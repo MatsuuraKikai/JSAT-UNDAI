@@ -5,15 +5,23 @@ using JSAT_UNDAI.ViewModels.Base;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Threading;
 
 namespace JSAT_UNDAI;
 
-/// <summary>
-/// Interaction logic for App.xaml
-/// </summary>
 public partial class App : Application
 {
+    private const string AppDataFolderName = "JSAT_UNDAI";
+    private const string MutexName = "MKS.UNDAI";
+    public const string MainWindowTitle = "JSAT UNDAI";
+
+    private const string LogFolderName = "Logs";
+    private const int SwRestore = 9;
+
     private static Mutex? _mutex;
+    private bool _mutexOwned;
+
+    private bool _isShowingErrorDialog;
 
     [DllImport("user32.dll")]
     private static extern bool SetForegroundWindow(IntPtr hWnd);
@@ -21,65 +29,64 @@ public partial class App : Application
     [DllImport("user32.dll", SetLastError = true)]
     private static extern IntPtr FindWindow(string? lpClassName, string lpWindowName);
 
-    private readonly NavigationStore _navigationStore;
-    private readonly ViewModelStore _viewModelStore;
-    public readonly MainPageViewModel _mainPageViewModel;
-    public readonly SettingPageViewModel _settingPageViewModel;
-    private string tempAppData = string.Empty;
+    [DllImport("user32.dll")]
+    private static extern bool IsIconic(IntPtr hWnd);
 
-    public App()
-    {
-        try
-        {
-            tempAppData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "JSAT_UNDAI");
-            Directory.CreateDirectory(tempAppData);
+    [DllImport("user32.dll")]
+    private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
-            _navigationStore = new NavigationStore();
-            _viewModelStore = new ViewModelStore();
+    private NavigationStore _navigationStore = null!;
+    private ViewModelStore _viewModelStore = null!;
 
-            _settingPageViewModel = new SettingPageViewModel(tempAppData, _viewModelStore, new NavigationService(_navigationStore, () => _mainPageViewModel));
-            _mainPageViewModel = new MainPageViewModel(tempAppData, _viewModelStore, new NavigationService(_navigationStore, () => _settingPageViewModel));
+    public MainPageViewModel _mainPageViewModel = null!;
+    public SettingPageViewModel _settingPageViewModel = null!;
 
-            _viewModelStore.MainPageViewModel = _mainPageViewModel;
-            _viewModelStore.SettingPageViewModel = _settingPageViewModel;
-
-            _mainPageViewModel.Initialize();
-            _settingPageViewModel.Initialize();
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"An error occurred during application initialization: {ex.Message}", "Initialization Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            Shutdown();
-        }
-    }
+    private string _appDataDirectory = string.Empty;
 
     protected override void OnStartup(StartupEventArgs e)
     {
         try
         {
             DispatcherUnhandledException += DispatcherUnhandledExceptionHandler;
-
             TaskScheduler.UnobservedTaskException += TaskExceptionHandler;
-
             AppDomain.CurrentDomain.UnhandledException += DomainUnhandledExceptionHandler;
 
-            const string appName = "MKS.UNDAI";
-
-            _mutex = new Mutex(true, appName, out bool createdNew);
+            _mutex = new Mutex(true, MutexName, out bool createdNew);
+            _mutexOwned = createdNew;
 
             if (!createdNew)
             {
-                IntPtr existingWindow = FindWindow(null, "UNDAI");
-
-                if (existingWindow != IntPtr.Zero)
-                {
-                    SetForegroundWindow(existingWindow);
-                }
-
+                ActivateExistingInstance();
                 Shutdown();
-
                 return;
             }
+
+            _appDataDirectory = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                AppDataFolderName);
+            Directory.CreateDirectory(_appDataDirectory);
+
+            ErrorLoggingService.Initialize(Path.Combine(_appDataDirectory, LogFolderName));
+            _ = ErrorLoggingService.LogInfo("Application starting.");
+
+            _navigationStore = new NavigationStore();
+            _viewModelStore = new ViewModelStore();
+
+            _settingPageViewModel = new SettingPageViewModel(
+                _appDataDirectory,
+                _viewModelStore,
+                new NavigationService(_navigationStore, () => _mainPageViewModel));
+
+            _mainPageViewModel = new MainPageViewModel(
+                _appDataDirectory,
+                _viewModelStore,
+                new NavigationService(_navigationStore, () => _settingPageViewModel));
+
+            _viewModelStore.MainPageViewModel = _mainPageViewModel;
+            _viewModelStore.SettingPageViewModel = _settingPageViewModel;
+
+            _mainPageViewModel.Initialize();
+            _settingPageViewModel.Initialize();
 
             _navigationStore.CurrentViewModel = _mainPageViewModel;
 
@@ -98,6 +105,12 @@ public partial class App : Application
         {
             _ = ErrorLoggingService.LogError("Error during application startup.", ex);
 
+            MessageBox.Show(
+                $"An error occurred during application startup:\n\n{ex.Message}",
+                "Startup Error",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+
             Shutdown();
         }
     }
@@ -109,7 +122,13 @@ public partial class App : Application
             _ = ErrorLoggingService.LogInfo("Application shutdown completed.");
             ErrorLoggingService.Shutdown();
 
-            _mutex?.ReleaseMutex();
+            if (_mutexOwned)
+            {
+                _mutex?.ReleaseMutex();
+            }
+
+            _mutex?.Dispose();
+            _mutex = null;
         }
         catch (Exception ex)
         {
@@ -121,31 +140,66 @@ public partial class App : Application
         }
     }
 
-    private void DispatcherUnhandledExceptionHandler(
-        object sender,
-        System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+    private static void ActivateExistingInstance()
+    {
+        IntPtr existingWindow = FindWindow(null, MainWindowTitle);
+
+        if (existingWindow == IntPtr.Zero)
+        {
+            return;
+        }
+
+        if (IsIconic(existingWindow))
+        {
+            ShowWindow(existingWindow, SwRestore);
+        }
+
+        SetForegroundWindow(existingWindow);
+    }
+
+    private void DispatcherUnhandledExceptionHandler(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
         _ = ErrorLoggingService.LogError("Unhandled UI exception.", e.Exception);
 
         e.Handled = true;
+
+        if (_isShowingErrorDialog)
+        {
+            return;
+        }
+
+        try
+        {
+            _isShowingErrorDialog = true;
+
+            MessageBox.Show(
+                $"An unexpected error occurred. Check the log.\n\n{e.Exception.Message}",
+                "Error",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+        }
+        finally
+        {
+            _isShowingErrorDialog = false;
+        }
     }
 
-    private void TaskExceptionHandler(
-        object? sender,
-        UnobservedTaskExceptionEventArgs e)
+    private void TaskExceptionHandler(object? sender, UnobservedTaskExceptionEventArgs e)
     {
         _ = ErrorLoggingService.LogError("Unhandled background task exception.", e.Exception);
 
         e.SetObserved();
     }
 
-    private void DomainUnhandledExceptionHandler(
-        object sender,
-        UnhandledExceptionEventArgs e)
+    private void DomainUnhandledExceptionHandler(object sender, UnhandledExceptionEventArgs e)
     {
         if (e.ExceptionObject is Exception ex)
         {
-            _ = ErrorLoggingService.LogError("Fatal application exception.", ex);
+            _ = ErrorLoggingService.LogError(
+                e.IsTerminating
+                    ? "Fatal application exception (process terminating)."
+                    : "Unhandled application domain exception.",
+                ex);
         }
     }
 }

@@ -3,13 +3,9 @@ using System.Windows.Data;
 
 namespace JSAT_UNDAI.Converters;
 
-/// <summary>
-/// Multiplies a container's ActualWidth by a 0.0–1.0 progress fraction to
-/// drive a fill-bar effect. Values[0] = container width, Values[1] = progress.
-/// </summary>
 public class ProgressWidthConverter : IMultiValueConverter
 {
-    public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+    public object Convert(object?[] values, Type targetType, object? parameter, CultureInfo culture)
     {
         if (values.Length < 2 || values[0] is not double width || values[1] is not double progress)
         {
@@ -19,7 +15,7 @@ public class ProgressWidthConverter : IMultiValueConverter
         return width * Math.Clamp(progress, 0.0, 1.0);
     }
 
-    public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+    public object[] ConvertBack(object? value, Type[] targetTypes, object? parameter, CultureInfo culture)
     {
         throw new NotSupportedException();
     }

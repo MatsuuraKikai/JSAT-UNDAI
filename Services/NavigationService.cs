@@ -22,9 +22,9 @@ public class NavigationService
         }
 
         var viewModel = _createViewModel();
-        _navigationStore.CurrentViewModel = _createViewModel();
+        _navigationStore.CurrentViewModel = viewModel;
 
-        if(viewModel is INavigationAware incoming)
+        if (viewModel is INavigationAware incoming)
         {
             incoming.OnNavigatedTo();
         }

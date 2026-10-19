@@ -3,5 +3,5 @@
 public class TcpServerConfig
 {
     public string ServerIPAddress { get; set; } = string.Empty;
-    public int ServerPort { get; set; } = 5625;
+    public int ServerPort { get; set; }
 }

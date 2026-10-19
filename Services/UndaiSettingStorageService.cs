@@ -86,17 +86,13 @@ public class UndaiSettingStorageService
         return new UndaiSettingEntry(
             DefaultUndaiIpAddress,
             DefaultUndaiSubnetMask,
-            DefaultUndaiGateway,
-            DefaultCameraIpAddress,
-            DefaultCameraPort);
+            DefaultUndaiGateway);
     }
 
     private static bool IsValid(UndaiSettingEntry setting)
     {
         return !string.IsNullOrEmpty(setting.UndaiIpAddress) &&
                !string.IsNullOrEmpty(setting.UndaiSubnetMask) &&
-               !string.IsNullOrEmpty(setting.UndaiGateway) &&
-               !string.IsNullOrEmpty(setting.CameraIpAddress) &&
-               !string.IsNullOrEmpty(setting.CameraPort);
+               !string.IsNullOrEmpty(setting.UndaiGateway);
     }
 }

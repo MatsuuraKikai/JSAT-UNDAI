@@ -7,10 +7,9 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:views="clr-namespace:JSAT_UNDAI.Views"
     xmlns:vm="clr-namespace:JSAT_UNDAI.ViewModels"
-    Title="JSAT UNDAI"
     MinWidth="800"
     MinHeight="500"
-    Background="LightYellow"
+    Background="#F0F4FF"
     WindowStartupLocation="CenterScreen"
     WindowState="Maximized"
     mc:Ignorable="d">
