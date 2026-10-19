@@ -10,6 +10,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\CCW ROTATE.png" />
+    <None Remove="Resources\CW ROTATE.png" />
+    <None Remove="Resources\DOWN ARROW.png" />
+    <None Remove="Resources\UP ARROW.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.161" />
     <PackageReference Include="WPF-UI" Version="4.3.0" />
@@ -19,8 +26,22 @@
   <ItemGroup>
     <Folder Include="Docs\Screenshots\" />
     <Folder Include="Assets\" />
-    <Folder Include="Resources\" />
     <Folder Include="Views\Base\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\CCW ROTATE.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\CW ROTATE.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\DOWN ARROW.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\UP ARROW.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
 </Project>

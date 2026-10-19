@@ -147,4 +147,186 @@
         <Setter Property="TextWrapping" Value="Wrap" />
     </Style>
 
+    <!--  ==========================================================  -->
+    <!--  OPERATOR PANEL (touch screen) - used by MainPageView  -->
+    <!--  ==========================================================  -->
+
+    <SolidColorBrush x:Key="PanelBorderBrush" Color="Blue" />
+    <SolidColorBrush x:Key="PanelActiveBrush" Color="#0070C0" />
+    <SolidColorBrush x:Key="ActionYellowBrush" Color="#FDEF75" />
+    <SolidColorBrush x:Key="DangerBrush" Color="#ED524F" />
+    <SolidColorBrush x:Key="CardBackgroundBrush" Color="#99FFFFFF" />
+    <SolidColorBrush x:Key="CardBorderBrush" Color="#33000000" />
+    <SolidColorBrush x:Key="StatusBarBrush" Color="Gray" />
+
+    <!--  Rounded panel button with drop shadow.  -->
+    <!--  Press feedback = dark overlay (works even if Background is bound).  -->
+    <ControlTemplate x:Key="PanelButtonTemplate" TargetType="Button">
+        <Border
+            x:Name="Bd"
+            Background="{TemplateBinding Background}"
+            BorderBrush="{TemplateBinding BorderBrush}"
+            BorderThickness="{TemplateBinding BorderThickness}"
+            CornerRadius="15">
+            <Grid>
+                <Border
+                    x:Name="PressOverlay"
+                    Background="Black"
+                    CornerRadius="15"
+                    IsHitTestVisible="False"
+                    Opacity="0" />
+                <ContentPresenter
+                    Margin="{TemplateBinding Padding}"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center" />
+            </Grid>
+            <Border.Effect>
+                <DropShadowEffect
+                    Direction="-40"
+                    Opacity="0.3"
+                    ShadowDepth="4" />
+            </Border.Effect>
+        </Border>
+        <ControlTemplate.Triggers>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter TargetName="PressOverlay" Property="Opacity" Value="0.25" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter TargetName="Bd" Property="Opacity" Value="0.45" />
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <!--  White panel button. Set Tag="{Binding SomeBool}": when true the button turns blue (selected / active).  -->
+    <Style x:Key="PanelButtonStyle" TargetType="Button">
+        <Setter Property="Template" Value="{StaticResource PanelButtonTemplate}" />
+        <Setter Property="Background" Value="White" />
+        <Setter Property="Foreground" Value="Black" />
+        <Setter Property="BorderBrush" Value="{StaticResource PanelBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="FontSize" Value="40" />
+        <Setter Property="Padding" Value="8" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="True">
+                <Setter Property="Background" Value="{StaticResource PanelActiveBrush}" />
+                <Setter Property="Foreground" Value="White" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <!--  Yellow action button (system setting etc.)  -->
+    <Style
+        x:Key="PanelButtonYellowStyle"
+        BasedOn="{StaticResource PanelButtonStyle}"
+        TargetType="Button">
+        <Setter Property="Background" Value="{StaticResource ActionYellowBrush}" />
+    </Style>
+
+    <!--  STOP button: red text, turns solid red while pressed  -->
+    <Style
+        x:Key="StopButtonStyle"
+        BasedOn="{StaticResource PanelButtonStyle}"
+        TargetType="Button">
+        <Setter Property="Foreground" Value="Red" />
+        <Setter Property="FontSize" Value="70" />
+        <Setter Property="FontWeight" Value="ExtraBold" />
+        <Style.Triggers>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter Property="Background" Value="{StaticResource DangerBrush}" />
+                <Setter Property="Foreground" Value="White" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!--  Value box that behaves like a button (tap -> keypad)  -->
+    <ControlTemplate x:Key="InputBoxButtonTemplate" TargetType="Button">
+        <Border
+            x:Name="Bd"
+            Background="{TemplateBinding Background}"
+            BorderBrush="{TemplateBinding BorderBrush}"
+            BorderThickness="{TemplateBinding BorderThickness}"
+            CornerRadius="5">
+            <Grid>
+                <Border
+                    x:Name="PressOverlay"
+                    Background="Black"
+                    CornerRadius="5"
+                    IsHitTestVisible="False"
+                    Opacity="0" />
+                <ContentPresenter
+                    Margin="{TemplateBinding Padding}"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center" />
+            </Grid>
+        </Border>
+        <ControlTemplate.Triggers>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter TargetName="PressOverlay" Property="Opacity" Value="0.2" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter TargetName="Bd" Property="Opacity" Value="0.45" />
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <Style x:Key="InputBoxButtonStyle" TargetType="Button">
+        <Setter Property="Template" Value="{StaticResource InputBoxButtonTemplate}" />
+        <Setter Property="Background" Value="White" />
+        <Setter Property="Foreground" Value="Black" />
+        <Setter Property="BorderBrush" Value="{StaticResource PanelBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="FontSize" Value="40" />
+        <Setter Property="Padding" Value="4" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+    </Style>
+
+    <!--  Section card  -->
+    <Style x:Key="CardBorderStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource CardBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="Padding" Value="20" />
+    </Style>
+
+    <Style x:Key="CardHeaderTextStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="30" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+        <Setter Property="Margin" Value="0,0,0,12" />
+    </Style>
+
+    <Style x:Key="LabelTextStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="30" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <!--  Black read-only value cell (white text)  -->
+    <Style x:Key="ValueBoxBorderStyle" TargetType="Border">
+        <Setter Property="Background" Value="Black" />
+        <Setter Property="CornerRadius" Value="5" />
+        <Setter Property="Height" Value="70" />
+        <Setter Property="Margin" Value="4" />
+    </Style>
+
+    <Style x:Key="ValueBoxTextStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="48" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <!--  Bottom status bar: gray normally, red when HasAlarm is true  -->
+    <Style x:Key="StatusBarBorderStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource StatusBarBrush}" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding HasAlarm}" Value="True">
+                <Setter Property="Background" Value="{StaticResource DangerBrush}" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
 </ResourceDictionary>

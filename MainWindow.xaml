@@ -9,7 +9,7 @@
     xmlns:vm="clr-namespace:JSAT_UNDAI.ViewModels"
     MinWidth="800"
     MinHeight="500"
-    Background="#F0F4FF"
+    Background="LightYellow"
     WindowStartupLocation="CenterScreen"
     WindowState="Maximized"
     mc:Ignorable="d">
