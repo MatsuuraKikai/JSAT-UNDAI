@@ -1,0 +1,150 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:System="clr-namespace:System;assembly=mscorlib">
+
+    <!--  =====================  -->
+    <!--  COLOR BRUSHES  -->
+    <!--  =====================  -->
+
+    <!--  Primary nav button (#2A4494 dark blue)  -->
+    <SolidColorBrush x:Key="NavPrimaryBrush" Color="#2A4494" />
+    <SolidColorBrush x:Key="NavPrimaryHoverBrush" Color="#1E3375" />
+    <SolidColorBrush x:Key="NavPrimaryPressedBrush" Color="#162860" />
+    <SolidColorBrush x:Key="NavPrimaryFgBrush" Color="White" />
+
+    <!--  Ghost nav button (#F0F0F0 light gray)  -->
+    <SolidColorBrush x:Key="NavGhostBrush" Color="#F0F0F0" />
+    <SolidColorBrush x:Key="NavGhostHoverBrush" Color="#DCDCDC" />
+    <SolidColorBrush x:Key="NavGhostPressedBrush" Color="#C8C8C8" />
+    <SolidColorBrush x:Key="NavGhostFgBrush" Color="#1E1E2E" />
+
+    <!--  Page / text surfaces  -->
+    <SolidColorBrush x:Key="PageBackgroundBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="#1E1E2E" />
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="#64748B" />
+    <SolidColorBrush x:Key="TextDisabledBrush" Color="#CBD5E1" />
+
+    <!--  =====================  -->
+    <!--  FONT SIZES  -->
+    <!--  =====================  -->
+    <System:Double x:Key="FontSizeSmall">12</System:Double>
+    <System:Double x:Key="FontSizeBase">13</System:Double>
+    <System:Double x:Key="FontSizeMedium">15</System:Double>
+    <System:Double x:Key="FontSizeLarge">20</System:Double>
+    <System:Double x:Key="FontSizeTitle">26</System:Double>
+
+    <!--  =====================  -->
+    <!--  SHARED NAV BUTTON  -->
+    <!--  CONTROL TEMPLATE  -->
+    <!--  Both primary and  -->
+    <!--  ghost share this.  -->
+    <!--  Tag = hover color.  -->
+    <!--  =====================  -->
+    <ControlTemplate x:Key="NavButtonTemplate" TargetType="Button">
+        <Border
+            x:Name="Bd"
+            Padding="{TemplateBinding Padding}"
+            Background="{TemplateBinding Background}"
+            BorderThickness="0"
+            CornerRadius="4">
+            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </Border>
+        <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="Bd" Property="Background" Value="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}" />
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter TargetName="Bd" Property="Opacity" Value="0.85" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter TargetName="Bd" Property="Opacity" Value="0.4" />
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <!--  =====================  -->
+    <!--  PRIMARY NAV BUTTON  -->
+    <!--  Forward actions  -->
+    <!--  "Go to Page →"  -->
+    <!--  =====================  -->
+    <Style x:Key="NavPrimaryButtonStyle" TargetType="Button">
+        <Setter Property="Height" Value="38" />
+        <Setter Property="Padding" Value="16,0" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeBase}" />
+        <Setter Property="FontFamily" Value="Segoe UI" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Background" Value="{StaticResource NavPrimaryBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource NavPrimaryFgBrush}" />
+        <Setter Property="Tag" Value="{StaticResource NavPrimaryHoverBrush}" />
+        <Setter Property="Template" Value="{StaticResource NavButtonTemplate}" />
+    </Style>
+
+    <!--  =====================  -->
+    <!--  GHOST NAV BUTTON  -->
+    <!--  Back actions  -->
+    <!--  "← Back to Main"  -->
+    <!--  =====================  -->
+    <Style x:Key="NavGhostButtonStyle" TargetType="Button">
+        <Setter Property="Height" Value="38" />
+        <Setter Property="Padding" Value="16,0" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeBase}" />
+        <Setter Property="FontFamily" Value="Segoe UI" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Background" Value="{StaticResource NavGhostBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource NavGhostFgBrush}" />
+        <Setter Property="Tag" Value="{StaticResource NavGhostHoverBrush}" />
+        <Setter Property="Template" Value="{StaticResource NavButtonTemplate}" />
+    </Style>
+
+    <!--  =====================  -->
+    <!--  NAV BAR CONTAINER  -->
+    <!--  StackPanel wrapping  -->
+    <!--  all nav buttons  -->
+    <!--  =====================  -->
+    <Style x:Key="NavBarStyle" TargetType="StackPanel">
+        <Setter Property="Orientation" Value="Horizontal" />
+        <Setter Property="HorizontalAlignment" Value="Right" />
+        <Setter Property="Margin" Value="12" />
+    </Style>
+
+    <!--  =====================  -->
+    <!--  PAGE CONTAINER  -->
+    <!--  Root Grid of each  -->
+    <!--  View  -->
+    <!--  =====================  -->
+    <Style x:Key="PageContainerStyle" TargetType="Grid">
+        <Setter Property="Background" Value="{StaticResource PageBackgroundBrush}" />
+    </Style>
+
+    <!--  =====================  -->
+    <!--  PAGE TITLE  -->
+    <!--  Large heading at  -->
+    <!--  top of each page  -->
+    <!--  =====================  -->
+    <Style x:Key="PageTitleStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="Segoe UI" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeTitle}" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+        <Setter Property="Margin" Value="0,0,0,20" />
+    </Style>
+
+    <!--  =====================  -->
+    <!--  BODY TEXT  -->
+    <!--  Standard paragraph  -->
+    <!--  text on any page  -->
+    <!--  =====================  -->
+    <Style x:Key="BodyTextStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="Segoe UI" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeBase}" />
+        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+        <Setter Property="LineHeight" Value="22" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+</ResourceDictionary>

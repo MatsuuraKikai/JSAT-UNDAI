@@ -1,0 +1,28 @@
+﻿<Window
+    x:Class="JSAT_UNDAI.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:JSAT_UNDAI"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:views="clr-namespace:JSAT_UNDAI.Views"
+    xmlns:vm="clr-namespace:JSAT_UNDAI.ViewModels"
+    Title="JSAT UNDAI"
+    MinWidth="800"
+    MinHeight="500"
+    Background="LightYellow"
+    WindowStartupLocation="CenterScreen"
+    WindowState="Maximized"
+    mc:Ignorable="d">
+    <Window.Resources>
+        <DataTemplate DataType="{x:Type vm:MainPageViewModel}">
+            <views:MainPageView />
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:SettingPageViewModel}">
+            <views:SettingPageView />
+        </DataTemplate>
+    </Window.Resources>
+
+    <ContentControl Content="{Binding CurrentViewModel}" />
+</Window>

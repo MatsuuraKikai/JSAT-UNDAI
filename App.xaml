@@ -1,0 +1,20 @@
+﻿<Application
+    x:Class="JSAT_UNDAI.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="clr-namespace:JSAT_UNDAI.Converters"
+    xmlns:local="clr-namespace:JSAT_UNDAI"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ui:ThemesDictionary Theme="Light" />
+                <ui:ControlsDictionary />
+                <ResourceDictionary Source="/Styles/MainStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <converters:ProgressWidthConverter x:Key="ProgressWidthConverter" />
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
