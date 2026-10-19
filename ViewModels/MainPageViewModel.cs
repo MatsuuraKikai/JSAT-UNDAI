@@ -5,6 +5,7 @@ using JSAT_UNDAI.Stores;
 using JSAT_UNDAI.ViewModels.Base;
 using System.Diagnostics;
 using System.Windows;
+using System.Windows.Threading;
 
 namespace JSAT_UNDAI.ViewModels;
 
@@ -32,6 +33,11 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
     private const string ConnectButtonHoverBlueColor = "#1E3375";
     private const string LogoutButtonHoverRedColor = "#35070a";
 
+    // =====================================================================
+    // Clock (top right)
+    // =====================================================================
+    private DispatcherTimer? _clockTimer;
+
     public MainPageViewModel(string tempAppData, ViewModelStore viewModelStore, NavigationService settingPageNavigationService)
     {
         _tempAppData = tempAppData;
@@ -55,6 +61,7 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
                 // Handle the case where the SettingPageViewModel is not available
             }
 
+            StartClock();
             InitializeTcpConnection();
         }
         catch (Exception ex)
@@ -91,6 +98,88 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
 
     [ObservableProperty]
     private string _logoutButtonHoverColor = LogoutButtonHoverRedColor;
+
+    [ObservableProperty]
+    private string _timeText = string.Empty;
+
+    [ObservableProperty]
+    private string _dateText = string.Empty;
+
+    [ObservableProperty]
+    private string _gpsStatusText = "GPS捕捉中";
+
+    [ObservableProperty]
+    private string _gpsStatusColor = "#ED524F";
+
+    [ObservableProperty]
+    private bool _isControlEnabled;
+
+    [ObservableProperty]
+    private bool _isHighSpeed;
+
+    [ObservableProperty]
+    private bool _isLowSpeed;
+
+    [ObservableProperty]
+    private bool _isInching = true;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SetElevationAngleCommand))]
+    private string _elevationAngleInput = string.Empty;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SetAzimuthAngleCommand))]
+    private string _azimuthAngleInput = string.Empty;
+
+    [ObservableProperty]
+    private string _currentRssi = "0.0";
+
+    [ObservableProperty]
+    private string _currentElevation = "0.0";
+
+    [ObservableProperty]
+    private string _currentAzimuth = "0.0";
+
+    [ObservableProperty]
+    private string _peakRssi = "0.0";
+
+    [ObservableProperty]
+    private string _peakElevation = "0.0";
+
+    [ObservableProperty]
+    private string _peakAzimuth = "0.0";
+
+    [ObservableProperty]
+    private string _unitLabel = "DD";
+
+    [ObservableProperty]
+    private string _latitude = "0.00000";
+
+    [ObservableProperty]
+    private string _longitude = "0.00000";
+
+    [ObservableProperty]
+    private bool _isHoming;
+
+    [ObservableProperty]
+    private bool _isPeakSearching;
+
+    [ObservableProperty]
+    private string _statusMessage = "READY";
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(AlarmResetCommand))]
+    private bool _hasAlarm;
+
+    private string CurrentSpeedModeName => IsHighSpeed ? "High" : IsLowSpeed ? "Low" : "Inching";
+
+    private string? _activeJogDirection;
+
+    private bool CanAlarmReset() => HasAlarm;
+
+    private bool CanSetElevationAngle() => !string.IsNullOrWhiteSpace(ElevationAngleInput);
+
+    private bool CanSetAzimuthAngle() => !string.IsNullOrWhiteSpace(AzimuthAngleInput);
 
     [RelayCommand]
     private void NavigateToSettingPage()
@@ -220,6 +309,169 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
         }
     }
 
+    [RelayCommand]
+    private void SelectSpeedMode(string? mode)
+    {
+        Safe(nameof(SelectSpeedMode), () =>
+        {
+            IsHighSpeed = mode == "High";
+            IsLowSpeed = mode == "Low";
+            IsInching = mode == "Inching";
+
+            _ = ErrorLoggingService.LogInfo($"Speed mode: {CurrentSpeedModeName}");
+            // TODO: send speed mode to the device.
+        });
+    }
+
+    [RelayCommand]
+    private void JogPressed(string? direction)
+    {
+        Safe(nameof(JogPressed), () =>
+        {
+            if (string.IsNullOrEmpty(direction))
+            {
+                return;
+            }
+
+            _activeJogDirection = direction;
+            _ = ErrorLoggingService.LogInfo($"Jog start: {direction} ({CurrentSpeedModeName})");
+            // TODO: send "start jog" for this direction at the selected speed mode.
+        });
+    }
+
+    [RelayCommand]
+    private void JogReleased(string? direction)
+    {
+        Safe(nameof(JogReleased), () =>
+        {
+            if (_activeJogDirection is null)
+            {
+                return; // already stopped
+            }
+
+            string stopped = _activeJogDirection;
+            _activeJogDirection = null;
+
+            _ = ErrorLoggingService.LogInfo($"Jog stop: {stopped}");
+            // TODO: send "stop jog" to the device.
+        });
+    }
+
+    [RelayCommand]
+    private void EditElevationAngle()
+    {
+        Safe(nameof(EditElevationAngle), () =>
+        {
+            // TODO: open the numeric keypad and write the result to ElevationAngleInput.
+            _ = ErrorLoggingService.LogInfo("Edit elevation angle requested.");
+        });
+    }
+
+    [RelayCommand]
+    private void EditAzimuthAngle()
+    {
+        Safe(nameof(EditAzimuthAngle), () =>
+        {
+            // TODO: open the numeric keypad and write the result to AzimuthAngleInput.
+            _ = ErrorLoggingService.LogInfo("Edit azimuth angle requested.");
+        });
+    }
+
+    [RelayCommand(CanExecute = nameof(CanSetElevationAngle))]
+    private void SetElevationAngle()
+    {
+        Safe(nameof(SetElevationAngle), () =>
+        {
+            _ = ErrorLoggingService.LogInfo($"Go to elevation angle: {ElevationAngleInput}");
+            // TODO: validate range, then send the position command.
+        });
+    }
+
+    [RelayCommand(CanExecute = nameof(CanSetAzimuthAngle))]
+    private void SetAzimuthAngle()
+    {
+        Safe(nameof(SetAzimuthAngle), () =>
+        {
+            _ = ErrorLoggingService.LogInfo($"Go to azimuth angle: {AzimuthAngleInput}");
+            // TODO: validate range, then send the position command.
+        });
+    }
+
+    [RelayCommand]
+    private void SaveAngle()
+    {
+        Safe(nameof(SaveAngle), () =>
+        {
+            _ = ErrorLoggingService.LogInfo("Save angle requested.");
+            // TODO: store the current angles.
+        });
+    }
+
+    [RelayCommand]
+    private void LoadAngle()
+    {
+        Safe(nameof(LoadAngle), () =>
+        {
+            _ = ErrorLoggingService.LogInfo("Load angle requested.");
+            // TODO: recall the stored angles.
+        });
+    }
+
+    [RelayCommand]
+    private void ToggleUnit()
+    {
+        Safe(nameof(ToggleUnit), () =>
+        {
+            _ = ErrorLoggingService.LogInfo("Coordinate unit button pressed.");
+            // TODO: switch the coordinate format and update UnitLabel / Latitude / Longitude.
+        });
+    }
+
+    [RelayCommand]
+    private void Home()
+    {
+        Safe(nameof(Home), () =>
+        {
+            _ = ErrorLoggingService.LogInfo("Home requested.");
+            // TODO: send home command, set IsHoming while it runs.
+        });
+    }
+
+    [RelayCommand]
+    private void PeakSearch()
+    {
+        Safe(nameof(PeakSearch), () =>
+        {
+            _ = ErrorLoggingService.LogInfo("Peak search requested.");
+            // TODO: send peak search command, set IsPeakSearching while it runs.
+        });
+    }
+
+    /// <summary>Fires on button PRESS (ClickMode=Press). Highest priority, never gated.</summary>
+    [RelayCommand]
+    private void Stop()
+    {
+        Safe(nameof(Stop), () =>
+        {
+            _activeJogDirection = null;
+            IsHoming = false;
+            IsPeakSearching = false;
+
+            _ = ErrorLoggingService.LogWarning("STOP pressed.");
+            // TODO: send stop to the device FIRST, bypassing any queue.
+        });
+    }
+
+    [RelayCommand(CanExecute = nameof(CanAlarmReset))]
+    private void AlarmReset()
+    {
+        Safe(nameof(AlarmReset), () =>
+        {
+            _ = ErrorLoggingService.LogInfo("Alarm reset requested.");
+            // TODO: send alarm reset; clear HasAlarm when the device confirms.
+        });
+    }
+
     private void InitializeTcpConnection()
     {
         _tcpServerConnectionService = new TcpServerConnectionService(_tempAppData);
@@ -254,6 +506,48 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
         catch (Exception ex)
         {
             _ = ErrorLoggingService.LogError("Error handling received TCP message.", ex);
+        }
+    }
+
+    /// <summary>Starts the 1 s clock. Call once from Initialize().</summary>
+    private void StartClock()
+    {
+        UpdateClock();
+
+        _clockTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+        _clockTimer.Tick += (_, _) => UpdateClock();
+        _clockTimer.Start();
+    }
+
+    private void UpdateClock()
+    {
+        DateTime now = DateTime.Now;
+        TimeText = now.ToString("HH:mm:ss");
+        DateText = now.ToString("yyyy/M/d");
+    }
+
+    private static void Safe(string commandName, Action action)
+    {
+        try
+        {
+            action();
+        }
+        catch (Exception ex)
+        {
+            _ = ErrorLoggingService.LogError($"Error in {commandName}.", ex);
+        }
+    }
+
+    /// <summary>Controls follow the TCP connection state.</summary>
+    partial void OnIsServerConnectedChanged(bool value)
+    {
+        IsControlEnabled = value;
+
+        if (!value)
+        {
+            // Link lost while a jog button may be held: drop the held state.
+            _activeJogDirection = null;
+            // TODO: the device side must stop by itself on link loss (watchdog / keep-alive).
         }
     }
 

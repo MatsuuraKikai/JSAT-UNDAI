@@ -4,155 +4,727 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
-    xmlns:local="clr-namespace:JSAT_UNDAI.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     xmlns:vm="clr-namespace:JSAT_UNDAI.ViewModels"
     d:DataContext="{d:DesignInstance Type=vm:MainPageViewModel}"
+    d:DesignHeight="1080"
+    d:DesignWidth="1920"
     mc:Ignorable="d">
+
+    <!--  Fixed 1920x1080 design canvas, scaled uniformly (no distortion). Window background (LightYellow) fills the bars.  -->
     <Viewbox
         HorizontalAlignment="Center"
-        VerticalAlignment="Top"
-        Stretch="Fill"
+        VerticalAlignment="Center"
+        Stretch="Uniform"
         StretchDirection="Both"
         UseLayoutRounding="True">
+
         <Grid
             Width="1920"
-            Height="1200"
-            Background="#F0F4FF">
+            Height="1080"
+            Background="LightYellow">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
+                <RowDefinition Height="130" />
                 <RowDefinition Height="*" />
+                <RowDefinition Height="120" />
             </Grid.RowDefinitions>
-            <TextBlock
-                Margin="10"
-                FontSize="24"
-                FontWeight="Bold"
-                Text="Main Page" />
-            <StackPanel Grid.Row="1" Margin="10">
-                <ui:Button
-                    Width="100"
-                    Height="30"
-                    Margin="0,0,0,10"
-                    Command="{Binding ClickMeCommand}"
-                    Content="Click Me"
-                    Style="{StaticResource NavGhostButtonStyle}" />
-                <ui:TextBox Width="200" PlaceholderText="Enter text here" />
-            </StackPanel>
-            <StackPanel Grid.Row="2" Margin="10">
-                <ui:Button
-                    Width="150"
-                    Height="30"
-                    Margin="0,0,0,10"
-                    Command="{Binding NavigateToSettingPageCommand}"
-                    Content="Setting Page"
-                    Style="{StaticResource NavPrimaryButtonStyle}" />
-                <Grid Width="300">
-                    <Border
-                        BorderBrush="Black"
-                        BorderThickness="2"
-                        CornerRadius="5">
-                        <Border.Effect>
-                            <DropShadowEffect
-                                BlurRadius="8"
-                                Direction="315"
-                                Opacity="0.45"
-                                ShadowDepth="4" />
-                        </Border.Effect>
-                        <ui:Button
-                            x:Name="ConnectButton"
-                            Height="50"
-                            Background="{Binding ConnectionButtonColor}"
-                            Command="{Binding ConnectButtonClickedCommand}"
-                            Content="{Binding ConnectionButtonLabel}"
-                            FontSize="20"
-                            Style="{StaticResource NavPrimaryButtonStyle}"
-                            Tag="{Binding ConnectionButtonHoverColor}">
-                            <i:Interaction.Triggers>
-                                <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
-                                    <i:InvokeCommandAction Command="{Binding ConnectButtonPressedCommand}" />
-                                </i:EventTrigger>
-                                <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
-                                    <i:InvokeCommandAction Command="{Binding ConnectButtonReleasedCommand}" />
-                                </i:EventTrigger>
-                            </i:Interaction.Triggers>
-                        </ui:Button>
-                    </Border>
+
+            <!--  =====================================================  -->
+            <!--  TOP BAR: connect / GPS status / clock  -->
+            <!--  =====================================================  -->
+            <Grid Grid.Row="0" Margin="40,25,40,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="340" />
+                    <ColumnDefinition Width="30" />
+                    <ColumnDefinition Width="340" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="360" />
+                </Grid.ColumnDefinitions>
+
+                <!--  Connect button. While connected: hold 2 s to disconnect (progress bar shows the hold).  -->
+                <Grid
+                    Grid.Column="0"
+                    Height="90"
+                    VerticalAlignment="Top">
+                    <Button
+                        x:Name="ConnectButton"
+                        Background="{Binding ConnectionButtonColor}"
+                        Command="{Binding ConnectButtonClickedCommand}"
+                        Content="{Binding ConnectionButtonLabel}"
+                        Foreground="White"
+                        Style="{StaticResource PanelButtonStyle}"
+                        Stylus.IsFlicksEnabled="False"
+                        Stylus.IsPressAndHoldEnabled="False">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                                <i:InvokeCommandAction Command="{Binding ConnectButtonPressedCommand}" />
+                            </i:EventTrigger>
+                            <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+                                <i:InvokeCommandAction Command="{Binding ConnectButtonReleasedCommand}" />
+                            </i:EventTrigger>
+                            <i:EventTrigger EventName="LostMouseCapture">
+                                <i:InvokeCommandAction Command="{Binding ConnectButtonReleasedCommand}" />
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </Button>
 
                     <Border
-                        Height="3"
-                        Margin="0,0,0,2"
+                        x:Name="ConnectHoldTrack"
+                        Height="6"
+                        Margin="24,0,24,10"
                         VerticalAlignment="Bottom"
                         Background="#33000000"
+                        CornerRadius="3"
                         IsHitTestVisible="False"
                         Visibility="{Binding IsDisconnectHolding, Converter={StaticResource BoolToVisibilityConverter}}">
                         <Border
                             HorizontalAlignment="Left"
                             Background="White"
+                            CornerRadius="3"
                             Opacity="0.9">
                             <Border.Width>
                                 <MultiBinding Converter="{StaticResource ProgressWidthConverter}">
-                                    <Binding ElementName="ConnectButton" Path="ActualWidth" />
+                                    <Binding ElementName="ConnectHoldTrack" Path="ActualWidth" />
                                     <Binding Path="DisconnectHoldProgress" />
                                 </MultiBinding>
                             </Border.Width>
                         </Border>
                     </Border>
                 </Grid>
-                <Grid Width="300">
+
+                <!--  GPS status  -->
+                <Border
+                    Grid.Column="2"
+                    Height="90"
+                    VerticalAlignment="Top"
+                    Background="{Binding GpsStatusColor}"
+                    CornerRadius="15">
+                    <Border.Effect>
+                        <DropShadowEffect
+                            Direction="-40"
+                            Opacity="0.3"
+                            ShadowDepth="4" />
+                    </Border.Effect>
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        FontSize="40"
+                        Foreground="White"
+                        Text="{Binding GpsStatusText}" />
+                </Border>
+
+                <!--  Clock  -->
+                <StackPanel
+                    Grid.Column="4"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center">
+                    <TextBlock
+                        HorizontalAlignment="Right"
+                        FontSize="56"
+                        FontWeight="SemiBold"
+                        Foreground="{StaticResource TextPrimaryBrush}"
+                        Text="{Binding TimeText}" />
+                    <TextBlock
+                        HorizontalAlignment="Right"
+                        FontSize="30"
+                        Foreground="{StaticResource TextPrimaryBrush}"
+                        Text="{Binding DateText}" />
+                </StackPanel>
+            </Grid>
+
+            <!--  =====================================================  -->
+            <!--  MAIN AREA  -->
+            <!--  =====================================================  -->
+            <Grid Grid.Row="1" Margin="40,10,40,10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1000" />
+                    <ColumnDefinition Width="40" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!--  ================= LEFT: manual control + installation position =================  -->
+                <Grid Grid.Column="0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <!--  Manual control: disabled as a whole when IsControlEnabled is false (not connected).  -->
+                    <Grid Grid.Row="0" IsEnabled="{Binding IsControlEnabled}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <!--  Speed mode (selected button turns blue via Tag)  -->
+                        <Grid Grid.Row="0" Height="90">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="20" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="20" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Button
+                                Grid.Column="0"
+                                Command="{Binding SelectSpeedModeCommand}"
+                                CommandParameter="High"
+                                Content="高速"
+                                Style="{StaticResource PanelButtonStyle}"
+                                Tag="{Binding IsHighSpeed}" />
+                            <Button
+                                Grid.Column="2"
+                                Command="{Binding SelectSpeedModeCommand}"
+                                CommandParameter="Low"
+                                Content="低速"
+                                Style="{StaticResource PanelButtonStyle}"
+                                Tag="{Binding IsLowSpeed}" />
+                            <Button
+                                Grid.Column="4"
+                                Command="{Binding SelectSpeedModeCommand}"
+                                CommandParameter="Inching"
+                                Content="寸動"
+                                Style="{StaticResource PanelButtonStyle}"
+                                Tag="{Binding IsInching}" />
+                        </Grid>
+
+                        <!--  Elevation card + Azimuth card  -->
+                        <Grid Grid.Row="1" Margin="0,20,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="30" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!--  Elevation (up / down)  -->
+                            <Border Grid.Column="0" Style="{StaticResource CardBorderStyle}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Style="{StaticResource CardHeaderTextStyle}" Text="仰角" />
+
+                                    <StackPanel
+                                        Grid.Row="1"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Orientation="Horizontal">
+                                        <Button
+                                            Width="200"
+                                            Height="200"
+                                            Margin="0,0,30,0"
+                                            Padding="0"
+                                            Style="{StaticResource PanelButtonStyle}"
+                                            Stylus.IsFlicksEnabled="False"
+                                            Stylus.IsPressAndHoldEnabled="False">
+                                            <Image Width="140" Source="/Resources/UP ARROW.png" />
+                                            <i:Interaction.Triggers>
+                                                <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                                                    <i:InvokeCommandAction Command="{Binding JogPressedCommand}" CommandParameter="Up" />
+                                                </i:EventTrigger>
+                                                <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+                                                    <i:InvokeCommandAction Command="{Binding JogReleasedCommand}" CommandParameter="Up" />
+                                                </i:EventTrigger>
+                                                <i:EventTrigger EventName="MouseLeave">
+                                                    <i:InvokeCommandAction Command="{Binding JogReleasedCommand}" CommandParameter="Up" />
+                                                </i:EventTrigger>
+                                                <i:EventTrigger EventName="LostMouseCapture">
+                                                    <i:InvokeCommandAction Command="{Binding JogReleasedCommand}" CommandParameter="Up" />
+                                                </i:EventTrigger>
+                                            </i:Interaction.Triggers>
+                                        </Button>
+                                        <Button
+                                            Width="200"
+                                            Height="200"
+                                            Padding="0"
+                                            Style="{StaticResource PanelButtonStyle}"
+                                            Stylus.IsFlicksEnabled="False"
+                                            Stylus.IsPressAndHoldEnabled="False">
+                                            <Image Width="140" Source="/Resources/DOWN ARROW.png" />
+                                            <i:Interaction.Triggers>
+                                                <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                                                    <i:InvokeCommandAction Command="{Binding JogPressedCommand}" CommandParameter="Down" />
+                                                </i:EventTrigger>
+                                                <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+                                                    <i:InvokeCommandAction Command="{Binding JogReleasedCommand}" CommandParameter="Down" />
+                                                </i:EventTrigger>
+                                                <i:EventTrigger EventName="MouseLeave">
+                                                    <i:InvokeCommandAction Command="{Binding JogReleasedCommand}" CommandParameter="Down" />
+                                                </i:EventTrigger>
+                                                <i:EventTrigger EventName="LostMouseCapture">
+                                                    <i:InvokeCommandAction Command="{Binding JogReleasedCommand}" CommandParameter="Down" />
+                                                </i:EventTrigger>
+                                            </i:Interaction.Triggers>
+                                        </Button>
+                                    </StackPanel>
+
+                                    <!--  Go-to angle: [位置決め] [value box -> keypad]  -->
+                                    <Grid
+                                        Grid.Row="2"
+                                        Height="80"
+                                        Margin="0,10,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="15" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Button
+                                            Grid.Column="0"
+                                            Command="{Binding SetElevationAngleCommand}"
+                                            Content="位置決め"
+                                            FontSize="36"
+                                            Style="{StaticResource PanelButtonStyle}" />
+                                        <Button
+                                            Grid.Column="2"
+                                            Command="{Binding EditElevationAngleCommand}"
+                                            Content="{Binding ElevationAngleInput}"
+                                            Style="{StaticResource InputBoxButtonStyle}" />
+                                    </Grid>
+                                </Grid>
+                            </Border>
+
+                            <!--  Azimuth (CCW / CW)  -->
+                            <Border Grid.Column="2" Style="{StaticResource CardBorderStyle}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Style="{StaticResource CardHeaderTextStyle}" Text="水平角" />
+
+                                    <StackPanel
+                                        Grid.Row="1"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Orientation="Horizontal">
+                                        <Button
+                                            Width="200"
+                                            Height="200"
+                                            Margin="0,0,30,0"
+                                            Padding="0"
+                                            Style="{StaticResource PanelButtonStyle}"
+                                            Stylus.IsFlicksEnabled="False"
+                                            Stylus.IsPressAndHoldEnabled="False">
+                                            <Image Width="140" Source="/Resources/CCW ROTATE.png" />
+                                            <i:Interaction.Triggers>
+                                                <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                                                    <i:InvokeCommandAction Command="{Binding JogPressedCommand}" CommandParameter="CCW" />
+                                                </i:EventTrigger>
+                                                <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+                                                    <i:InvokeCommandAction Command="{Binding JogReleasedCommand}" CommandParameter="CCW" />
+                                                </i:EventTrigger>
+                                                <i:EventTrigger EventName="MouseLeave">
+                                                    <i:InvokeCommandAction Command="{Binding JogReleasedCommand}" CommandParameter="CCW" />
+                                                </i:EventTrigger>
+                                                <i:EventTrigger EventName="LostMouseCapture">
+                                                    <i:InvokeCommandAction Command="{Binding JogReleasedCommand}" CommandParameter="CCW" />
+                                                </i:EventTrigger>
+                                            </i:Interaction.Triggers>
+                                        </Button>
+                                        <Button
+                                            Width="200"
+                                            Height="200"
+                                            Padding="0"
+                                            Style="{StaticResource PanelButtonStyle}"
+                                            Stylus.IsFlicksEnabled="False"
+                                            Stylus.IsPressAndHoldEnabled="False">
+                                            <Image Width="140" Source="/Resources/CW ROTATE.png" />
+                                            <i:Interaction.Triggers>
+                                                <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                                                    <i:InvokeCommandAction Command="{Binding JogPressedCommand}" CommandParameter="CW" />
+                                                </i:EventTrigger>
+                                                <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+                                                    <i:InvokeCommandAction Command="{Binding JogReleasedCommand}" CommandParameter="CW" />
+                                                </i:EventTrigger>
+                                                <i:EventTrigger EventName="MouseLeave">
+                                                    <i:InvokeCommandAction Command="{Binding JogReleasedCommand}" CommandParameter="CW" />
+                                                </i:EventTrigger>
+                                                <i:EventTrigger EventName="LostMouseCapture">
+                                                    <i:InvokeCommandAction Command="{Binding JogReleasedCommand}" CommandParameter="CW" />
+                                                </i:EventTrigger>
+                                            </i:Interaction.Triggers>
+                                        </Button>
+                                    </StackPanel>
+
+                                    <Grid
+                                        Grid.Row="2"
+                                        Height="80"
+                                        Margin="0,10,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="15" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Button
+                                            Grid.Column="0"
+                                            Command="{Binding SetAzimuthAngleCommand}"
+                                            Content="位置決め"
+                                            FontSize="36"
+                                            Style="{StaticResource PanelButtonStyle}" />
+                                        <Button
+                                            Grid.Column="2"
+                                            Command="{Binding EditAzimuthAngleCommand}"
+                                            Content="{Binding AzimuthAngleInput}"
+                                            Style="{StaticResource InputBoxButtonStyle}" />
+                                    </Grid>
+                                </Grid>
+                            </Border>
+                        </Grid>
+
+                        <!--  Save / load angle  -->
+                        <Grid
+                            Grid.Row="2"
+                            Height="100"
+                            Margin="0,15,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="30" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Button
+                                Grid.Column="0"
+                                Command="{Binding SaveAngleCommand}"
+                                Content="角度保存"
+                                Style="{StaticResource PanelButtonStyle}" />
+                            <Button
+                                Grid.Column="2"
+                                Command="{Binding LoadAngleCommand}"
+                                Content="角度呼出し"
+                                Style="{StaticResource PanelButtonStyle}" />
+                        </Grid>
+                    </Grid>
+
+                    <!--  Installation position: unit button + latitude / longitude (always enabled)  -->
                     <Border
-                        Margin="0,5"
-                        BorderBrush="Black"
-                        BorderThickness="2"
-                        CornerRadius="5">
-                        <Border.Effect>
-                            <DropShadowEffect
-                                BlurRadius="8"
-                                Direction="315"
-                                Opacity="0.45"
-                                ShadowDepth="4" />
-                        </Border.Effect>
-                        <Button
-                            x:Name="LogoutButton"
-                            Height="50"
-                            Background="#490206"
-                            Content="ログアウト"
-                            FontSize="20"
-                            Style="{StaticResource NavPrimaryButtonStyle}"
-                            Tag="{Binding LogoutButtonHoverColor}">
-                            <i:Interaction.Triggers>
-                                <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
-                                    <i:InvokeCommandAction Command="{Binding LogoutButtonPressedCommand}" />
-                                </i:EventTrigger>
-                                <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
-                                    <i:InvokeCommandAction Command="{Binding LogoutButtonReleasedCommand}" />
-                                </i:EventTrigger>
-                            </i:Interaction.Triggers>
-                        </Button>
+                        Grid.Row="1"
+                        Margin="0,15,0,0"
+                        Padding="15"
+                        HorizontalAlignment="Stretch"
+                        Style="{StaticResource CardBorderStyle}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="190" />
+                                <ColumnDefinition Width="20" />
+                                <ColumnDefinition Width="90" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="65" />
+                                <RowDefinition Height="65" />
+                            </Grid.RowDefinitions>
+
+                            <Button
+                                Grid.Row="0"
+                                Grid.RowSpan="2"
+                                Grid.Column="0"
+                                Command="{Binding ToggleUnitCommand}"
+                                Style="{StaticResource PanelButtonStyle}">
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock
+                                        FontSize="30"
+                                        Text="ユニット"
+                                        TextAlignment="Center" />
+                                    <TextBlock
+                                        FontSize="34"
+                                        FontWeight="SemiBold"
+                                        Text="{Binding UnitLabel}"
+                                        TextAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+
+                            <TextBlock
+                                Grid.Row="0"
+                                Grid.Column="2"
+                                Style="{StaticResource LabelTextStyle}"
+                                Text="緯度" />
+                            <Border
+                                Grid.Row="0"
+                                Grid.Column="3"
+                                Style="{StaticResource ValueBoxBorderStyle}">
+                                <TextBlock
+                                    FontSize="36"
+                                    Style="{StaticResource ValueBoxTextStyle}"
+                                    Text="{Binding Latitude}" />
+                            </Border>
+
+                            <TextBlock
+                                Grid.Row="1"
+                                Grid.Column="2"
+                                Style="{StaticResource LabelTextStyle}"
+                                Text="経度" />
+                            <Border
+                                Grid.Row="1"
+                                Grid.Column="3"
+                                Style="{StaticResource ValueBoxBorderStyle}">
+                                <TextBlock
+                                    FontSize="36"
+                                    Style="{StaticResource ValueBoxTextStyle}"
+                                    Text="{Binding Longitude}" />
+                            </Border>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <!--  ================= RIGHT: readout / actions / stop / system setting =================  -->
+                <Grid Grid.Column="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <!--  Readout table: RSSI / elevation / azimuth, current and peak  -->
+                    <Border Grid.Row="0" Style="{StaticResource CardBorderStyle}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="190" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <TextBlock
+                                Grid.Row="0"
+                                Grid.Column="1"
+                                HorizontalAlignment="Center"
+                                Style="{StaticResource LabelTextStyle}"
+                                Text="RSSI" />
+                            <TextBlock
+                                Grid.Row="0"
+                                Grid.Column="2"
+                                HorizontalAlignment="Center"
+                                Style="{StaticResource LabelTextStyle}"
+                                Text="仰角" />
+                            <TextBlock
+                                Grid.Row="0"
+                                Grid.Column="3"
+                                HorizontalAlignment="Center"
+                                Style="{StaticResource LabelTextStyle}"
+                                Text="水平角" />
+
+                            <TextBlock
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Margin="0,0,15,0"
+                                HorizontalAlignment="Right"
+                                Style="{StaticResource LabelTextStyle}"
+                                Text="現在値" />
+                            <Border
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                MinHeight="115"
+                                Style="{StaticResource ValueBoxBorderStyle}">
+                                <TextBlock
+                                    FontSize="72"
+                                    Style="{StaticResource ValueBoxTextStyle}"
+                                    Text="{Binding CurrentRssi}" />
+                            </Border>
+                            <Border
+                                Grid.Row="1"
+                                Grid.Column="2"
+                                MinHeight="115"
+                                Style="{StaticResource ValueBoxBorderStyle}">
+                                <TextBlock
+                                    FontSize="72"
+                                    Style="{StaticResource ValueBoxTextStyle}"
+                                    Text="{Binding CurrentElevation}" />
+                            </Border>
+                            <Border
+                                Grid.Row="1"
+                                Grid.Column="3"
+                                MinHeight="115"
+                                Style="{StaticResource ValueBoxBorderStyle}">
+                                <TextBlock
+                                    FontSize="72"
+                                    Style="{StaticResource ValueBoxTextStyle}"
+                                    Text="{Binding CurrentAzimuth}" />
+                            </Border>
+
+                            <TextBlock
+                                Grid.Row="2"
+                                Grid.Column="0"
+                                Margin="0,0,15,0"
+                                HorizontalAlignment="Right"
+                                Style="{StaticResource LabelTextStyle}"
+                                Text="ピーク値" />
+                            <Border
+                                Grid.Row="2"
+                                Grid.Column="1"
+                                MinHeight="85"
+                                Style="{StaticResource ValueBoxBorderStyle}">
+                                <TextBlock
+                                    FontSize="56"
+                                    Style="{StaticResource ValueBoxTextStyle}"
+                                    Text="{Binding PeakRssi}" />
+                            </Border>
+                            <Border
+                                Grid.Row="2"
+                                Grid.Column="2"
+                                MinHeight="85"
+                                Style="{StaticResource ValueBoxBorderStyle}">
+                                <TextBlock
+                                    FontSize="56"
+                                    Style="{StaticResource ValueBoxTextStyle}"
+                                    Text="{Binding PeakElevation}" />
+                            </Border>
+                            <Border
+                                Grid.Row="2"
+                                Grid.Column="3"
+                                MinHeight="85"
+                                Style="{StaticResource ValueBoxBorderStyle}">
+                                <TextBlock
+                                    FontSize="56"
+                                    Style="{StaticResource ValueBoxTextStyle}"
+                                    Text="{Binding PeakAzimuth}" />
+                            </Border>
+                        </Grid>
                     </Border>
 
+                    <!--  Home / peak search (disabled when not connected)  -->
+                    <Grid
+                        Grid.Row="1"
+                        Height="150"
+                        Margin="0,20,0,0"
+                        IsEnabled="{Binding IsControlEnabled}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="20" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Button
+                            Grid.Column="0"
+                            Command="{Binding HomeCommand}"
+                            Content="原点"
+                            Style="{StaticResource PanelButtonStyle}"
+                            Tag="{Binding IsHoming}" />
+                        <Button
+                            Grid.Column="2"
+                            Command="{Binding PeakSearchCommand}"
+                            Content="ピークサーチ"
+                            Style="{StaticResource PanelButtonStyle}"
+                            Tag="{Binding IsPeakSearching}" />
+                    </Grid>
+
+                    <!--  STOP: always enabled, fires on press (not on release)  -->
+                    <Button
+                        Grid.Row="2"
+                        Height="200"
+                        Margin="0,20,0,0"
+                        ClickMode="Press"
+                        Command="{Binding StopCommand}"
+                        Content="停止"
+                        Style="{StaticResource StopButtonStyle}" />
+
+                    <!--  System setting (moved here from the bottom bar)  -->
+                    <Button
+                        Grid.Row="3"
+                        Height="90"
+                        Margin="0,25,0,0"
+                        Command="{Binding NavigateToSettingPageCommand}"
+                        Content="システム設定"
+                        FontSize="34"
+                        Style="{StaticResource PanelButtonYellowStyle}" />
+                </Grid>
+            </Grid>
+
+            <!--  =====================================================  -->
+            <!--  BOTTOM BAR: alarm reset / status / logout  -->
+            <!--  =====================================================  -->
+            <Grid Grid.Row="2" Margin="40,0,40,20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="340" />
+                    <ColumnDefinition Width="20" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="240" />
+                </Grid.ColumnDefinitions>
+
+                <Button
+                    Grid.Column="0"
+                    Height="90"
+                    VerticalAlignment="Bottom"
+                    Command="{Binding AlarmResetCommand}"
+                    Content="アラームリセット"
+                    FontSize="34"
+                    Style="{StaticResource PanelButtonStyle}" />
+
+                <Border
+                    Grid.Column="2"
+                    Height="90"
+                    VerticalAlignment="Bottom"
+                    Style="{StaticResource StatusBarBorderStyle}">
+                    <TextBlock
+                        Margin="20,0"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        FontSize="40"
+                        Foreground="White"
+                        Text="{Binding StatusMessage}"
+                        TextTrimming="CharacterEllipsis" />
+                </Border>
+
+                <!--  Logout: hold 2 s (progress bar shows the hold)  -->
+                <Grid
+                    Grid.Column="4"
+                    Height="90"
+                    VerticalAlignment="Bottom">
+                    <Button
+                        x:Name="LogoutButton"
+                        Background="{StaticResource DangerBrush}"
+                        Content="ログアウト"
+                        Foreground="White"
+                        Style="{StaticResource PanelButtonStyle}"
+                        Stylus.IsFlicksEnabled="False"
+                        Stylus.IsPressAndHoldEnabled="False">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                                <i:InvokeCommandAction Command="{Binding LogoutButtonPressedCommand}" />
+                            </i:EventTrigger>
+                            <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+                                <i:InvokeCommandAction Command="{Binding LogoutButtonReleasedCommand}" />
+                            </i:EventTrigger>
+                            <i:EventTrigger EventName="LostMouseCapture">
+                                <i:InvokeCommandAction Command="{Binding LogoutButtonReleasedCommand}" />
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </Button>
+
                     <Border
-                        Height="3"
-                        Margin="0,0,0,2"
+                        x:Name="LogoutHoldTrack"
+                        Height="6"
+                        Margin="20,0,20,10"
                         VerticalAlignment="Bottom"
                         Background="#33000000"
+                        CornerRadius="3"
                         IsHitTestVisible="False"
                         Visibility="{Binding IsLogoutHolding, Converter={StaticResource BoolToVisibilityConverter}}">
                         <Border
                             HorizontalAlignment="Left"
                             Background="White"
+                            CornerRadius="3"
                             Opacity="0.9">
                             <Border.Width>
                                 <MultiBinding Converter="{StaticResource ProgressWidthConverter}">
-                                    <Binding ElementName="LogoutButton" Path="ActualWidth" />
+                                    <Binding ElementName="LogoutHoldTrack" Path="ActualWidth" />
                                     <Binding Path="LogoutHoldProgress" />
                                 </MultiBinding>
                             </Border.Width>
                         </Border>
                     </Border>
                 </Grid>
-            </StackPanel>
+            </Grid>
         </Grid>
     </Viewbox>
 </UserControl>
