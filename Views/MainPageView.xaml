@@ -527,20 +527,20 @@
                         Style="{StaticResource CardBorderStyle}">
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="190" />
-                                <ColumnDefinition Width="30" />
-                                <ColumnDefinition Width="150" />
-                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="160" />
+                                <ColumnDefinition Width="20" />
+                                <ColumnDefinition Width="1*" />
+                                <ColumnDefinition Width="20" />
+                                <ColumnDefinition Width="1.0*" />
+                                <ColumnDefinition Width="20" />
+                                <ColumnDefinition Width="110" />
                             </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="90" />
-                                <RowDefinition Height="90" />
-                            </Grid.RowDefinitions>
 
+                            <!--  Unit toggle  -->
                             <Button
-                                Grid.Row="0"
-                                Grid.RowSpan="2"
                                 Grid.Column="0"
+                                Width="150"
+                                Height="150"
                                 Command="{Binding ToggleUnitCommand}"
                                 Style="{StaticResource PanelButtonStyle}">
                                 <StackPanel VerticalAlignment="Center">
@@ -556,37 +556,137 @@
                                 </StackPanel>
                             </Button>
 
-                            <TextBlock
-                                Grid.Row="0"
-                                Grid.Column="2"
-                                Style="{StaticResource LabelTextStyle}"
-                                Text="緯度"
-                                TextAlignment="Center" />
-                            <Border
-                                Grid.Row="0"
-                                Grid.Column="3"
-                                Style="{StaticResource ValueBoxBorderStyle}">
-                                <TextBlock
-                                    FontSize="36"
-                                    Style="{StaticResource ValueBoxTextStyle}"
-                                    Text="{Binding Latitude}" />
-                            </Border>
+                            <!--  雲台: GPS position  -->
+                            <GroupBox Grid.Column="2" Style="{StaticResource PanelGroupBoxStyle}">
+                                <GroupBox.Header>
+                                    <TextBlock
+                                        FontSize="24"
+                                        FontWeight="SemiBold"
+                                        Foreground="{StaticResource TextPrimaryBrush}"
+                                        Text="雲台" />
+                                </GroupBox.Header>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="80" />
+                                        <RowDefinition Height="80" />
+                                    </Grid.RowDefinitions>
 
-                            <TextBlock
-                                Grid.Row="1"
-                                Grid.Column="2"
-                                Style="{StaticResource LabelTextStyle}"
-                                Text="経度"
-                                TextAlignment="Center" />
-                            <Border
-                                Grid.Row="1"
-                                Grid.Column="3"
-                                Style="{StaticResource ValueBoxBorderStyle}">
-                                <TextBlock
-                                    FontSize="36"
-                                    Style="{StaticResource ValueBoxTextStyle}"
-                                    Text="{Binding Longitude}" />
-                            </Border>
+                                    <TextBlock
+                                        Grid.Row="0"
+                                        Grid.Column="0"
+                                        Margin="0,0,12,0"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Center"
+                                        Style="{StaticResource LabelTextStyle}"
+                                        Text="緯度" />
+                                    <Border
+                                        Grid.Row="0"
+                                        Grid.Column="1"
+                                        Style="{StaticResource ValueBoxBorderStyle}">
+                                        <Viewbox Stretch="Uniform" StretchDirection="DownOnly">
+                                            <TextBlock
+                                                FontSize="36"
+                                                Style="{StaticResource ValueBoxTextStyle}"
+                                                Text="{Binding Latitude}" />
+                                        </Viewbox>
+                                    </Border>
+
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        Grid.Column="0"
+                                        Margin="0,0,12,0"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Center"
+                                        Style="{StaticResource LabelTextStyle}"
+                                        Text="経度" />
+                                    <Border
+                                        Grid.Row="1"
+                                        Grid.Column="1"
+                                        Style="{StaticResource ValueBoxBorderStyle}">
+                                        <Viewbox Stretch="Uniform" StretchDirection="DownOnly">
+                                            <TextBlock
+                                                FontSize="36"
+                                                Style="{StaticResource ValueBoxTextStyle}"
+                                                Text="{Binding Longitude}" />
+                                        </Viewbox>
+                                    </Border>
+                                </Grid>
+                            </GroupBox>
+
+                            <!--  衛星: geostationary satellite  -->
+                            <GroupBox Grid.Column="4" Style="{StaticResource PanelGroupBoxStyle}">
+                                <GroupBox.Header>
+                                    <TextBlock
+                                        FontSize="24"
+                                        FontWeight="SemiBold"
+                                        Foreground="{StaticResource TextPrimaryBrush}"
+                                        Text="衛星" />
+                                </GroupBox.Header>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="80" />
+                                        <RowDefinition Height="80" />
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock
+                                        Grid.Row="0"
+                                        Grid.Column="0"
+                                        Margin="0,0,12,0"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Center"
+                                        Style="{StaticResource LabelTextStyle}"
+                                        Text="衛星名" />
+                                    <Border
+                                        Grid.Row="0"
+                                        Grid.Column="1"
+                                        Style="{StaticResource ValueBoxBorderStyle}">
+                                        <Viewbox Stretch="Uniform" StretchDirection="DownOnly">
+                                            <TextBlock
+                                                FontSize="36"
+                                                Style="{StaticResource ValueBoxTextStyle}"
+                                                Text="{Binding SatelliteName}" />
+                                        </Viewbox>
+                                    </Border>
+
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        Grid.Column="0"
+                                        Margin="0,0,12,0"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Center"
+                                        Style="{StaticResource LabelTextStyle}"
+                                        Text="経度" />
+                                    <Border
+                                        Grid.Row="1"
+                                        Grid.Column="1"
+                                        Style="{StaticResource ValueBoxBorderStyle}">
+                                        <Viewbox Stretch="Uniform" StretchDirection="DownOnly">
+                                            <TextBlock
+                                                FontSize="36"
+                                                Style="{StaticResource ValueBoxTextStyle}"
+                                                Text="{Binding SatelliteLongitude}" />
+                                        </Viewbox>
+                                    </Border>
+                                </Grid>
+                            </GroupBox>
+
+                            <!--  UNDAI Satellite Edit button  -->
+                            <Button
+                                Grid.Column="6"
+                                Width="100"
+                                Height="150"
+                                Command="{Binding EditInstallationCommand}"
+                                Content="編集"
+                                FontSize="32"
+                                Style="{StaticResource PanelButtonStyle}" />
                         </Grid>
                     </Border>
                 </Grid>

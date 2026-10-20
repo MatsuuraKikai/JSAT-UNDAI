@@ -343,4 +343,62 @@
         </Style.Triggers>
     </Style>
 
+    <!--  GroupBox with the title offset from the left corner (change the 20 below to move the title)  -->
+    <Style x:Key="PanelGroupBoxStyle" TargetType="GroupBox">
+        <Setter Property="BorderBrush" Value="#9A9A9A" />
+        <Setter Property="Padding" Value="10,6,10,10" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="GroupBox">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <!--  Top line: [left piece] [title] [right piece]  -->
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="20" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Border
+                                Grid.Column="0"
+                                Margin="0,16,0,0"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="1.5,1.5,0,0"
+                                CornerRadius="8,0,0,0" />
+
+                            <ContentPresenter
+                                Grid.Column="1"
+                                Margin="8,0"
+                                VerticalAlignment="Center"
+                                ContentSource="Header"
+                                RecognizesAccessKey="True" />
+
+                            <Border
+                                Grid.Column="2"
+                                Margin="0,16,0,0"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="0,1.5,1.5,0"
+                                CornerRadius="0,8,0,0" />
+                        </Grid>
+
+                        <!--  Body: sides and bottom of the frame  -->
+                        <Border
+                            Grid.Row="1"
+                            Padding="{TemplateBinding Padding}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="1.5,0,1.5,1.5"
+                            CornerRadius="0,0,8,8">
+                            <ContentPresenter />
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
 </ResourceDictionary>

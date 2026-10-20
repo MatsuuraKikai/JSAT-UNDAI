@@ -189,6 +189,12 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
     private string _statusMessage = "READY";
 
     [ObservableProperty]
+    private string _satelliteName = "-----";
+
+    [ObservableProperty]
+    private string _satelliteLongitude = "0.00000";
+
+    [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(AlarmResetCommand))]
     private bool _hasAlarm;
 
@@ -491,6 +497,11 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
             _ = ErrorLoggingService.LogInfo("Alarm reset requested.");
             // TODO: send alarm reset; clear HasAlarm when the device confirms.
         });
+    }
+    [RelayCommand]
+    private void EditInstallation()
+    {
+        // TODO: open the edit popup (GPS position, satellite name, satellite longitude)
     }
 
     private void InitializeTcpConnection()
