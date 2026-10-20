@@ -229,7 +229,7 @@
         BasedOn="{StaticResource PanelButtonStyle}"
         TargetType="Button">
         <Setter Property="Foreground" Value="Red" />
-        <Setter Property="FontSize" Value="70" />
+        <Setter Property="FontSize" Value="80" />
         <Setter Property="FontWeight" Value="ExtraBold" />
         <Style.Triggers>
             <Trigger Property="IsPressed" Value="True">
