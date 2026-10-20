@@ -181,7 +181,7 @@
                         </Grid.RowDefinitions>
 
                         <!--  Speed mode (selected button turns blue via Tag)  -->
-                        <Grid Grid.Row="0" Height="90">
+                        <Grid Grid.Row="0" Height="70">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="20" />
@@ -221,7 +221,10 @@
                             </Grid.ColumnDefinitions>
 
                             <!--  Elevation: [UP]  current angle  [DOWN]  -->
-                            <Border Grid.Column="0" Style="{StaticResource CardBorderStyle}">
+                            <Border
+                                Grid.Column="0"
+                                Padding="20,5,20,20"
+                                Style="{StaticResource CardBorderStyle}">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
@@ -229,24 +232,63 @@
                                         <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
 
-                                    <TextBlock Style="{StaticResource CardHeaderTextStyle}" Text="仰角" />
+                                    <Grid Grid.Row="0" VerticalAlignment="Center">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Style="{StaticResource CardHeaderTextStyle}" Text="仰角" />
 
-                                    <Grid Grid.Row="1" VerticalAlignment="Center">
+                                        <!--  Current elevation: same black value box as the rest of the screen  -->
+                                        <Border
+                                            Grid.Column="1"
+                                            Height="90"
+                                            Margin="0,0"
+                                            VerticalAlignment="Center"
+                                            Style="{StaticResource ValueBoxBorderStyle}">
+                                            <Grid Margin="0,2,0,4">
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="*" />
+                                                </Grid.RowDefinitions>
+                                                <TextBlock
+                                                    Grid.Row="0"
+                                                    HorizontalAlignment="Center"
+                                                    FontSize="20"
+                                                    Foreground="#B0B0B0"
+                                                    Text="現在値" />
+                                                <Viewbox
+                                                    Grid.Row="1"
+                                                    Stretch="Uniform"
+                                                    StretchDirection="DownOnly">
+                                                    <TextBlock Style="{StaticResource ValueBoxTextStyle}">
+                                                        <Run Text="{Binding CurrentElevation, Mode=OneWay}" /><Run Text="°" />
+                                                    </TextBlock>
+                                                </Viewbox>
+                                            </Grid>
+                                        </Border>
+
+                                    </Grid>
+                                    <Grid
+                                        Grid.Row="1"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="50" />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
 
                                         <Button
                                             Grid.Column="0"
-                                            Width="130"
+                                            Width="170"
                                             Height="170"
                                             Padding="0"
                                             Style="{StaticResource PanelButtonStyle}"
                                             Stylus.IsFlicksEnabled="False"
                                             Stylus.IsPressAndHoldEnabled="False">
-                                            <Image Width="90" Source="/Resources/UP ARROW.png" />
+                                            <Image Width="120" Source="/Resources/UP ARROW.png" />
                                             <i:Interaction.Triggers>
                                                 <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
                                                     <i:InvokeCommandAction Command="{Binding JogPressedCommand}" CommandParameter="Up" />
@@ -263,31 +305,15 @@
                                             </i:Interaction.Triggers>
                                         </Button>
 
-                                        <!--  Current elevation. DownOnly Viewbox shrinks the text instead of clipping it.  -->
-                                        <Viewbox
-                                            Grid.Column="1"
-                                            Margin="8,0"
-                                            HorizontalAlignment="Center"
-                                            VerticalAlignment="Center"
-                                            Stretch="Uniform"
-                                            StretchDirection="DownOnly">
-                                            <TextBlock
-                                                FontSize="48"
-                                                FontWeight="SemiBold"
-                                                Foreground="{StaticResource TextPrimaryBrush}">
-                                                <Run Text="{Binding CurrentElevation, Mode=OneWay}" /><Run Text="°" />
-                                            </TextBlock>
-                                        </Viewbox>
-
                                         <Button
                                             Grid.Column="2"
-                                            Width="130"
+                                            Width="170"
                                             Height="170"
                                             Padding="0"
                                             Style="{StaticResource PanelButtonStyle}"
                                             Stylus.IsFlicksEnabled="False"
                                             Stylus.IsPressAndHoldEnabled="False">
-                                            <Image Width="90" Source="/Resources/DOWN ARROW.png" />
+                                            <Image Width="120" Source="/Resources/DOWN ARROW.png" />
                                             <i:Interaction.Triggers>
                                                 <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
                                                     <i:InvokeCommandAction Command="{Binding JogPressedCommand}" CommandParameter="Down" />
@@ -331,7 +357,10 @@
                             </Border>
 
                             <!--  Azimuth: [CCW]  current angle  [CW]  -->
-                            <Border Grid.Column="2" Style="{StaticResource CardBorderStyle}">
+                            <Border
+                                Grid.Column="2"
+                                Padding="20,5,20,20"
+                                Style="{StaticResource CardBorderStyle}">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
@@ -339,24 +368,63 @@
                                         <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
 
-                                    <TextBlock Style="{StaticResource CardHeaderTextStyle}" Text="水平角" />
+                                    <Grid Grid.Row="0" VerticalAlignment="Center">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Style="{StaticResource CardHeaderTextStyle}" Text="水平角" />
 
-                                    <Grid Grid.Row="1" VerticalAlignment="Center">
+                                        <!--  Current azimuth: same black value box as the rest of the screen  -->
+                                        <Border
+                                            Grid.Column="1"
+                                            Height="90"
+                                            Margin="0,0"
+                                            VerticalAlignment="Center"
+                                            Style="{StaticResource ValueBoxBorderStyle}">
+                                            <Grid Margin="0,2,0,4">
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="*" />
+                                                </Grid.RowDefinitions>
+                                                <TextBlock
+                                                    Grid.Row="0"
+                                                    HorizontalAlignment="Center"
+                                                    FontSize="20"
+                                                    Foreground="#B0B0B0"
+                                                    Text="現在値" />
+                                                <Viewbox
+                                                    Grid.Row="1"
+                                                    Stretch="Uniform"
+                                                    StretchDirection="DownOnly">
+                                                    <TextBlock Style="{StaticResource ValueBoxTextStyle}">
+                                                        <Run Text="{Binding CurrentAzimuth, Mode=OneWay}" /><Run Text="°" />
+                                                    </TextBlock>
+                                                </Viewbox>
+                                            </Grid>
+                                        </Border>
+                                    </Grid>
+
+                                    <Grid
+                                        Grid.Row="1"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="50" />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
 
                                         <Button
                                             Grid.Column="0"
-                                            Width="130"
+                                            Width="170"
                                             Height="170"
                                             Padding="0"
                                             Style="{StaticResource PanelButtonStyle}"
                                             Stylus.IsFlicksEnabled="False"
                                             Stylus.IsPressAndHoldEnabled="False">
-                                            <Image Width="90" Source="/Resources/CCW ROTATE.png" />
+                                            <Image Width="120" Source="/Resources/CCW ROTATE.png" />
                                             <i:Interaction.Triggers>
                                                 <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
                                                     <i:InvokeCommandAction Command="{Binding JogPressedCommand}" CommandParameter="CCW" />
@@ -373,31 +441,15 @@
                                             </i:Interaction.Triggers>
                                         </Button>
 
-                                        <!--  Current azimuth  -->
-                                        <Viewbox
-                                            Grid.Column="1"
-                                            Margin="8,0"
-                                            HorizontalAlignment="Center"
-                                            VerticalAlignment="Center"
-                                            Stretch="Uniform"
-                                            StretchDirection="DownOnly">
-                                            <TextBlock
-                                                FontSize="48"
-                                                FontWeight="SemiBold"
-                                                Foreground="{StaticResource TextPrimaryBrush}">
-                                                <Run Text="{Binding CurrentAzimuth, Mode=OneWay}" /><Run Text="°" />
-                                            </TextBlock>
-                                        </Viewbox>
-
                                         <Button
                                             Grid.Column="2"
-                                            Width="130"
+                                            Width="170"
                                             Height="170"
                                             Padding="0"
                                             Style="{StaticResource PanelButtonStyle}"
                                             Stylus.IsFlicksEnabled="False"
                                             Stylus.IsPressAndHoldEnabled="False">
-                                            <Image Width="90" Source="/Resources/CW ROTATE.png" />
+                                            <Image Width="120" Source="/Resources/CW ROTATE.png" />
                                             <i:Interaction.Triggers>
                                                 <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
                                                     <i:InvokeCommandAction Command="{Binding JogPressedCommand}" CommandParameter="CW" />
@@ -415,6 +467,7 @@
                                         </Button>
                                     </Grid>
 
+                                    <!--  Go-to angle: [位置決め] [value box -> keypad]  -->
                                     <Grid
                                         Grid.Row="2"
                                         Height="80"
@@ -556,6 +609,7 @@
                                 <ColumnDefinition Width="190" />
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
@@ -566,14 +620,7 @@
                                 Grid.Column="1"
                                 VerticalAlignment="Center"
                                 Style="{StaticResource LabelTextStyle}"
-                                Text="現在値"
-                                TextAlignment="Center" />
-                            <TextBlock
-                                Grid.Row="0"
-                                Grid.Column="2"
-                                VerticalAlignment="Center"
-                                Style="{StaticResource LabelTextStyle}"
-                                Text="ピーク値"
+                                Text="SNR"
                                 TextAlignment="Center" />
 
                             <TextBlock
@@ -583,7 +630,7 @@
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
                                 Style="{StaticResource LabelTextStyle}"
-                                Text="SNR" />
+                                Text="現在値" />
                             <Border
                                 Grid.Row="1"
                                 Grid.Column="1"
@@ -592,15 +639,6 @@
                                     FontSize="50"
                                     Style="{StaticResource ValueBoxTextStyle}"
                                     Text="{Binding CurrentRssi}" />
-                            </Border>
-                            <Border
-                                Grid.Row="1"
-                                Grid.Column="2"
-                                Style="{StaticResource ValueBoxBorderStyle}">
-                                <TextBlock
-                                    FontSize="50"
-                                    Style="{StaticResource ValueBoxTextStyle}"
-                                    Text="{Binding PeakRssi}" />
                             </Border>
                         </Grid>
                     </Border>
@@ -617,6 +655,7 @@
                                 <ColumnDefinition Width="190" />
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
@@ -628,10 +667,16 @@
                                 Grid.Column="1"
                                 HorizontalAlignment="Center"
                                 Style="{StaticResource LabelTextStyle}"
-                                Text="仰角" />
+                                Text="SNR" />
                             <TextBlock
                                 Grid.Row="0"
                                 Grid.Column="2"
+                                HorizontalAlignment="Center"
+                                Style="{StaticResource LabelTextStyle}"
+                                Text="仰角" />
+                            <TextBlock
+                                Grid.Row="0"
+                                Grid.Column="3"
                                 HorizontalAlignment="Center"
                                 Style="{StaticResource LabelTextStyle}"
                                 Text="水平角" />
@@ -643,7 +688,7 @@
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
                                 Style="{StaticResource LabelTextStyle}"
-                                Text="ピーク位置" />
+                                Text="ピーク値" />
                             <Border
                                 Grid.Row="1"
                                 Grid.Column="1"
@@ -661,6 +706,15 @@
                                     FontSize="50"
                                     Style="{StaticResource ValueBoxTextStyle}"
                                     Text="{Binding PeakAzimuth}" />
+                            </Border>
+                            <Border
+                                Grid.Row="1"
+                                Grid.Column="3"
+                                Style="{StaticResource ValueBoxBorderStyle}">
+                                <TextBlock
+                                    FontSize="50"
+                                    Style="{StaticResource ValueBoxTextStyle}"
+                                    Text="{Binding PeakRssi}" />
                             </Border>
                         </Grid>
                     </Border>

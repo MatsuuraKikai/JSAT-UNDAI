@@ -147,10 +147,10 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
     private string _currentRssi = "0.0";
 
     [ObservableProperty]
-    private string _currentElevation = "99.9";
+    private string _currentElevation = "0.0";
 
     [ObservableProperty]
-    private string _currentAzimuth = "99.9";
+    private string _currentAzimuth = "0.0";
 
     [ObservableProperty]
     private string _peakRssi = "0.0";
