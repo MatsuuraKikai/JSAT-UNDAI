@@ -24,7 +24,7 @@
             Height="1080"
             Background="LightYellow">
             <Grid.RowDefinitions>
-                <RowDefinition Height="130" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
                 <RowDefinition Height="120" />
             </Grid.RowDefinitions>
@@ -32,8 +32,10 @@
             <!--  =====================================================  -->
             <!--  TOP BAR: connect / GPS status / clock  -->
             <!--  =====================================================  -->
-            <Grid Grid.Row="0" Margin="40,25,40,0">
+            <Grid Grid.Row="0" Margin="40,10,40,0">
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="340" />
+                    <ColumnDefinition Width="30" />
                     <ColumnDefinition Width="340" />
                     <ColumnDefinition Width="30" />
                     <ColumnDefinition Width="340" />
@@ -113,9 +115,30 @@
                         Text="{Binding GpsStatusText}" />
                 </Border>
 
+                <!--  Modem status  -->
+                <Border
+                    Grid.Column="4"
+                    Height="90"
+                    VerticalAlignment="Top"
+                    Background="{Binding ModemStatusColor}"
+                    CornerRadius="15">
+                    <Border.Effect>
+                        <DropShadowEffect
+                            Direction="-40"
+                            Opacity="0.3"
+                            ShadowDepth="4" />
+                    </Border.Effect>
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        FontSize="40"
+                        Foreground="White"
+                        Text="{Binding ModemStatusText}" />
+                </Border>
+
                 <!--  Clock  -->
                 <StackPanel
-                    Grid.Column="4"
+                    Grid.Column="6"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Center">
                     <TextBlock
@@ -378,10 +401,7 @@
                         </Grid>
 
                         <!--  Save / load angle  -->
-                        <Grid
-                            Grid.Row="2"
-                            Height="100"
-                            Margin="0,15,0,0">
+                        <Grid Grid.Row="2" Margin="0,15,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="30" />
@@ -390,12 +410,12 @@
                             <Button
                                 Grid.Column="0"
                                 Command="{Binding SaveAngleCommand}"
-                                Content="角度保存"
+                                Content="位置保存"
                                 Style="{StaticResource PanelButtonStyle}" />
                             <Button
                                 Grid.Column="2"
                                 Command="{Binding LoadAngleCommand}"
-                                Content="角度呼出し"
+                                Content="位置復元"
                                 Style="{StaticResource PanelButtonStyle}" />
                         </Grid>
                     </Grid>
@@ -406,17 +426,18 @@
                         Margin="0,15,0,0"
                         Padding="15"
                         HorizontalAlignment="Stretch"
+                        IsEnabled="{Binding IsControlEnabled}"
                         Style="{StaticResource CardBorderStyle}">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="190" />
-                                <ColumnDefinition Width="20" />
-                                <ColumnDefinition Width="90" />
+                                <ColumnDefinition Width="30" />
+                                <ColumnDefinition Width="150" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="65" />
-                                <RowDefinition Height="65" />
+                                <RowDefinition Height="90" />
+                                <RowDefinition Height="90" />
                             </Grid.RowDefinitions>
 
                             <Button
@@ -427,7 +448,7 @@
                                 Style="{StaticResource PanelButtonStyle}">
                                 <StackPanel VerticalAlignment="Center">
                                     <TextBlock
-                                        FontSize="30"
+                                        FontSize="40"
                                         Text="ユニット"
                                         TextAlignment="Center" />
                                     <TextBlock
@@ -442,7 +463,8 @@
                                 Grid.Row="0"
                                 Grid.Column="2"
                                 Style="{StaticResource LabelTextStyle}"
-                                Text="緯度" />
+                                Text="緯度"
+                                TextAlignment="Center" />
                             <Border
                                 Grid.Row="0"
                                 Grid.Column="3"
@@ -457,7 +479,8 @@
                                 Grid.Row="1"
                                 Grid.Column="2"
                                 Style="{StaticResource LabelTextStyle}"
-                                Text="経度" />
+                                Text="経度"
+                                TextAlignment="Center" />
                             <Border
                                 Grid.Row="1"
                                 Grid.Column="3"
@@ -478,10 +501,14 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-                    <!--  Readout table: RSSI / elevation / azimuth, current and peak  -->
-                    <Border Grid.Row="0" Style="{StaticResource CardBorderStyle}">
+                    <!--  Readout table: SNR / elevation / azimuth, current and peak  -->
+                    <Border
+                        Grid.Row="0"
+                        IsEnabled="{Binding IsControlEnabled}"
+                        Style="{StaticResource CardBorderStyle}">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="190" />
@@ -493,6 +520,7 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
 
                             <TextBlock
@@ -500,7 +528,7 @@
                                 Grid.Column="1"
                                 HorizontalAlignment="Center"
                                 Style="{StaticResource LabelTextStyle}"
-                                Text="RSSI" />
+                                Text="SNR" />
                             <TextBlock
                                 Grid.Row="0"
                                 Grid.Column="2"
@@ -524,30 +552,27 @@
                             <Border
                                 Grid.Row="1"
                                 Grid.Column="1"
-                                MinHeight="115"
                                 Style="{StaticResource ValueBoxBorderStyle}">
                                 <TextBlock
-                                    FontSize="72"
+                                    FontSize="55"
                                     Style="{StaticResource ValueBoxTextStyle}"
                                     Text="{Binding CurrentRssi}" />
                             </Border>
                             <Border
                                 Grid.Row="1"
                                 Grid.Column="2"
-                                MinHeight="115"
                                 Style="{StaticResource ValueBoxBorderStyle}">
                                 <TextBlock
-                                    FontSize="72"
+                                    FontSize="55"
                                     Style="{StaticResource ValueBoxTextStyle}"
                                     Text="{Binding CurrentElevation}" />
                             </Border>
                             <Border
                                 Grid.Row="1"
                                 Grid.Column="3"
-                                MinHeight="115"
                                 Style="{StaticResource ValueBoxBorderStyle}">
                                 <TextBlock
-                                    FontSize="72"
+                                    FontSize="55"
                                     Style="{StaticResource ValueBoxTextStyle}"
                                     Text="{Binding CurrentAzimuth}" />
                             </Border>
@@ -562,40 +587,111 @@
                             <Border
                                 Grid.Row="2"
                                 Grid.Column="1"
-                                MinHeight="85"
                                 Style="{StaticResource ValueBoxBorderStyle}">
                                 <TextBlock
-                                    FontSize="56"
+                                    FontSize="50"
                                     Style="{StaticResource ValueBoxTextStyle}"
                                     Text="{Binding PeakRssi}" />
                             </Border>
                             <Border
                                 Grid.Row="2"
                                 Grid.Column="2"
-                                MinHeight="85"
                                 Style="{StaticResource ValueBoxBorderStyle}">
                                 <TextBlock
-                                    FontSize="56"
+                                    FontSize="50"
                                     Style="{StaticResource ValueBoxTextStyle}"
                                     Text="{Binding PeakElevation}" />
                             </Border>
                             <Border
                                 Grid.Row="2"
                                 Grid.Column="3"
-                                MinHeight="85"
                                 Style="{StaticResource ValueBoxBorderStyle}">
                                 <TextBlock
-                                    FontSize="56"
+                                    FontSize="50"
                                     Style="{StaticResource ValueBoxTextStyle}"
                                     Text="{Binding PeakAzimuth}" />
                             </Border>
                         </Grid>
                     </Border>
 
+                    <!--  Readout table: Target Position, Polarize / elevation / azimuth -->
+                    <Border
+                        Grid.Row="1"
+                        Margin="0,20,0,0"
+                        IsEnabled="{Binding IsControlEnabled}"
+                        Style="{StaticResource CardBorderStyle}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="190" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <TextBlock
+                                Grid.Row="0"
+                                Grid.Column="1"
+                                HorizontalAlignment="Center"
+                                Style="{StaticResource LabelTextStyle}"
+                                Text="偏波角" />
+                            <TextBlock
+                                Grid.Row="0"
+                                Grid.Column="2"
+                                HorizontalAlignment="Center"
+                                Style="{StaticResource LabelTextStyle}"
+                                Text="仰角" />
+                            <TextBlock
+                                Grid.Row="0"
+                                Grid.Column="3"
+                                HorizontalAlignment="Center"
+                                Style="{StaticResource LabelTextStyle}"
+                                Text="水平角" />
+
+                            <TextBlock
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Margin="0,0,15,0"
+                                HorizontalAlignment="Right"
+                                Style="{StaticResource LabelTextStyle}"
+                                Text="目的値" />
+                            <Border
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                Style="{StaticResource ValueBoxBorderStyle}">
+                                <TextBlock
+                                    FontSize="50"
+                                    Style="{StaticResource ValueBoxTextStyle}"
+                                    Text="{Binding TargetPolarize}" />
+                            </Border>
+                            <Border
+                                Grid.Row="1"
+                                Grid.Column="2"
+                                Style="{StaticResource ValueBoxBorderStyle}">
+                                <TextBlock
+                                    FontSize="50"
+                                    Style="{StaticResource ValueBoxTextStyle}"
+                                    Text="{Binding TargetElevation}" />
+                            </Border>
+                            <Border
+                                Grid.Row="1"
+                                Grid.Column="3"
+                                Style="{StaticResource ValueBoxBorderStyle}">
+                                <TextBlock
+                                    FontSize="50"
+                                    Style="{StaticResource ValueBoxTextStyle}"
+                                    Text="{Binding TargetAzimuth}" />
+                            </Border>
+                        </Grid>
+                    </Border>
+
                     <!--  Home / peak search (disabled when not connected)  -->
                     <Grid
-                        Grid.Row="1"
-                        Height="150"
+                        Grid.Row="2"
+                        Height="80"
                         Margin="0,20,0,0"
                         IsEnabled="{Binding IsControlEnabled}">
                         <Grid.ColumnDefinitions>
@@ -619,17 +715,18 @@
 
                     <!--  STOP: always enabled, fires on press (not on release)  -->
                     <Button
-                        Grid.Row="2"
-                        Height="200"
+                        Grid.Row="3"
+                        Height="150"
                         Margin="0,20,0,0"
                         ClickMode="Press"
                         Command="{Binding StopCommand}"
                         Content="停止"
+                        IsEnabled="{Binding IsControlEnabled}"
                         Style="{StaticResource StopButtonStyle}" />
 
                     <!--  System setting (moved here from the bottom bar)  -->
                     <Button
-                        Grid.Row="3"
+                        Grid.Row="4"
                         Height="90"
                         Margin="0,25,0,0"
                         Command="{Binding NavigateToSettingPageCommand}"

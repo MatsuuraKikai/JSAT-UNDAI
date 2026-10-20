@@ -106,10 +106,22 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
     private string _dateText = string.Empty;
 
     [ObservableProperty]
+    private bool _gpsStatus = false;
+
+    [ObservableProperty]
     private string _gpsStatusText = "GPS捕捉中";
 
     [ObservableProperty]
     private string _gpsStatusColor = "#ED524F";
+
+    [ObservableProperty]
+    private bool _modemStatus = false;
+
+    [ObservableProperty]
+    private string _modemStatusText = "モデム捕捉中";
+
+    [ObservableProperty]
+    private string _modemStatusColor = "#ED524F";
 
     [ObservableProperty]
     private bool _isControlEnabled;
@@ -148,6 +160,15 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
 
     [ObservableProperty]
     private string _peakAzimuth = "0.0";
+
+    [ObservableProperty]
+    private string _targetPolarize = "0.0";
+
+    [ObservableProperty]
+    private string _targetElevation = "0.0";
+
+    [ObservableProperty]
+    private string _targetAzimuth = "0.0";
 
     [ObservableProperty]
     private string _unitLabel = "DD";
@@ -548,6 +569,38 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
             // Link lost while a jog button may be held: drop the held state.
             _activeJogDirection = null;
             // TODO: the device side must stop by itself on link loss (watchdog / keep-alive).
+
+            _ = ErrorLoggingService.LogWarning("TCP connection lost. Controls disabled.");
+            GpsStatus = false;
+            ModemStatus = false;
+        }
+    }
+
+    partial void OnGpsStatusChanged(bool value)
+    {
+        if(value)
+        {
+            GpsStatusText = "GPS捕捉";
+            GpsStatusColor = "#3785c3";
+        }
+        else
+        {
+            GpsStatusText = "GPS捕捉中";
+            GpsStatusColor = "#ED524F";
+        }
+    }
+
+    partial void OnModemStatusChanged(bool value)
+    {
+        if (value)
+        {
+            ModemStatusText = "モデム捕捉";
+            ModemStatusColor = "#3785c3";
+        }
+        else
+        {
+            ModemStatusText = "モデム捕捉中";
+            ModemStatusColor = "#ED524F";
         }
     }
 
