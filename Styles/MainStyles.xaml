@@ -309,6 +309,11 @@
         <Setter Property="CornerRadius" Value="5" />
         <Setter Property="Height" Value="70" />
         <Setter Property="Margin" Value="4" />
+        <Style.Triggers>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Opacity" Value="0.35" />
+            </Trigger>
+        </Style.Triggers>
     </Style>
 
     <Style x:Key="ValueBoxTextStyle" TargetType="TextBlock">
@@ -326,6 +331,15 @@
             <DataTrigger Binding="{Binding HasAlarm}" Value="True">
                 <Setter Property="Background" Value="{StaticResource DangerBrush}" />
             </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="StatusBadgeBorderStyle" TargetType="Border">
+        <Setter Property="CornerRadius" Value="15" />
+        <Style.Triggers>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Opacity" Value="0.4" />
+            </Trigger>
         </Style.Triggers>
     </Style>
 

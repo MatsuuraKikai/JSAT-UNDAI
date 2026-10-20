@@ -100,7 +100,9 @@
                     Height="90"
                     VerticalAlignment="Top"
                     Background="{Binding GpsStatusColor}"
-                    CornerRadius="15">
+                    CornerRadius="15"
+                    IsEnabled="{Binding IsControlEnabled}"
+                    Style="{StaticResource StatusBadgeBorderStyle}">
                     <Border.Effect>
                         <DropShadowEffect
                             Direction="-40"
@@ -121,7 +123,9 @@
                     Height="90"
                     VerticalAlignment="Top"
                     Background="{Binding ModemStatusColor}"
-                    CornerRadius="15">
+                    CornerRadius="15"
+                    IsEnabled="{Binding IsControlEnabled}"
+                    Style="{StaticResource StatusBadgeBorderStyle}">
                     <Border.Effect>
                         <DropShadowEffect
                             Direction="-40"
