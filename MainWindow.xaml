@@ -21,6 +21,10 @@
         <DataTemplate DataType="{x:Type vm:SettingPageViewModel}">
             <views:SettingPageView />
         </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:SystemResetSettingPageViewModel}">
+            <views:SystemResetSettingPageView />
+        </DataTemplate>
     </Window.Resources>
 
     <ContentControl Content="{Binding CurrentViewModel}" />

@@ -1,0 +1,91 @@
+﻿<Window
+    x:Class="JSAT_UNDAI.Views.Base.PinEntryDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="clr-namespace:JSAT_UNDAI.ViewModels.Base"
+    Title="暗証番号入力"
+    Width="500"
+    d:DataContext="{d:DesignInstance Type=vm:PinEntryViewModel}"
+    Background="LightYellow"
+    ResizeMode="NoResize"
+    ShowInTaskbar="False"
+    Height="380"
+    WindowStartupLocation="CenterOwner"
+    mc:Ignorable="d">
+
+    <Grid Margin="30">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!--  Prompt  -->
+        <TextBlock
+            Grid.Row="0"
+            HorizontalAlignment="Center"
+            FontSize="25"
+            FontWeight="SemiBold"
+            Foreground="{StaticResource TextPrimaryBrush}"
+            Text="暗証番号（4桁）を入力してください" />
+
+        <Grid
+            Grid.Row="1"
+            Width="300"
+            Height="90"
+            Margin="0,20,0,0">
+            <Border
+                Background="#70000000"
+                CornerRadius="10"
+                Style="{StaticResource ValueBoxBorderStyle}">
+                <TextBlock
+                    FontSize="50"
+                    Style="{StaticResource ValueBoxTextStyle}"
+                    Text="{Binding PinDisplay}" />
+            </Border>
+            <PasswordBox
+                x:Name="PinBox"
+                FontSize="50"
+                MaxLength="4"
+                Opacity="0"
+                PasswordChanged="OnPinPasswordChanged"
+                PreviewTextInput="OnPinPreviewTextInput" />
+        </Grid>
+
+        <!--  Error message (empty when everything is fine)  -->
+        <TextBlock
+            Grid.Row="2"
+            MinHeight="44"
+            Margin="0,16,0,0"
+            VerticalAlignment="Center"
+            FontSize="26"
+            Foreground="Red"
+            Text="{Binding ErrorMessage}"
+            TextWrapping="Wrap" />
+
+        <!--  OK / cancel  -->
+        <Grid Grid.Row="3" Margin="0,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="30" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Button
+                Grid.Column="0"
+                Command="{Binding OkCommand}"
+                Content="OK"
+                FontSize="30"
+                IsDefault="True"
+                Style="{StaticResource PrimaryButtonStyle}" />
+            <Button
+                Grid.Column="2"
+                Content="キャンセル"
+                FontSize="30"
+                IsCancel="True"
+                Style="{StaticResource SecondaryButtonStyle}" />
+        </Grid>
+    </Grid>
+</Window>

@@ -2,27 +2,19 @@
     x:Class="JSAT_UNDAI.Views.MainPageView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:beh="clr-namespace:JSAT_UNDAI.Services"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     xmlns:vm="clr-namespace:JSAT_UNDAI.ViewModels"
     d:DataContext="{d:DesignInstance Type=vm:MainPageViewModel}"
-    d:DesignHeight="1080"
-    d:DesignWidth="1920"
     mc:Ignorable="d">
 
     <!--  Fixed 1920x1080 design canvas, scaled uniformly (no distortion). Window background (LightYellow) fills the bars.  -->
-    <Viewbox
-        HorizontalAlignment="Center"
-        VerticalAlignment="Center"
-        Stretch="Uniform"
-        StretchDirection="Both"
-        UseLayoutRounding="True">
+    <Viewbox Style="{StaticResource DesignCanvasViewboxStyle}">
 
-        <Grid
-            Width="1920"
-            Height="1080"
-            Background="LightYellow">
+        <Grid Style="{StaticResource DesignCanvasGridStyle}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
@@ -351,11 +343,14 @@
                                             Content="位置決め"
                                             FontSize="36"
                                             Style="{StaticResource PanelButtonStyle}" />
-                                        <Button
+                                        <ui:TextBox
                                             Grid.Column="2"
-                                            Command="{Binding EditElevationAngleCommand}"
-                                            Content="{Binding ElevationAngleInput}"
-                                            Style="{StaticResource InputBoxButtonStyle}" />
+                                            VerticalContentAlignment="Center"
+                                            beh:NumericInput.IsDecimalOnly="True"
+                                            FontSize="40"
+                                            PlaceholderText="90.0"
+                                            Text="{Binding ElevationAngleInput, UpdateSourceTrigger=PropertyChanged}"
+                                            TextAlignment="Center" />
                                     </Grid>
                                 </Grid>
                             </Border>
@@ -487,11 +482,14 @@
                                             Content="位置決め"
                                             FontSize="36"
                                             Style="{StaticResource PanelButtonStyle}" />
-                                        <Button
+                                        <ui:TextBox
                                             Grid.Column="2"
-                                            Command="{Binding EditAzimuthAngleCommand}"
-                                            Content="{Binding AzimuthAngleInput}"
-                                            Style="{StaticResource InputBoxButtonStyle}" />
+                                            VerticalContentAlignment="Center"
+                                            beh:NumericInput.IsDecimalOnly="True"
+                                            FontSize="40"
+                                            PlaceholderText="90.0"
+                                            Text="{Binding AzimuthAngleInput, UpdateSourceTrigger=PropertyChanged}"
+                                            TextAlignment="Center" />
                                     </Grid>
                                 </Grid>
                             </Border>

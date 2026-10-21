@@ -9,48 +9,480 @@
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     xmlns:vm="clr-namespace:JSAT_UNDAI.ViewModels"
     d:DataContext="{d:DesignInstance Type=vm:SettingPageViewModel}"
-    d:DesignHeight="450"
-    d:DesignWidth="800"
     mc:Ignorable="d">
-    <Viewbox
-        HorizontalAlignment="Center"
-        VerticalAlignment="Top"
-        Stretch="Fill"
-        StretchDirection="Both"
-        UseLayoutRounding="True">
-        <Grid
-            Width="1920"
-            Height="1200"
-            Background="#F0F4FF">
+
+    <UserControl.Resources>
+        <!--  Section title: ネットワーク設定 etc.  -->
+        <Style x:Key="SettingSectionTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="30" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+        </Style>
+
+        <!--  Row label  -->
+        <Style x:Key="SettingLabelStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="26" />
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <!--  Input box: white, thin blue border  -->
+        <Style x:Key="SettingTextBoxStyle" TargetType="TextBox">
+            <Setter Property="FontSize" Value="26" />
+            <Setter Property="Height" Value="40" />
+            <Setter Property="Margin" Value="0,2" />
+            <Setter Property="Padding" Value="2,0" />
+            <Setter Property="Background" Value="White" />
+            <Setter Property="Foreground" Value="Black" />
+            <Setter Property="BorderBrush" Value="#5B5BFF" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+    </UserControl.Resources>
+
+    <Viewbox Style="{StaticResource DesignCanvasViewboxStyle}">
+        <Grid Style="{StaticResource DesignCanvasGridStyle}">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
+                <RowDefinition Height="40" />
+                <RowDefinition Height="40" />
+                <RowDefinition Height="80" />
             </Grid.RowDefinitions>
-            <TextBlock
-                Margin="10"
-                FontSize="24"
-                FontWeight="Bold"
-                Text="Setting Page" />
-            <StackPanel Grid.Row="1" Margin="10">
-                <ui:Button
-                    Width="100"
-                    Height="30"
+
+            <!--  ================= Content: left / right columns =================  -->
+            <Grid Grid.Row="0" Margin="80,40,80,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="820" />
+                    <ColumnDefinition Width="100" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!--  ============ LEFT: network + gimbal ============  -->
+                <StackPanel Grid.Column="0">
+
+                    <TextBlock Style="{StaticResource SettingSectionTitleStyle}" Text="ネットワーク設定" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="400" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="44" />
+                            <RowDefinition Height="44" />
+                            <RowDefinition Height="44" />
+                            <RowDefinition Height="44" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock
+                            Grid.Row="0"
+                            Style="{StaticResource SettingLabelStyle}"
+                            Text="雲台IPアドレス" />
+                        <TextBox
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            Style="{StaticResource SettingTextBoxStyle}"
+                            Text="{Binding UndaiIpAddress}" />
+
+                        <TextBlock
+                            Grid.Row="1"
+                            Style="{StaticResource SettingLabelStyle}"
+                            Text="サブネットマスク" />
+                        <TextBox
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Style="{StaticResource SettingTextBoxStyle}"
+                            Text="{Binding UndaiSubnetMask}" />
+
+                        <TextBlock
+                            Grid.Row="2"
+                            Style="{StaticResource SettingLabelStyle}"
+                            Text="デフォルトゲートウェイ" />
+                        <TextBox
+                            Grid.Row="2"
+                            Grid.Column="1"
+                            Style="{StaticResource SettingTextBoxStyle}"
+                            Text="{Binding UndaiGateway}" />
+
+                        <TextBlock
+                            Grid.Row="3"
+                            Style="{StaticResource SettingLabelStyle}"
+                            Text="モデムIPアドレス" />
+                        <TextBox
+                            Grid.Row="3"
+                            Grid.Column="1"
+                            Style="{StaticResource SettingTextBoxStyle}"
+                            Text="{Binding ModemIpAddress}" />
+                    </Grid>
+
+                    <TextBlock
+                        Margin="0,30,0,8"
+                        Style="{StaticResource SettingSectionTitleStyle}"
+                        Text="雲台設定" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="275" />
+                            <ColumnDefinition Width="262" />
+                            <ColumnDefinition Width="10" />
+                            <ColumnDefinition Width="262" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="44" />
+                            <RowDefinition Height="44" />
+                            <RowDefinition Height="44" />
+                            <RowDefinition Height="44" />
+                            <RowDefinition Height="44" />
+                        </Grid.RowDefinitions>
+
+                        <!--  Column headers  -->
+                        <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            HorizontalAlignment="Center"
+                            Style="{StaticResource SettingLabelStyle}"
+                            Text="水平角" />
+                        <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="3"
+                            HorizontalAlignment="Center"
+                            Style="{StaticResource SettingLabelStyle}"
+                            Text="仰角" />
+
+                        <TextBlock
+                            Grid.Row="1"
+                            Style="{StaticResource SettingLabelStyle}"
+                            Text="原点オフセット(度)" />
+                        <TextBox
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Style="{StaticResource SettingTextBoxStyle}"
+                            Text="{Binding OriginOffsetAzimuth}" />
+                        <TextBox
+                            Grid.Row="1"
+                            Grid.Column="3"
+                            Style="{StaticResource SettingTextBoxStyle}"
+                            Text="{Binding OriginOffsetElevation}" />
+
+                        <TextBlock
+                            Grid.Row="2"
+                            Style="{StaticResource SettingLabelStyle}"
+                            Text="手動高速[1-100]" />
+                        <TextBox
+                            Grid.Row="2"
+                            Grid.Column="1"
+                            Style="{StaticResource SettingTextBoxStyle}"
+                            Text="{Binding ManualHighSpeedAzimuth}" />
+                        <TextBox
+                            Grid.Row="2"
+                            Grid.Column="3"
+                            Style="{StaticResource SettingTextBoxStyle}"
+                            Text="{Binding ManualHighSpeedElevation}" />
+
+                        <TextBlock
+                            Grid.Row="3"
+                            Style="{StaticResource SettingLabelStyle}"
+                            Text="手動低速[1-100]" />
+                        <TextBox
+                            Grid.Row="3"
+                            Grid.Column="1"
+                            Style="{StaticResource SettingTextBoxStyle}"
+                            Text="{Binding ManualLowSpeedAzimuth}" />
+                        <TextBox
+                            Grid.Row="3"
+                            Grid.Column="3"
+                            Style="{StaticResource SettingTextBoxStyle}"
+                            Text="{Binding ManualLowSpeedElevation}" />
+
+                        <TextBlock
+                            Grid.Row="4"
+                            Style="{StaticResource SettingLabelStyle}"
+                            Text="寸動角度(度)" />
+                        <TextBox
+                            Grid.Row="4"
+                            Grid.Column="1"
+                            Style="{StaticResource SettingTextBoxStyle}"
+                            Text="{Binding JogAngleAzimuth}" />
+                        <TextBox
+                            Grid.Row="4"
+                            Grid.Column="3"
+                            Style="{StaticResource SettingTextBoxStyle}"
+                            Text="{Binding JogAngleElevation}" />
+                    </Grid>
+
+                    <!--  Alarm buttons  -->
+                    <StackPanel Margin="275,20,0,0" Orientation="Horizontal">
+                        <Button
+                            Width="235"
+                            Height="70"
+                            Command="{Binding AlarmResetCommand}"
+                            Content="アラームリセット"
+                            FontSize="28"
+                            Style="{StaticResource SecondaryButtonStyle}" />
+                        <Button
+                            Width="235"
+                            Height="70"
+                            Margin="20,0,0,0"
+                            Command="{Binding AlarmHistoryCommand}"
+                            Content="アラーム履歴"
+                            FontSize="28"
+                            Style="{StaticResource SecondaryButtonStyle}" />
+                    </StackPanel>
+                </StackPanel>
+
+                <!--  ============ RIGHT: search settings ============  -->
+                <StackPanel Grid.Column="2">
+
+                    <TextBlock Style="{StaticResource SettingSectionTitleStyle}" Text="広域サーチ設定" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="270" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="44" />
+                            <RowDefinition Height="44" />
+                            <RowDefinition Height="44" />
+                            <RowDefinition Height="44" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock
+                            Grid.Row="0"
+                            Style="{StaticResource SettingLabelStyle}"
+                            Text="広域サーチ速度[1-100]" />
+                        <TextBox
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            Style="{StaticResource SettingTextBoxStyle}"
+                            Text="{Binding WideSearchSpeed}" />
+
+                        <TextBlock
+                            Grid.Row="1"
+                            Style="{StaticResource SettingLabelStyle}"
+                            Text="広域サーチ水平角度(度)(±)" />
+                        <TextBox
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Style="{StaticResource SettingTextBoxStyle}"
+                            Text="{Binding WideSearchAzimuthRange}" />
+
+                        <TextBlock
+                            Grid.Row="2"
+                            Style="{StaticResource SettingLabelStyle}"
+                            Text="広域サーチ垂直角度(度)(±)" />
+                        <TextBox
+                            Grid.Row="2"
+                            Grid.Column="1"
+                            Style="{StaticResource SettingTextBoxStyle}"
+                            Text="{Binding WideSearchElevationRange}" />
+
+                        <TextBlock
+                            Grid.Row="3"
+                            Style="{StaticResource SettingLabelStyle}"
+                            Text="広域成功RSSIレベル(dBm)" />
+                        <TextBox
+                            Grid.Row="3"
+                            Grid.Column="1"
+                            Style="{StaticResource SettingTextBoxStyle}"
+                            Text="{Binding WideSearchSuccessRssi}" />
+                    </Grid>
+
+                    <TextBlock
+                        Margin="0,24,0,8"
+                        Style="{StaticResource SettingSectionTitleStyle}"
+                        Text="詳細サーチ設定" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="270" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="44" />
+                            <RowDefinition Height="44" />
+                            <RowDefinition Height="44" />
+                            <RowDefinition Height="44" />
+                            <RowDefinition Height="44" />
+                            <RowDefinition Height="44" />
+                            <RowDefinition Height="44" />
+                            <RowDefinition Height="60" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock
+                            Grid.Row="0"
+                            Style="{StaticResource SettingLabelStyle}"
+                            Text="詳細サーチ速度[1-100]" />
+                        <TextBox
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            Style="{StaticResource SettingTextBoxStyle}"
+                            Text="{Binding DetailSearchSpeed}" />
+
+                        <TextBlock
+                            Grid.Row="1"
+                            Style="{StaticResource SettingLabelStyle}"
+                            Text="詳細サーチステップ角(度)" />
+                        <TextBox
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Style="{StaticResource SettingTextBoxStyle}"
+                            Text="{Binding DetailSearchStepAngle}" />
+
+                        <TextBlock
+                            Grid.Row="2"
+                            Style="{StaticResource SettingLabelStyle}"
+                            Text="詳細サーチ水平角度(度)(±)" />
+                        <TextBox
+                            Grid.Row="2"
+                            Grid.Column="1"
+                            Style="{StaticResource SettingTextBoxStyle}"
+                            Text="{Binding DetailSearchAzimuthRange}" />
+
+                        <TextBlock
+                            Grid.Row="3"
+                            Style="{StaticResource SettingLabelStyle}"
+                            Text="詳細サーチ垂直角度(度)(±)" />
+                        <TextBox
+                            Grid.Row="3"
+                            Grid.Column="1"
+                            Style="{StaticResource SettingTextBoxStyle}"
+                            Text="{Binding DetailSearchElevationRange}" />
+
+                        <TextBlock
+                            Grid.Row="4"
+                            Style="{StaticResource SettingLabelStyle}"
+                            Text="詳細サーチ成功RSSIレベル(dBm)" />
+                        <TextBox
+                            Grid.Row="4"
+                            Grid.Column="1"
+                            Style="{StaticResource SettingTextBoxStyle}"
+                            Text="{Binding DetailSearchSuccessRssi}" />
+
+                        <TextBlock
+                            Grid.Row="5"
+                            Style="{StaticResource SettingLabelStyle}"
+                            Text="ステップ安定秒" />
+                        <TextBox
+                            Grid.Row="5"
+                            Grid.Column="1"
+                            Style="{StaticResource SettingTextBoxStyle}"
+                            Text="{Binding DetailSearchStepSettleSeconds}" />
+
+                        <TextBlock
+                            Grid.Row="6"
+                            Style="{StaticResource SettingLabelStyle}"
+                            Text="打切り減衰(dBm)" />
+                        <TextBox
+                            Grid.Row="6"
+                            Grid.Column="1"
+                            Style="{StaticResource SettingTextBoxStyle}"
+                            Text="{Binding DetailSearchTurnbackThresholdLevel}" />
+
+                        <!--  Continuous run time (not part of the saved search block, separate gap above)  -->
+                        <TextBlock
+                            Grid.Row="7"
+                            Style="{StaticResource SettingLabelStyle}"
+                            Text="連続運転終了時間(分)" />
+                        <TextBox
+                            Grid.Row="7"
+                            Grid.Column="1"
+                            Style="{StaticResource SettingTextBoxStyle}"
+                            Text="{Binding ContinuousRunMinutes}" />
+                    </Grid>
+
+                    <!--  Continuous run buttons  -->
+                    <Grid Margin="0,20,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Button
+                            Grid.Column="0"
+                            Width="235"
+                            Height="70"
+                            HorizontalAlignment="Center"
+                            Command="{Binding StopCommand}"
+                            Content="停止"
+                            FontSize="30"
+                            Style="{StaticResource SecondaryButtonStyle}" />
+                        <Button
+                            Grid.Column="1"
+                            Width="235"
+                            Height="70"
+                            HorizontalAlignment="Center"
+                            Command="{Binding StartContinuousRunCommand}"
+                            Content="連続運転開始"
+                            FontSize="30"
+                            Style="{StaticResource PrimaryButtonStyle}" />
+                    </Grid>
+                </StackPanel>
+            </Grid>
+
+            <!--  ================= Undai Version =================  -->
+            <Grid Grid.Row="1" Margin="80,0">
+                <TextBlock
+                    Grid.Row="0"
+                    Grid.Column="2"
                     Margin="0,0,0,10"
-                    Command="{Binding ClickMeCommand}"
-                    Content="Click Me"
-                    Style="{StaticResource NavGhostButtonStyle}" />
-                <ui:TextBox Width="200" PlaceholderText="Enter text here" />
-            </StackPanel>
-            <StackPanel Grid.Row="2" Margin="10">
-                <ui:Button
-                    Width="150"
-                    Height="30"
-                    Margin="0,0,0,10"
-                    Command="{Binding NavigateToMainPageCommand}"
-                    Content="Main Page"
-                    Style="{StaticResource NavPrimaryButtonStyle}" />
-            </StackPanel>
+                    HorizontalAlignment="Right"
+                    FontSize="20"
+                    Foreground="{StaticResource TextPrimaryBrush}"
+                    Text="{Binding UndaiVersionText}" />
+            </Grid>
+
+            <!--  ================= Error Message =================  -->
+            <Grid
+                Grid.Row="2"
+                Margin="80,0"
+                HorizontalAlignment="Right">
+                <TextBlock FontSize="24" Text="{Binding StatusMessage}">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsStatusError}" Value="True">
+                                    <Setter Property="Foreground" Value="Red" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </Grid>
+
+            <!--  ================= Bottom bar =================  -->
+            <Grid Grid.Row="3" Margin="80,0,80,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <Button
+                        Width="235"
+                        Height="70"
+                        Command="{Binding NavigateToMainPageCommand}"
+                        Content="戻る"
+                        FontSize="36"
+                        Style="{StaticResource SecondaryButtonStyle}" />
+                    <Button
+                        Width="235"
+                        Height="70"
+                        Margin="30,0,0,0"
+                        Command="{Binding PinResetCommand}"
+                        Content="PINリセット"
+                        FontSize="28"
+                        Style="{StaticResource SecondaryButtonStyle}" />
+                </StackPanel>
+
+                <Button
+                    Grid.Column="2"
+                    Width="235"
+                    Height="70"
+                    HorizontalAlignment="Right"
+                    Command="{Binding SaveCommand}"
+                    Content="登録"
+                    FontSize="36"
+                    Style="{StaticResource PrimaryButtonStyle}" />
+            </Grid>
         </Grid>
     </Viewbox>
 </UserControl>

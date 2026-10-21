@@ -13,6 +13,8 @@
     <None Remove="Resources\CCW ROTATE.png" />
     <None Remove="Resources\CW ROTATE.png" />
     <None Remove="Resources\DOWN ARROW.png" />
+    <None Remove="Resources\ResetUndaiForDefaultIP.png" />
+    <None Remove="Resources\ResetUndaiForSettingChanged.png" />
     <None Remove="Resources\UP ARROW.png" />
   </ItemGroup>
 
@@ -26,7 +28,6 @@
   <ItemGroup>
     <Folder Include="Docs\Screenshots\" />
     <Folder Include="Assets\" />
-    <Folder Include="Views\Base\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -37,6 +38,12 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Resources\DOWN ARROW.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\ResetUndaiForDefaultIP.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\ResetUndaiForSettingChanged.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Resources\UP ARROW.png">

@@ -7,4 +7,6 @@ public class ViewModelStore
     public MainPageViewModel MainPageViewModel { get; set; } = null!;
 
     public SettingPageViewModel SettingPageViewModel { get; set; } = null!;
+
+    public SystemResetSettingPageViewModel SystemResetSettingPageViewModel { get; set; } = null!;
 }

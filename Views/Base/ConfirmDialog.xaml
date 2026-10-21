@@ -1,0 +1,57 @@
+﻿<Window
+    x:Class="JSAT_UNDAI.Views.Base.ConfirmDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="確認"
+    Width="500"
+    Background="LightYellow"
+    ResizeMode="NoResize"
+    ShowInTaskbar="False"
+    Height="210"
+    WindowStartupLocation="CenterOwner">
+
+    <Grid Margin="30">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="20" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!--  Message  -->
+        <TextBlock
+            x:Name="MessageText"
+            Grid.Row="0"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            FontSize="25"
+            FontWeight="SemiBold"
+            Foreground="{StaticResource TextPrimaryBrush}"
+            TextAlignment="Center"
+            TextWrapping="Wrap" />
+
+        <!--  Yes / No  -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="30" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Button
+                x:Name="YesButton"
+                Grid.Column="0"
+                Click="OnYesClick"
+                Content="はい"
+                FontSize="30"
+                Style="{StaticResource PrimaryButtonStyle}" />
+            <!--  No = default + Esc, so an accidental Enter or touch does not confirm  -->
+            <Button
+                x:Name="NoButton"
+                Grid.Column="2"
+                Content="いいえ"
+                FontSize="30"
+                IsCancel="True"
+                IsDefault="True"
+                Style="{StaticResource SecondaryButtonStyle}" />
+        </Grid>
+    </Grid>
+</Window>

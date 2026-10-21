@@ -6,7 +6,7 @@ namespace JSAT_UNDAI.Services;
 
 public class TcpServerConnectionService : IDisposable
 {
-    private readonly TcpServerConfigService _configService;
+    private readonly UndaiSettingStorageService _undaiSettingStorageService;
 
     private TcpClient? _client;
     private CancellationTokenSource? _cts;
@@ -30,7 +30,7 @@ public class TcpServerConnectionService : IDisposable
 
     public TcpServerConnectionService(string appDataDirectory)
     {
-        _configService = new TcpServerConfigService(appDataDirectory);
+        _undaiSettingStorageService = new UndaiSettingStorageService(appDataDirectory);
     }
 
     public async Task ConnectAsync()
@@ -42,9 +42,9 @@ public class TcpServerConnectionService : IDisposable
 
         try
         {
-            var config = await _configService.LoadAsync();
-            CurrentServerIP = config.ServerIPAddress;
-            CurrentServerPort = config.ServerPort;
+            var config = _undaiSettingStorageService.LoadSetting();
+            CurrentServerIP = config.CurrentUndaiIpAddress;
+            CurrentServerPort = UndaiSettingEntry.DefaultUndaiPort;
 
             var endpoint = new IPEndPoint(IPAddress.Parse(CurrentServerIP), CurrentServerPort);
 

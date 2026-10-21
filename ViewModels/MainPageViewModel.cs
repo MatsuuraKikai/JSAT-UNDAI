@@ -3,7 +3,10 @@ using CommunityToolkit.Mvvm.Input;
 using JSAT_UNDAI.Services;
 using JSAT_UNDAI.Stores;
 using JSAT_UNDAI.ViewModels.Base;
+using JSAT_UNDAI.Views;
+using JSAT_UNDAI.Views.Base;
 using System.Diagnostics;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Threading;
 
@@ -15,6 +18,7 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
     readonly ViewModelStore _viewModelStore;
     public string _tempAppData = string.Empty;
     readonly NavigationService _settingPageNavigationService;
+    readonly NavigationService _systemResetSettingPageNavigationService;
 
     //TCP Server Connection
     private TcpServerConnectionService? _tcpServerConnectionService;
@@ -33,16 +37,20 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
     private const string ConnectButtonHoverBlueColor = "#1E3375";
     private const string LogoutButtonHoverRedColor = "#35070a";
 
+    private double _manualLatitude;
+    private double _manualLongitude;
+
     // =====================================================================
     // Clock (top right)
     // =====================================================================
     private DispatcherTimer? _clockTimer;
 
-    public MainPageViewModel(string tempAppData, ViewModelStore viewModelStore, NavigationService settingPageNavigationService)
+    public MainPageViewModel(string tempAppData, ViewModelStore viewModelStore, NavigationService settingPageNavigationService, NavigationService systemResetSettingPageNavigationService)
     {
         _tempAppData = tempAppData;
         _viewModelStore = viewModelStore;
         _settingPageNavigationService = settingPageNavigationService;
+        _systemResetSettingPageNavigationService = systemResetSettingPageNavigationService;
 
         _ = ErrorLoggingService.LogInfo("MainPageViewModel created.");
     }
@@ -195,6 +203,9 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
     private string _satelliteLongitude = "0.00000";
 
     [ObservableProperty]
+    private bool _isManualGps;
+
+    [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(AlarmResetCommand))]
     private bool _hasAlarm;
 
@@ -204,17 +215,39 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
 
     private bool CanAlarmReset() => HasAlarm;
 
-    private bool CanSetElevationAngle() => !string.IsNullOrWhiteSpace(ElevationAngleInput);
+    private bool CanSetElevationAngle() => TryParseAngle(ElevationAngleInput, out _);
 
-    private bool CanSetAzimuthAngle() => !string.IsNullOrWhiteSpace(AzimuthAngleInput);
+    private bool CanSetAzimuthAngle() => TryParseAngle(AzimuthAngleInput, out _);
 
     [RelayCommand]
     private void NavigateToSettingPage()
     {
         try
         {
-            _settingPageNavigationService.Navigate();
-            _ = ErrorLoggingService.LogInfo("Navigated to SettingPage.");
+            if (IsServerConnected)
+            {
+                var pinViewModel = new PinEntryViewModel(CheckPin);
+                var dialog = new PinEntryDialog
+                {
+                    DataContext = pinViewModel,
+                    Owner = Application.Current?.MainWindow,
+                };
+
+                if (dialog.ShowDialog() == true)
+                {
+                    _settingPageNavigationService.Navigate();
+                    _ = ErrorLoggingService.LogInfo("Navigated to SettingPage.");
+                }
+                else
+                {
+                    _ = ErrorLoggingService.LogInfo("Navigation to SettingPage canceled by user.");
+                }
+            }
+            else
+            {
+                _systemResetSettingPageNavigationService.Navigate();
+                _ = ErrorLoggingService.LogInfo("Navigated to SystemResetSettingPage (not connected).");
+            }
         }
         catch (Exception ex)
         {
@@ -384,31 +417,16 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
         });
     }
 
-    [RelayCommand]
-    private void EditElevationAngle()
-    {
-        Safe(nameof(EditElevationAngle), () =>
-        {
-            // TODO: open the numeric keypad and write the result to ElevationAngleInput.
-            _ = ErrorLoggingService.LogInfo("Edit elevation angle requested.");
-        });
-    }
-
-    [RelayCommand]
-    private void EditAzimuthAngle()
-    {
-        Safe(nameof(EditAzimuthAngle), () =>
-        {
-            // TODO: open the numeric keypad and write the result to AzimuthAngleInput.
-            _ = ErrorLoggingService.LogInfo("Edit azimuth angle requested.");
-        });
-    }
-
     [RelayCommand(CanExecute = nameof(CanSetElevationAngle))]
     private void SetElevationAngle()
     {
         Safe(nameof(SetElevationAngle), () =>
         {
+            if (!TryParseAngle(ElevationAngleInput, out double angle))
+            {
+                return;
+            }
+
             _ = ErrorLoggingService.LogInfo($"Go to elevation angle: {ElevationAngleInput}");
             // TODO: validate range, then send the position command.
         });
@@ -419,6 +437,11 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
     {
         Safe(nameof(SetAzimuthAngle), () =>
         {
+            if (!TryParseAngle(AzimuthAngleInput, out double angle))
+            {
+                return;
+            }
+
             _ = ErrorLoggingService.LogInfo($"Go to azimuth angle: {AzimuthAngleInput}");
             // TODO: validate range, then send the position command.
         });
@@ -498,10 +521,43 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
             // TODO: send alarm reset; clear HasAlarm when the device confirms.
         });
     }
+
     [RelayCommand]
     private void EditInstallation()
     {
-        // TODO: open the edit popup (GPS position, satellite name, satellite longitude)
+        var dialogViewModel = new InstallationEditViewModel(IsManualGps, _manualLatitude, _manualLongitude);
+
+        var dialog = new InstallationEditDialog
+        {
+            DataContext = dialogViewModel,
+            Owner = Application.Current?.MainWindow,
+        };
+
+        // false = cancelled or closed: nothing changes on the main screen.
+        if (dialog.ShowDialog() != true)
+        {
+            return;
+        }
+
+        bool wasManual = IsManualGps;
+        IsManualGps = dialogViewModel.IsManualGps;
+
+        if (IsManualGps)
+        {
+            _manualLatitude = dialogViewModel.ResultLatitude;
+            _manualLongitude = dialogViewModel.ResultLongitude;
+
+            // Assumes Latitude / Longitude are string properties (the screen shows "0.00000").
+            Latitude = _manualLatitude.ToString("0.00000", CultureInfo.InvariantCulture);
+            Longitude = _manualLongitude.ToString("0.00000", CultureInfo.InvariantCulture);
+        }
+        else if (wasManual)
+        {
+            // Back to auto: clear the typed values so they are not mistaken for a live GPS fix.
+            // The next GPS receiver update fills them in again.
+            Latitude = "0.00000";
+            Longitude = "0.00000";
+        }
     }
 
     private void InitializeTcpConnection()
@@ -533,7 +589,7 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
         try
         {
             // Handle the received message here
-            _ = ErrorLoggingService.LogInfo($"Received TCP message: {rawMessage}");
+            //_ = ErrorLoggingService.LogInfo($"Received TCP message: {rawMessage}");
         }
         catch (Exception ex)
         {
@@ -589,7 +645,7 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
 
     partial void OnGpsStatusChanged(bool value)
     {
-        if(value)
+        if (value)
         {
             GpsStatusText = "GPS捕捉";
             GpsStatusColor = "#3785c3";
@@ -712,14 +768,12 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
     {
         try
         {
-            MessageBoxResult result = MessageBox.Show(
-                Application.Current.MainWindow,
-                "アプリを終了しますか？",
-                "ログアウト確認",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
+            ConfirmDialog confirmDialog = new ConfirmDialog("終了確認", "アプリを終了しますか？")
+            {
+                Owner = Application.Current.MainWindow
+            };
 
-            if (result == MessageBoxResult.Yes)
+            if(confirmDialog.ShowDialog() == true)
             {
                 _ = ErrorLoggingService.LogInfo("User confirmed logout. Disconnecting and shutting down.");
                 DisconnectAndShutdown();
@@ -753,5 +807,15 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
         {
             _ = ErrorLoggingService.LogError("Error during MainPage navigation exit.", ex);
         }
+    }
+
+    private bool TryParseAngle(string? text, out double angle)
+    {
+        return double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out angle);
+    }
+
+    private bool CheckPin(string enteredPin)
+    {
+        return enteredPin == "1234";
     }
 }

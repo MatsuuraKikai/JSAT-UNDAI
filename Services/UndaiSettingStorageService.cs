@@ -9,23 +9,14 @@ public class UndaiSettingStorageService
     private readonly string _filePath;
     private readonly string _fileName = "undai_settings.json";
 
-    public const string DefaultUndaiIpAddress = "192.168.1.10";
-    public const string DefaultUndaiSubnetMask = "255.255.255.0";
-    public const string DefaultUndaiGateway = "192.168.1.1";
-
-    public const string DefaultCameraIpAddress = "192.168.1.20";
-    public const string DefaultCameraPort = "1234";
-
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
         WriteIndented = true
     };
 
-    public UndaiSettingStorageService()
+    public UndaiSettingStorageService(string appDataDirectory)
     {
-        string folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UNDAI");
-        Directory.CreateDirectory(folder);
-        _filePath = Path.Combine(folder, _fileName);
+        _filePath = Path.Combine(appDataDirectory, _fileName);
 
         if (!File.Exists(_filePath))
         {
@@ -76,23 +67,23 @@ public class UndaiSettingStorageService
         return JsonSerializer.Deserialize<UndaiSettingEntry>(json, _jsonOptions) ?? CreateDefaultSettings();
     }
 
-    private void WriteDefaultSettings()
+    public void WriteDefaultSettings()
     {
         File.WriteAllText(_filePath, JsonSerializer.Serialize(CreateDefaultSettings(), _jsonOptions));
     }
 
-    private static UndaiSettingEntry CreateDefaultSettings()
+    private UndaiSettingEntry CreateDefaultSettings()
     {
         return new UndaiSettingEntry(
-            DefaultUndaiIpAddress,
-            DefaultUndaiSubnetMask,
-            DefaultUndaiGateway);
+            UndaiSettingEntry.DefaultUndaiIpAddress,
+            UndaiSettingEntry.DefaultUndaiSubnetMask,
+            UndaiSettingEntry.DefaultUndaiGateway);
     }
 
-    private static bool IsValid(UndaiSettingEntry setting)
+    private bool IsValid(UndaiSettingEntry setting)
     {
-        return !string.IsNullOrEmpty(setting.UndaiIpAddress) &&
-               !string.IsNullOrEmpty(setting.UndaiSubnetMask) &&
-               !string.IsNullOrEmpty(setting.UndaiGateway);
+        return !string.IsNullOrEmpty(setting.CurrentUndaiIpAddress) &&
+               !string.IsNullOrEmpty(setting.CurrentUndaiSubnetMask) &&
+               !string.IsNullOrEmpty(setting.CurrentUndaiGateway);
     }
 }

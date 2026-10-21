@@ -401,4 +401,62 @@
         </Setter>
     </Style>
 
+    <Style x:Key="DesignCanvasViewboxStyle" TargetType="Viewbox">
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Stretch" Value="Uniform" />
+        <Setter Property="StretchDirection" Value="Both" />
+        <Setter Property="UseLayoutRounding" Value="True" />
+    </Style>
+
+    <Style x:Key="DesignCanvasGridStyle" TargetType="Grid">
+        <Setter Property="Width" Value="1920" />
+        <Setter Property="Height" Value="1080" />
+        <Setter Property="Background" Value="LightYellow" />
+    </Style>
+
+    <!--  ===== Action button colors =====  -->
+    <SolidColorBrush x:Key="PrimaryButtonBrush" Color="#FF1E6FD9" />
+    <SolidColorBrush x:Key="PrimaryButtonHoverBrush" Color="#FF3A85EA" />
+    <SolidColorBrush x:Key="PrimaryButtonPressedBrush" Color="#FF1757AD" />
+    <SolidColorBrush x:Key="SecondaryButtonBrush" Color="#FF555555" />
+    <SolidColorBrush x:Key="SecondaryButtonHoverBrush" Color="#FF6E6E6E" />
+    <SolidColorBrush x:Key="SecondaryButtonPressedBrush" Color="#FF3F3F3F" />
+
+    <!--  Shared shape: reuses PanelButtonTemplate (drop shadow + press overlay + disabled look)  -->
+    <Style x:Key="ActionButtonBaseStyle" TargetType="Button">
+        <Setter Property="Template" Value="{StaticResource PanelButtonTemplate}" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="20,8" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+    </Style>
+
+    <!--  Primary: main action (OK, はい, 保存)  -->
+    <Style
+        x:Key="PrimaryButtonStyle"
+        BasedOn="{StaticResource ActionButtonBaseStyle}"
+        TargetType="Button">
+        <Setter Property="Background" Value="{StaticResource PrimaryButtonBrush}" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{StaticResource PrimaryButtonHoverBrush}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!--  Secondary: back / cancel (戻る, キャンセル, いいえ)  -->
+    <Style
+        x:Key="SecondaryButtonStyle"
+        BasedOn="{StaticResource ActionButtonBaseStyle}"
+        TargetType="Button">
+        <Setter Property="Background" Value="{StaticResource SecondaryButtonBrush}" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{StaticResource SecondaryButtonHoverBrush}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
 </ResourceDictionary>

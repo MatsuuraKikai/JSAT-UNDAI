@@ -40,6 +40,9 @@ public partial class App : Application
 
     public MainPageViewModel _mainPageViewModel = null!;
     public SettingPageViewModel _settingPageViewModel = null!;
+    public SystemResetSettingPageViewModel _systemResetSettingPageViewModel = null!;
+
+    UndaiSettingStorageService _undaiSettingStorageService = null!;
 
     private string _appDataDirectory = string.Empty;
 
@@ -72,21 +75,33 @@ public partial class App : Application
             _navigationStore = new NavigationStore();
             _viewModelStore = new ViewModelStore();
 
+            _undaiSettingStorageService = new UndaiSettingStorageService(_appDataDirectory);
+
             _settingPageViewModel = new SettingPageViewModel(
                 _appDataDirectory,
+                _viewModelStore, 
+                _undaiSettingStorageService,
+                new NavigationService(_navigationStore, () => _mainPageViewModel));
+
+            _systemResetSettingPageViewModel = new SystemResetSettingPageViewModel(
+                _appDataDirectory,
                 _viewModelStore,
+                _undaiSettingStorageService,
                 new NavigationService(_navigationStore, () => _mainPageViewModel));
 
             _mainPageViewModel = new MainPageViewModel(
                 _appDataDirectory,
                 _viewModelStore,
-                new NavigationService(_navigationStore, () => _settingPageViewModel));
+                new NavigationService(_navigationStore, () => _settingPageViewModel),
+                new NavigationService(_navigationStore, () => _systemResetSettingPageViewModel));
 
             _viewModelStore.MainPageViewModel = _mainPageViewModel;
             _viewModelStore.SettingPageViewModel = _settingPageViewModel;
+            _viewModelStore.SystemResetSettingPageViewModel = _systemResetSettingPageViewModel;
 
             _mainPageViewModel.Initialize();
             _settingPageViewModel.Initialize();
+            _systemResetSettingPageViewModel.Initialize();
 
             _navigationStore.CurrentViewModel = _mainPageViewModel;
 
