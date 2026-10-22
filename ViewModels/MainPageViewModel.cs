@@ -19,6 +19,9 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
     public string _tempAppData = string.Empty;
     readonly NavigationService _settingPageNavigationService;
     readonly NavigationService _systemResetSettingPageNavigationService;
+    UndaiSettingStorageService _undaiSettingStorageService;
+    PinStorageService _pinStorageService;
+    UndaiSettingEntry _undaiSettingEntry;
 
     //TCP Server Connection
     private TcpServerConnectionService? _tcpServerConnectionService;
@@ -40,15 +43,27 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
     private double _manualLatitude;
     private double _manualLongitude;
 
+    private const int defaultPIN = 1056; // Default PIN for settings access
+
     // =====================================================================
     // Clock (top right)
     // =====================================================================
     private DispatcherTimer? _clockTimer;
 
-    public MainPageViewModel(string tempAppData, ViewModelStore viewModelStore, NavigationService settingPageNavigationService, NavigationService systemResetSettingPageNavigationService)
+    public MainPageViewModel
+    (
+        string tempAppData, 
+        ViewModelStore viewModelStore, 
+        UndaiSettingStorageService undaiSettingStorageService,
+        PinStorageService pinStorageService,
+        NavigationService settingPageNavigationService, 
+        NavigationService systemResetSettingPageNavigationService)
     {
         _tempAppData = tempAppData;
         _viewModelStore = viewModelStore;
+        _undaiSettingStorageService = undaiSettingStorageService;
+        _pinStorageService = pinStorageService;
+
         _settingPageNavigationService = settingPageNavigationService;
         _systemResetSettingPageNavigationService = systemResetSettingPageNavigationService;
 
@@ -71,6 +86,8 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
 
             StartClock();
             InitializeTcpConnection();
+
+            _undaiSettingEntry = _undaiSettingStorageService.LoadSetting();
         }
         catch (Exception ex)
         {
@@ -120,7 +137,7 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
     private string _gpsStatusText = "GPS捕捉中";
 
     [ObservableProperty]
-    private string _gpsStatusColor = "#ED524F";
+    private string _gpsStatusColor = "#D98280";
 
     [ObservableProperty]
     private bool _modemStatus = false;
@@ -129,7 +146,7 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
     private string _modemStatusText = "モデム捕捉中";
 
     [ObservableProperty]
-    private string _modemStatusColor = "#ED524F";
+    private string _modemStatusColor = "#D98280";
 
     [ObservableProperty]
     private bool _isControlEnabled;
@@ -226,7 +243,7 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
         {
             if (IsServerConnected)
             {
-                var pinViewModel = new PinEntryViewModel(CheckPin);
+                var pinViewModel = new PinEntryViewModel(_pinStorageService.Verify);
                 var dialog = new PinEntryDialog
                 {
                     DataContext = pinViewModel,
@@ -252,20 +269,6 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
         catch (Exception ex)
         {
             _ = ErrorLoggingService.LogError("Error navigating to SettingPage.", ex);
-        }
-    }
-
-    [RelayCommand]
-    private void ClickMe()
-    {
-        try
-        {
-            // Example action for the ClickMe command
-            _ = ErrorLoggingService.LogInfo("ClickMe command executed.");
-        }
-        catch (Exception ex)
-        {
-            _ = ErrorLoggingService.LogError("Error executing ClickMe command.", ex);
         }
     }
 
@@ -648,12 +651,12 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
         if (value)
         {
             GpsStatusText = "GPS捕捉";
-            GpsStatusColor = "#3785c3";
+            GpsStatusColor = "#719B82"; //#3785c3
         }
         else
         {
             GpsStatusText = "GPS捕捉中";
-            GpsStatusColor = "#ED524F";
+            GpsStatusColor = "#D98280";  //#ED524F
         }
     }
 
@@ -662,12 +665,12 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
         if (value)
         {
             ModemStatusText = "モデム捕捉";
-            ModemStatusColor = "#3785c3";
+            ModemStatusColor = "#719B82";
         }
         else
         {
             ModemStatusText = "モデム捕捉中";
-            ModemStatusColor = "#ED524F";
+            ModemStatusColor = "#D98280";
         }
     }
 
@@ -773,7 +776,7 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
                 Owner = Application.Current.MainWindow
             };
 
-            if(confirmDialog.ShowDialog() == true)
+            if (confirmDialog.ShowDialog() == true)
             {
                 _ = ErrorLoggingService.LogInfo("User confirmed logout. Disconnecting and shutting down.");
                 DisconnectAndShutdown();
@@ -812,10 +815,5 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
     private bool TryParseAngle(string? text, out double angle)
     {
         return double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out angle);
-    }
-
-    private bool CheckPin(string enteredPin)
-    {
-        return enteredPin == "1234";
     }
 }

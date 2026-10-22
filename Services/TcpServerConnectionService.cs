@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.IO;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
@@ -11,6 +12,9 @@ public class TcpServerConnectionService : IDisposable
     private TcpClient? _client;
     private CancellationTokenSource? _cts;
     private readonly StringBuilder _messageBuffer = new();
+
+    private readonly object _bufferLock = new();
+    private readonly object _cleanupLock = new();
 
     public bool IsConnected { get; private set; }
     public string CurrentServerIP { get; private set; } = string.Empty;
@@ -48,19 +52,22 @@ public class TcpServerConnectionService : IDisposable
 
             var endpoint = new IPEndPoint(IPAddress.Parse(CurrentServerIP), CurrentServerPort);
 
-            _cts = new CancellationTokenSource();
-            _client = new TcpClient();
+            var cts = new CancellationTokenSource();
+            var client = new TcpClient();
+            _cts = cts;
+            _client = client;
 
-            using var connectCts = CancellationTokenSource.CreateLinkedTokenSource(_cts.Token);
+            using var connectCts = CancellationTokenSource.CreateLinkedTokenSource(cts.Token);
             connectCts.CancelAfter(10000);
 
-            await _client.ConnectAsync(endpoint.Address, endpoint.Port, connectCts.Token);
+            await client.ConnectAsync(endpoint.Address, endpoint.Port, connectCts.Token);
 
             IsConnected = true;
             ConnectionStatusChanged?.Invoke(true);
 
-            _ = Task.Run(() => ReceiveLoopAsync(_cts.Token));
-            _ = Task.Run(() => ConnectionHealthLoopAsync(_cts.Token));
+            var token = cts.Token;
+            _ = Task.Run(() => ReceiveLoopAsync(client, token));
+            _ = Task.Run(() => ConnectionHealthLoopAsync(client, token));
         }
         catch (Exception ex)
         {
@@ -75,8 +82,7 @@ public class TcpServerConnectionService : IDisposable
     {
         try
         {
-            _cts?.Cancel();
-            CleanupAfterDisconnect();
+            CleanupAfterDisconnect(); // cancels, closes, and disposes in the right order
         }
         catch (Exception ex)
         {
@@ -86,33 +92,43 @@ public class TcpServerConnectionService : IDisposable
 
     private void CleanupAfterDisconnect()
     {
-        bool wasConnected = IsConnected;
+        bool wasConnected;
 
-        try { _client?.Close(); } catch { /* already closed */ }
-        _client = null;
+        lock (_cleanupLock)
+        {
+            wasConnected = IsConnected;
 
-        _cts?.Dispose();
-        _cts = null;
+            var cts = _cts;
+            var client = _client;
+            _cts = null;
+            _client = null;
+            IsConnected = false;
 
-        IsConnected = false;
-        _messageBuffer.Clear();
+            try { cts?.Cancel(); } catch { /* already disposed */ }
+            try { client?.Close(); } catch { /* already closed */ }
+            try { cts?.Dispose(); } catch { }
 
+            lock (_bufferLock)
+            {
+                _messageBuffer.Clear();
+            }
+        }
+
+        // Raise outside the lock so a subscriber calling back into the service can't deadlock
         if (wasConnected)
         {
             ConnectionStatusChanged?.Invoke(false);
         }
     }
 
-    private async Task ReceiveLoopAsync(CancellationToken token)
+    private async Task ReceiveLoopAsync(TcpClient client, CancellationToken token)
     {
-        if (_client == null) return;
-
         try
         {
-            var stream = _client.GetStream();
+            var stream = client.GetStream();
             var buffer = new byte[8192];
 
-            while (!token.IsCancellationRequested && _client.Connected)
+            while (!token.IsCancellationRequested)
             {
                 int bytesRead = await stream.ReadAsync(buffer, token);
                 if (bytesRead == 0)
@@ -121,9 +137,15 @@ public class TcpServerConnectionService : IDisposable
                 }
 
                 string chunk = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                _messageBuffer.Append(chunk);
 
-                foreach (var line in ExtractCompleteLines())
+                List<string> lines;
+                lock (_bufferLock)
+                {
+                    _messageBuffer.Append(chunk);
+                    lines = ExtractCompleteLines();
+                }
+
+                foreach (var line in lines)
                 {
                     MessageReceived?.Invoke(line);
                 }
@@ -133,23 +155,27 @@ public class TcpServerConnectionService : IDisposable
         {
             // expected on manual disconnect
         }
+        catch (Exception ex) when (ex is ObjectDisposedException or IOException)
+        {
+            // socket closed underneath us (disconnect / health check) - expected
+        }
         catch (Exception ex)
         {
             _ = ErrorLoggingService.LogError("Error receiving TCP data.", ex);
         }
         finally
         {
-            if (!token.IsCancellationRequested)
+            // Only clean up if this loop's client is still the active one
+            if (!token.IsCancellationRequested && ReferenceEquals(_client, client))
             {
-                // stream ended unexpectedly -> treat as disconnect
                 CleanupAfterDisconnect();
             }
         }
     }
 
     /// <summary>
-    /// Splits the internal buffer on '\n', returns each complete line (no content
-    /// filtering/parsing), and keeps any trailing partial line for the next read.
+    /// Splits the internal buffer on '\n', returns each complete line, and keeps
+    /// any trailing partial line for the next read. Caller must hold _bufferLock.
     /// </summary>
     private List<string> ExtractCompleteLines()
     {
@@ -175,7 +201,7 @@ public class TcpServerConnectionService : IDisposable
         return lines;
     }
 
-    private async Task ConnectionHealthLoopAsync(CancellationToken token)
+    private async Task ConnectionHealthLoopAsync(TcpClient client, CancellationToken token)
     {
         while (!token.IsCancellationRequested)
         {
@@ -183,10 +209,14 @@ public class TcpServerConnectionService : IDisposable
             {
                 await Task.Delay(2000, token);
 
-                if (_client == null || !IsSocketStillConnected(_client.Client))
+                if (!IsSocketStillConnected(client.Client))
                 {
-                    _ = ErrorLoggingService.LogError("TCP connection lost (health check).");
-                    CleanupAfterDisconnect();
+                    // Skip if this connection was already replaced or torn down
+                    if (!token.IsCancellationRequested && ReferenceEquals(_client, client))
+                    {
+                        _ = ErrorLoggingService.LogError("TCP connection lost (health check).");
+                        CleanupAfterDisconnect();
+                    }
                     return;
                 }
             }
@@ -196,8 +226,11 @@ public class TcpServerConnectionService : IDisposable
             }
             catch (Exception ex)
             {
-                _ = ErrorLoggingService.LogError("Error in TCP connection health check.", ex);
-                CleanupAfterDisconnect();
+                if (!token.IsCancellationRequested && ReferenceEquals(_client, client))
+                {
+                    _ = ErrorLoggingService.LogError("Error in TCP connection health check.", ex);
+                    CleanupAfterDisconnect();
+                }
                 return;
             }
         }
@@ -205,7 +238,7 @@ public class TcpServerConnectionService : IDisposable
 
     /// <summary>
     /// TcpClient.Connected only reflects the last I/O operation, not real-time state.
-    /// Poll + Available==0 is the standard way to detect a half-closed socket. [Confidence: High]
+    /// Poll + Available==0 is the standard way to detect a half-closed socket.
     /// </summary>
     private static bool IsSocketStillConnected(Socket socket)
     {

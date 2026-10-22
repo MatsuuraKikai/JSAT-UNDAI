@@ -8,91 +8,94 @@
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     mc:Ignorable="d">
     <Viewbox Style="{StaticResource DesignCanvasViewboxStyle}">
-
         <Grid Style="{StaticResource DesignCanvasGridStyle}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="400" />
+                    <ColumnDefinition Width="500" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <TextBlock
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Margin="5"
+                    FontSize="30"
+                    Text="Default IP Address" />
+
+                <Border
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    Margin="5"
+                    Background="White"
+                    BorderBrush="Blue"
+                    BorderThickness="1"
+                    CornerRadius="5">
+                    <TextBlock
+                        Padding="5"
+                        FontSize="30"
+                        Text="{Binding DefaultIPAddress}" />
+                </Border>
+
+                <TextBlock
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Margin="5"
+                    FontSize="30"
+                    Text="Current IP Address" />
+
+                <Border
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    Margin="5"
+                    Background="White"
+                    BorderBrush="Blue"
+                    BorderThickness="1"
+                    CornerRadius="5">
+
+                    <TextBlock
+                        Padding="5"
+                        FontSize="30"
+                        Text="{Binding CurrentIPAddress}" />
+                </Border>
+            </Grid>
             <Image
+                Grid.Row="1"
                 Width="1500"
                 Height="750"
                 Source="/Resources/ResetUndaiForDefaultIP.png"
                 Stretch="UniformToFill"
                 Visibility="{Binding ResetUndaiImgVisibility, Converter={StaticResource BoolToVisibilityConverter}}" />
-
-            <StackPanel Margin="10">
-                <Border>
-                    <Grid Margin="10">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="400" />
-                            <ColumnDefinition Width="500" />
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="AUTO" />
-                            <RowDefinition Height="AUTO" />
-                        </Grid.RowDefinitions>
-
-                        <TextBlock
-                            Grid.Row="0"
-                            Grid.Column="0"
-                            Margin="5"
-                            FontSize="40"
-                            Text="Default IP Address" />
-
-                        <Border
-                            Grid.Row="0"
-                            Grid.Column="1"
-                            Margin="5"
-                            Background="White"
-                            BorderBrush="Blue"
-                            BorderThickness="1"
-                            CornerRadius="5">
-                            <TextBlock
-                                Padding="5"
-                                FontSize="40"
-                                Text="{Binding DefaultIPAddress}" />
-                        </Border>
-
-                        <TextBlock
-                            Grid.Row="1"
-                            Grid.Column="0"
-                            Margin="5"
-                            FontSize="40"
-                            Text="Current IP Address" />
-
-                        <Border
-                            Grid.Row="1"
-                            Grid.Column="1"
-                            Margin="5"
-                            Background="White"
-                            BorderBrush="Blue"
-                            BorderThickness="1"
-                            CornerRadius="5">
-
-                            <TextBlock
-                                Padding="5"
-                                FontSize="40"
-                                Text="{Binding CurrentIPAddress}" />
-                        </Border>
-                    </Grid>
+            <Grid Grid.Row="2">
+                <Border HorizontalAlignment="Right">
+                    <ui:Button
+                        Width="300"
+                        Command="{Binding ResetToDefaultCommand}"
+                        Content="デフォルトにリセット"
+                        FontSize="30"
+                        Style="{StaticResource PrimaryButtonStyle}" />
                 </Border>
-                <Grid>
-                    <Border Margin="5,0,5,5" HorizontalAlignment="Right">
-                        <ui:Button
-                            Width="350"
-                            Content="デフォルトにリセット"
-                            FontSize="40"
-                            Command="{Binding ResetToDefaultCommand}"
-                            Style="{StaticResource PrimaryButtonStyle}" />
-                    </Border>
-                    <Border Margin="5,0,5,5" HorizontalAlignment="Left">
+                <Border HorizontalAlignment="Left">
 
-                        <ui:Button
-                            Width="250"
-                            Command="{Binding NavigateToMainPageCommand}"
-                            Content="戻る"
-                            FontSize="40"
-                            Style="{StaticResource SecondaryButtonStyle}" />
-                    </Border>
-                </Grid>
-            </StackPanel>
+                    <ui:Button
+                        Width="300"
+                        Height="70"
+                        Command="{Binding NavigateToMainPageCommand}"
+                        Content="戻る"
+                        FontSize="30"
+                        Style="{StaticResource SecondaryButtonStyle}" />
+
+                </Border>
+            </Grid>
         </Grid>
     </Viewbox>
 </UserControl>

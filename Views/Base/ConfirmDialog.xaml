@@ -4,10 +4,10 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     Title="確認"
     Width="500"
+    Height="210"
     Background="LightYellow"
     ResizeMode="NoResize"
     ShowInTaskbar="False"
-    Height="210"
     WindowStartupLocation="CenterOwner">
 
     <Grid Margin="30">
@@ -40,14 +40,14 @@
                 x:Name="YesButton"
                 Grid.Column="0"
                 Click="OnYesClick"
-                Content="はい"
+                Content="OK"
                 FontSize="30"
                 Style="{StaticResource PrimaryButtonStyle}" />
             <!--  No = default + Esc, so an accidental Enter or touch does not confirm  -->
             <Button
                 x:Name="NoButton"
                 Grid.Column="2"
-                Content="いいえ"
+                Content="キャンセル"
                 FontSize="30"
                 IsCancel="True"
                 IsDefault="True"

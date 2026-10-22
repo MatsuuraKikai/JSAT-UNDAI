@@ -172,17 +172,4 @@
     public UndaiSettingEntry()
     {
     }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="UndaiSettingEntry"/> class.
-    /// </summary>
-    /// <param name="undaiIpAddress">The undaiIpAddress<see cref="string"/></param>
-    /// <param name="undaiSubnetMask">The undaiSubnetMask<see cref="string"/></param>
-    /// <param name="undaiGateway">The undaiGateway<see cref="string"/></param>
-    public UndaiSettingEntry(string undaiIpAddress, string undaiSubnetMask, string undaiGateway)
-    {
-        CurrentUndaiIpAddress = undaiIpAddress;
-        CurrentUndaiSubnetMask = undaiSubnetMask;
-        CurrentUndaiGateway = undaiGateway;
-    }
 }

@@ -3,43 +3,51 @@ using CommunityToolkit.Mvvm.Input;
 using JSAT_UNDAI.Services;
 using JSAT_UNDAI.Stores;
 using JSAT_UNDAI.ViewModels.Base;
+using JSAT_UNDAI.Views.Base;
 using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Windows;
 
 namespace JSAT_UNDAI.ViewModels;
 
-// Assumes ViewModelBase derives from ObservableObject (needed for [ObservableProperty]).
 public partial class SettingPageViewModel : ViewModelBase, INavigationAware
 {
-    // ---- Input limits (ASSUMED, adjust to the real hardware limits) ----
+    // ---- Input limits (ASSUMED) ----
     private const double SpeedMin = 1, SpeedMax = 100;      // [1-100] from the screen labels
     private const double OffsetLimit = 180;                  // origin offset: -180..180 deg
     private const double AngleRangeMax = 180;                // search range (±): 0..180 deg
-    private const double StepAngleMin = 0.001, StepAngleMax = 180;
+    private const double StepAngleMin = 0.1, StepAngleMax = 180;
     private const double RssiMin = -150, RssiMax = 0;        // dBm
     private const double SettleSecondsMax = 60;
     private const double TurnbackThresholdMax = 100;         // dBm
     private const int ContinuousRunMinutesMin = 1, ContinuousRunMinutesMax = 1440;
+    private const int SatelliteNameMaxLength = 32;
 
     UndaiSettingStorageService _undaiSettingStorageService;
+    PinStorageService _pinStorageService;
 
     MainPageViewModel _mainPageViewModel;
 
     readonly ViewModelStore _viewModelStore;
     public string _tempAppData = string.Empty;
-    readonly NavigationService _mapPageNavigationService;
+    readonly NavigationService _mainPageNavigationService;
+    readonly NavigationService _developerPageNavigationService;
 
     // ================= Bindable text fields =================
 
-    // ネットワーク設定
+    // Network Setting
     [ObservableProperty] private string _undaiIpAddress = string.Empty;
     [ObservableProperty] private string _undaiSubnetMask = string.Empty;
     [ObservableProperty] private string _undaiGateway = string.Empty;
     [ObservableProperty] private string _modemIpAddress = string.Empty;
 
-    // 雲台設定 (水平角 = Azimuth / 仰角 = Elevation)
+    // Satellite Setting
+    [ObservableProperty] private string _satelliteName = string.Empty;
+    [ObservableProperty] private string _satelliteLongitude = string.Empty;
+
+    // Undai Setting (水平角 = Azimuth / 仰角 = Elevation)
     [ObservableProperty] private string _originOffsetAzimuth = string.Empty;
     [ObservableProperty] private string _originOffsetElevation = string.Empty;
     [ObservableProperty] private string _manualHighSpeedAzimuth = string.Empty;
@@ -49,13 +57,13 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
     [ObservableProperty] private string _jogAngleAzimuth = string.Empty;
     [ObservableProperty] private string _jogAngleElevation = string.Empty;
 
-    // 広域サーチ設定
+    // Wide Search Setting
     [ObservableProperty] private string _wideSearchSpeed = string.Empty;
     [ObservableProperty] private string _wideSearchAzimuthRange = string.Empty;
     [ObservableProperty] private string _wideSearchElevationRange = string.Empty;
     [ObservableProperty] private string _wideSearchSuccessRssi = string.Empty;
 
-    // 詳細サーチ設定
+    // Detail Search Setting
     [ObservableProperty] private string _detailSearchSpeed = string.Empty;
     [ObservableProperty] private string _detailSearchStepAngle = string.Empty;
     [ObservableProperty] private string _detailSearchAzimuthRange = string.Empty;
@@ -64,9 +72,13 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
     [ObservableProperty] private string _detailSearchStepSettleSeconds = string.Empty;
     [ObservableProperty] private string _detailSearchTurnbackThresholdLevel = string.Empty;   // 打切り減衰(dBm)
 
-    // 連続運転 / バージョン表示
+    // Endurance Test
     [ObservableProperty] private string _continuousRunMinutes = string.Empty;
-    [ObservableProperty] private string _undaiVersionText = "雲台Ver --";
+
+    // Undai Version
+    [ObservableProperty] private string _undaiVersionText = "0.0";
+
+    int currentPIN;
 
     // ================= State =================
 
@@ -83,12 +95,21 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
     [ObservableProperty] private string _statusMessage = string.Empty;
     [ObservableProperty] private bool _isStatusError;
 
-    public SettingPageViewModel(string tempAppData, ViewModelStore viewModelStore, UndaiSettingStorageService undaiSettingStorageService, NavigationService mapPageNavigationService)
+    public SettingPageViewModel
+    (
+        string tempAppData, 
+        ViewModelStore viewModelStore, 
+        UndaiSettingStorageService undaiSettingStorageService,
+        PinStorageService pinStorageService, 
+        NavigationService mainPageNavigationService,
+        NavigationService developerPageNavigationService)
     {
         _tempAppData = tempAppData;
         _viewModelStore = viewModelStore;
         _undaiSettingStorageService = undaiSettingStorageService;
-        _mapPageNavigationService = mapPageNavigationService;
+        _pinStorageService = pinStorageService;
+        _mainPageNavigationService = mainPageNavigationService;
+        _developerPageNavigationService = developerPageNavigationService;
     }
 
     public void Initialize()
@@ -144,12 +165,26 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
     {
         try
         {
-            _mapPageNavigationService.Navigate();
+            _mainPageNavigationService.Navigate();
             _ = ErrorLoggingService.LogInfo("Navigated to MainPage from SettingPage.");
         }
         catch (Exception ex)
         {
             _ = ErrorLoggingService.LogError("Error navigating to MainPage from SettingPage.", ex);
+        }
+    }
+
+    [RelayCommand]
+    private void NavigateToDeveloperPage()
+    {
+        try
+        {
+            _developerPageNavigationService.Navigate();
+            _ = ErrorLoggingService.LogInfo("Navigated to DeveloperPage from SettingPage.");
+        }
+        catch (Exception ex)
+        {
+            _ = ErrorLoggingService.LogError("Error navigating to DeveloperPage from SettingPage.", ex);
         }
     }
 
@@ -159,7 +194,7 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
     {
         try
         {
-            // Start from the stored entry so fields not on this page (UndaiVersion, Satellite*) are preserved
+            // Start from the stored entry so fields not on this page are preserved
             var entry = _undaiSettingStorageService.LoadSetting();
 
             if (!TryApplyToEntry(entry, out var error))
@@ -218,7 +253,20 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
     [RelayCommand]
     private void PinReset()
     {
-        _ = ErrorLoggingService.LogInfo("TODO: PinReset command (PIN storage not decided).");
+        var pinChangeDialog = new PinChangeDialog(_pinStorageService.Verify)
+        {
+            Owner = Application.Current.MainWindow
+        };
+
+        if (pinChangeDialog.ShowDialog() == true)
+        {
+            _pinStorageService.SetPin(pinChangeDialog.NewPin);
+            _ = ErrorLoggingService.LogInfo("PinReset command completed successfully.");
+        }
+        else
+        {
+            _ = ErrorLoggingService.LogInfo("TODO: PinReset command (PIN storage not decided).");
+        }
     }
 
     // ================= Load: UndaiSettingEntry -> text boxes =================
@@ -243,6 +291,9 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
             JogAngleAzimuth = s.JogAngleAzimuth;
             JogAngleElevation = s.JogAngleElevation;
 
+            SatelliteName = s.SatelliteName;
+            SatelliteLongitude = s.SatelliteLongitude;
+
             WideSearchSpeed = s.WideSearchSpeed;
             WideSearchAzimuthRange = s.WideSearchAzimuthRange;
             WideSearchElevationRange = s.WideSearchElevationRange;
@@ -257,7 +308,7 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
             DetailSearchTurnbackThresholdLevel = s.DetailSearchTurnbackThresholdLevel;
 
             ContinuousRunMinutes = s.ContinuousRunMinutes;
-            UndaiVersionText = $"雲台Ver {s.UndaiVersion}";
+            UndaiVersionText = s.UndaiVersion;
 
             IsLoaded = true;
             SetStatus(string.Empty, false);
@@ -300,7 +351,7 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
             return false;
         }
 
-        // ---- Gimbal ----
+        // ---- UNDAI ----
         if (!TryParseNumber("原点オフセット(水平角)", OriginOffsetAzimuth, -OffsetLimit, OffsetLimit, out var originAz, out error)) return false;
         if (!TryParseNumber("原点オフセット(仰角)", OriginOffsetElevation, -OffsetLimit, OffsetLimit, out var originEl, out error)) return false;
         if (!TryParseNumber("手動高速(水平角)", ManualHighSpeedAzimuth, SpeedMin, SpeedMax, out var highAz, out error)) return false;
@@ -309,6 +360,17 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
         if (!TryParseNumber("手動低速(仰角)", ManualLowSpeedElevation, SpeedMin, SpeedMax, out var lowEl, out error)) return false;
         if (!TryParseNumber("寸動角度(水平角)", JogAngleAzimuth, StepAngleMin, StepAngleMax, out var jogAz, out error)) return false;
         if (!TryParseNumber("寸動角度(仰角)", JogAngleElevation, StepAngleMin, StepAngleMax, out var jogEl, out error)) return false;
+
+        if (lowAz > highAz)
+        {
+            error = "手動低速(水平角)は手動高速(水平角)以下にしてください";
+            return false;
+        }
+        if (lowEl > highEl)
+        {
+            error = "手動低速(仰角)は手動高速(仰角)以下にしてください";
+            return false;
+        }
 
         // ---- Wide search ----
         if (!TryParseNumber("広域サーチ速度", WideSearchSpeed, SpeedMin, SpeedMax, out var wideSpeed, out error)) return false;
@@ -328,7 +390,14 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
         // ---- Continuous run ----
         if (!TryParseInteger("連続運転終了時間", ContinuousRunMinutes, ContinuousRunMinutesMin, ContinuousRunMinutesMax, out var runMinutes, out error)) return false;
 
-        // ---- All valid: write normalized strings. UndaiVersion / Satellite* are left untouched. ----
+        // ---- Satellite ----
+        // Name: free text, trimmed, max 32 chars. Empty = not set.
+        if (!TryParseName("衛星名", SatelliteName, 1, SatelliteNameMaxLength, out var satName, out error)) return false;
+
+        // Longitude: empty = not set, otherwise - 180..180 degrees.
+        if (!TryParseNumber("衛星経度", SatelliteLongitude, -180, 180, out var satLon, out error)) return false;
+
+        // ---- All valid: write normalized strings ----
         entry.CurrentUndaiIpAddress = ip.ToString();
         entry.CurrentUndaiSubnetMask = mask.ToString();
         entry.CurrentUndaiGateway = gateway.ToString();
@@ -342,6 +411,9 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
         entry.ManualLowSpeedElevation = FormatNumber(lowEl);
         entry.JogAngleAzimuth = FormatNumber(jogAz);
         entry.JogAngleElevation = FormatNumber(jogEl);
+
+        entry.SatelliteName = satName;
+        entry.SatelliteLongitude = FormatNumber(satLon);
 
         entry.WideSearchSpeed = FormatNumber(wideSpeed);
         entry.WideSearchAzimuthRange = FormatNumber(wideAz);
@@ -438,5 +510,26 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
         uint m = ((uint)b[0] << 24) | ((uint)b[1] << 16) | ((uint)b[2] << 8) | b[3];
         uint inverted = ~m;
         return m != 0 && (inverted & (inverted + 1)) == 0;
+    }
+
+    private static bool TryParseName(string label, string? text, int minLen, int maxLen, out string name, out string error)
+    {
+        error = string.Empty;
+        name = (text ?? string.Empty).Trim();
+
+        if (name.Length < minLen)
+        {
+            error = minLen <= 1
+            ? $"{label}を入力してください"
+            : $"{label}は{minLen}文字以上で入力してください";
+            return false;
+        }
+        if (name.Length > maxLen)
+        {
+            error = $"{label}は{maxLen}文字以内で入力してください";
+            return false;
+        }
+
+        return true;
     }
 }

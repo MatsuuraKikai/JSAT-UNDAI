@@ -24,7 +24,7 @@
             <!--  =====================================================  -->
             <!--  TOP BAR: connect / GPS status / clock  -->
             <!--  =====================================================  -->
-            <Grid Grid.Row="0" Margin="40,10,40,0">
+            <Grid Grid.Row="0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="340" />
                     <ColumnDefinition Width="30" />
@@ -92,15 +92,9 @@
                     Height="90"
                     VerticalAlignment="Top"
                     Background="{Binding GpsStatusColor}"
-                    CornerRadius="15"
+                    CornerRadius="5"
                     IsEnabled="{Binding IsControlEnabled}"
                     Style="{StaticResource StatusBadgeBorderStyle}">
-                    <Border.Effect>
-                        <DropShadowEffect
-                            Direction="-40"
-                            Opacity="0.3"
-                            ShadowDepth="4" />
-                    </Border.Effect>
                     <TextBlock
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
@@ -115,15 +109,9 @@
                     Height="90"
                     VerticalAlignment="Top"
                     Background="{Binding ModemStatusColor}"
-                    CornerRadius="15"
+                    CornerRadius="5"
                     IsEnabled="{Binding IsControlEnabled}"
                     Style="{StaticResource StatusBadgeBorderStyle}">
-                    <Border.Effect>
-                        <DropShadowEffect
-                            Direction="-40"
-                            Opacity="0.3"
-                            ShadowDepth="4" />
-                    </Border.Effect>
                     <TextBlock
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
@@ -154,7 +142,7 @@
             <!--  =====================================================  -->
             <!--  MAIN AREA  -->
             <!--  =====================================================  -->
-            <Grid Grid.Row="1" Margin="40,10,40,10">
+            <Grid Grid.Row="1">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1000" />
                     <ColumnDefinition Width="40" />
@@ -948,7 +936,7 @@
             <!--  =====================================================  -->
             <!--  BOTTOM BAR: alarm reset / status / logout  -->
             <!--  =====================================================  -->
-            <Grid Grid.Row="2" Margin="40,0,40,20">
+            <Grid Grid.Row="2">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="340" />
                     <ColumnDefinition Width="20" />

@@ -1,0 +1,399 @@
+﻿<UserControl
+    x:Class="JSAT_UNDAI.Views.DeveloperPageView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:beh="clr-namespace:JSAT_UNDAI.Services"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+    xmlns:local="clr-namespace:JSAT_UNDAI.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:vm="clr-namespace:JSAT_UNDAI.ViewModels"
+    d:DataContext="{d:DesignInstance Type=vm:DeveloperPageViewModel}"
+    mc:Ignorable="d">
+
+    <Viewbox Style="{StaticResource DesignCanvasViewboxStyle}">
+        <Grid Style="{StaticResource DesignCanvasGridStyle}">
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <StackPanel Grid.Row="0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <!--  Elevation card + Azimuth card  -->
+                    <Grid
+                        Grid.Row="0"
+                        Margin="0,100,0,0"
+                        HorizontalAlignment="Center">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="600" />
+                            <ColumnDefinition Width="30" />
+                            <ColumnDefinition Width="600" />
+                        </Grid.ColumnDefinitions>
+
+                        <!--  Elevation: [UP]  current angle  [DOWN]  -->
+                        <Border
+                            Grid.Column="0"
+                            Padding="20,5,20,20"
+                            Style="{StaticResource CardBorderStyle}">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="10" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="10" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <Grid Grid.Row="0" VerticalAlignment="Center">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Style="{StaticResource CardHeaderTextStyle}" Text="仰角" />
+
+                                    <!--  Current elevation: same black value box as the rest of the screen  -->
+                                    <Border
+                                        Grid.Column="1"
+                                        Height="90"
+                                        Margin="0,0"
+                                        VerticalAlignment="Center"
+                                        Style="{StaticResource ValueBoxBorderStyle}">
+                                        <Grid Margin="0,2,0,4">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="*" />
+                                            </Grid.RowDefinitions>
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                HorizontalAlignment="Center"
+                                                FontSize="20"
+                                                Foreground="#B0B0B0"
+                                                Text="現在値" />
+                                            <Viewbox
+                                                Grid.Row="1"
+                                                Stretch="Uniform"
+                                                StretchDirection="DownOnly">
+                                                <TextBlock Style="{StaticResource ValueBoxTextStyle}">
+                                                    <Run Text="{Binding CurrentElevation, Mode=OneWay}" /><Run Text="°" />
+                                                </TextBlock>
+                                            </Viewbox>
+                                        </Grid>
+                                    </Border>
+
+                                </Grid>
+
+                                <Grid
+                                    Grid.Row="2"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="50" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <Button
+                                        Grid.Column="0"
+                                        Width="170"
+                                        Height="170"
+                                        Padding="0"
+                                        Style="{StaticResource PanelButtonStyle}"
+                                        Stylus.IsFlicksEnabled="False"
+                                        Stylus.IsPressAndHoldEnabled="False">
+                                        <Image Width="120" Source="/Resources/UP ARROW.png" />
+                                        <i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                                                <i:InvokeCommandAction Command="{Binding JogPressedCommand}" CommandParameter="Up" />
+                                            </i:EventTrigger>
+                                            <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+                                                <i:InvokeCommandAction Command="{Binding JogReleasedCommand}" CommandParameter="Up" />
+                                            </i:EventTrigger>
+                                            <i:EventTrigger EventName="MouseLeave">
+                                                <i:InvokeCommandAction Command="{Binding JogReleasedCommand}" CommandParameter="Up" />
+                                            </i:EventTrigger>
+                                            <i:EventTrigger EventName="LostMouseCapture">
+                                                <i:InvokeCommandAction Command="{Binding JogReleasedCommand}" CommandParameter="Up" />
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>
+                                    </Button>
+
+                                    <Button
+                                        Grid.Column="2"
+                                        Width="170"
+                                        Height="170"
+                                        Padding="0"
+                                        Style="{StaticResource PanelButtonStyle}"
+                                        Stylus.IsFlicksEnabled="False"
+                                        Stylus.IsPressAndHoldEnabled="False">
+                                        <Image Width="120" Source="/Resources/DOWN ARROW.png" />
+                                        <i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                                                <i:InvokeCommandAction Command="{Binding JogPressedCommand}" CommandParameter="Down" />
+                                            </i:EventTrigger>
+                                            <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+                                                <i:InvokeCommandAction Command="{Binding JogReleasedCommand}" CommandParameter="Down" />
+                                            </i:EventTrigger>
+                                            <i:EventTrigger EventName="MouseLeave">
+                                                <i:InvokeCommandAction Command="{Binding JogReleasedCommand}" CommandParameter="Down" />
+                                            </i:EventTrigger>
+                                            <i:EventTrigger EventName="LostMouseCapture">
+                                                <i:InvokeCommandAction Command="{Binding JogReleasedCommand}" CommandParameter="Down" />
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>
+                                    </Button>
+                                </Grid>
+
+                                <!--  Go-to angle: [位置決め] [value box -> keypad]  -->
+                                <Grid
+                                    Grid.Row="4"
+                                    Width="500"
+                                    Height="70"
+                                    Margin="0,10,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="15" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Button
+                                        Grid.Column="0"
+                                        Command="{Binding SetElevationAngleCommand}"
+                                        Content="位置決め"
+                                        FontSize="30"
+                                        Style="{StaticResource PanelButtonStyle}" />
+                                    <ui:TextBox
+                                        Grid.Column="2"
+                                        VerticalContentAlignment="Center"
+                                        beh:NumericInput.IsDecimalOnly="True"
+                                        FontSize="30"
+                                        PlaceholderText="90.0"
+                                        Text="{Binding ElevationAngleInput, UpdateSourceTrigger=PropertyChanged}"
+                                        TextAlignment="Center" />
+                                </Grid>
+                            </Grid>
+                        </Border>
+
+                        <!--  Azimuth: [CCW]  current angle  [CW]  -->
+                        <Border
+                            Grid.Column="2"
+                            Padding="20,5,20,20"
+                            Style="{StaticResource CardBorderStyle}">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="10" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="10" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <Grid Grid.Row="0" VerticalAlignment="Center">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Style="{StaticResource CardHeaderTextStyle}" Text="水平角" />
+
+                                    <!--  Current azimuth: same black value box as the rest of the screen  -->
+                                    <Border
+                                        Grid.Column="1"
+                                        Height="90"
+                                        Margin="0,0"
+                                        VerticalAlignment="Center"
+                                        Style="{StaticResource ValueBoxBorderStyle}">
+                                        <Grid Margin="0,2,0,4">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="*" />
+                                            </Grid.RowDefinitions>
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                HorizontalAlignment="Center"
+                                                FontSize="20"
+                                                Foreground="#B0B0B0"
+                                                Text="現在値" />
+                                            <Viewbox
+                                                Grid.Row="1"
+                                                Stretch="Uniform"
+                                                StretchDirection="DownOnly">
+                                                <TextBlock Style="{StaticResource ValueBoxTextStyle}">
+                                                    <Run Text="{Binding CurrentAzimuth, Mode=OneWay}" /><Run Text="°" />
+                                                </TextBlock>
+                                            </Viewbox>
+                                        </Grid>
+                                    </Border>
+                                </Grid>
+
+                                <Grid
+                                    Grid.Row="2"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="50" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <Button
+                                        Grid.Column="0"
+                                        Width="170"
+                                        Height="170"
+                                        Padding="0"
+                                        Style="{StaticResource PanelButtonStyle}"
+                                        Stylus.IsFlicksEnabled="False"
+                                        Stylus.IsPressAndHoldEnabled="False">
+                                        <Image Width="120" Source="/Resources/CCW ROTATE.png" />
+                                        <i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                                                <i:InvokeCommandAction Command="{Binding JogPressedCommand}" CommandParameter="CCW" />
+                                            </i:EventTrigger>
+                                            <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+                                                <i:InvokeCommandAction Command="{Binding JogReleasedCommand}" CommandParameter="CCW" />
+                                            </i:EventTrigger>
+                                            <i:EventTrigger EventName="MouseLeave">
+                                                <i:InvokeCommandAction Command="{Binding JogReleasedCommand}" CommandParameter="CCW" />
+                                            </i:EventTrigger>
+                                            <i:EventTrigger EventName="LostMouseCapture">
+                                                <i:InvokeCommandAction Command="{Binding JogReleasedCommand}" CommandParameter="CCW" />
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>
+                                    </Button>
+
+                                    <Button
+                                        Grid.Column="2"
+                                        Width="170"
+                                        Height="170"
+                                        Padding="0"
+                                        Style="{StaticResource PanelButtonStyle}"
+                                        Stylus.IsFlicksEnabled="False"
+                                        Stylus.IsPressAndHoldEnabled="False">
+                                        <Image Width="120" Source="/Resources/CW ROTATE.png" />
+                                        <i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                                                <i:InvokeCommandAction Command="{Binding JogPressedCommand}" CommandParameter="CW" />
+                                            </i:EventTrigger>
+                                            <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+                                                <i:InvokeCommandAction Command="{Binding JogReleasedCommand}" CommandParameter="CW" />
+                                            </i:EventTrigger>
+                                            <i:EventTrigger EventName="MouseLeave">
+                                                <i:InvokeCommandAction Command="{Binding JogReleasedCommand}" CommandParameter="CW" />
+                                            </i:EventTrigger>
+                                            <i:EventTrigger EventName="LostMouseCapture">
+                                                <i:InvokeCommandAction Command="{Binding JogReleasedCommand}" CommandParameter="CW" />
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>
+                                    </Button>
+                                </Grid>
+
+                                <!--  Go-to angle: [位置決め] [value box -> keypad]  -->
+                                <Grid
+                                    Grid.Row="4"
+                                    Width="500"
+                                    Height="70"
+                                    Margin="0,10,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="15" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Button
+                                        Grid.Column="0"
+                                        Command="{Binding SetAzimuthAngleCommand}"
+                                        Content="位置決め"
+                                        FontSize="30"
+                                        Style="{StaticResource PanelButtonStyle}" />
+                                    <ui:TextBox
+                                        Grid.Column="2"
+                                        VerticalContentAlignment="Center"
+                                        beh:NumericInput.IsDecimalOnly="True"
+                                        FontSize="30"
+                                        PlaceholderText="90.0"
+                                        Text="{Binding AzimuthAngleInput, UpdateSourceTrigger=PropertyChanged}"
+                                        TextAlignment="Center" />
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </Grid>
+
+                </Grid>
+
+                <Grid Margin="20" HorizontalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="20" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Button
+                        Grid.Column="0"
+                        Width="320"
+                        Height="70"
+                        Command="{Binding ElevationEncorderResetCommand}"
+                        Content="Ele. Encorder Reset"
+                        FontSize="30"
+                        Style="{StaticResource SecondaryButtonStyle}" />
+                    <Button
+                        Grid.Column="2"
+                        Width="320"
+                        Height="70"
+                        Command="{Binding AzimuthEncorderResetCommand}"
+                        Content="Azi. Encorder Reset"
+                        FontSize="30"
+                        Style="{StaticResource SecondaryButtonStyle}" />
+                </Grid>
+
+                <StackPanel Grid.Row="1" HorizontalAlignment="Center">
+                    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+
+                        <ui:TextBlock
+                            HorizontalAlignment="Center"
+                            FontWeight="Bold"
+                            Style="{StaticResource SettingLabelStyle}"
+                            Text="Status Message: " />
+                        <ui:Button
+                            Width="50"
+                            Height="50"
+                            Appearance="Primary"
+                            Command="{Binding ResetStatusMessageCommand}"
+                            Icon="{ui:SymbolIcon ArrowReset48}" />
+                    </StackPanel>
+                    <ScrollViewer Height="300" VerticalScrollBarVisibility="Auto">
+                        <ui:TextBlock
+                            Width="1500"
+                            VerticalAlignment="Top"
+                            Style="{StaticResource SettingLabelStyle}"
+                            Text="{Binding StatusMessage}"
+                            TextWrapping="WrapWithOverflow" />
+                    </ScrollViewer>
+                </StackPanel>
+
+
+            </StackPanel>
+            <StackPanel Grid.Row="1" Orientation="Horizontal">
+                <Button
+                    Width="235"
+                    Height="70"
+                    Command="{Binding NavigateToMainPageCommand}"
+                    Content="トップページ"
+                    FontSize="30"
+                    Style="{StaticResource SecondaryButtonStyle}" />
+                <Button
+                    Width="235"
+                    Height="70"
+                    Margin="30,0,0,0"
+                    Command="{Binding NavigateToSettingPageCommand}"
+                    Content="戻る"
+                    FontSize="30"
+                    Style="{StaticResource SecondaryButtonStyle}" />
+            </StackPanel>
+        </Grid>
+    </Viewbox>
+</UserControl>

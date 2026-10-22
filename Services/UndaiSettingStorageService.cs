@@ -74,10 +74,7 @@ public class UndaiSettingStorageService
 
     private UndaiSettingEntry CreateDefaultSettings()
     {
-        return new UndaiSettingEntry(
-            UndaiSettingEntry.DefaultUndaiIpAddress,
-            UndaiSettingEntry.DefaultUndaiSubnetMask,
-            UndaiSettingEntry.DefaultUndaiGateway);
+        return new UndaiSettingEntry();
     }
 
     private bool IsValid(UndaiSettingEntry setting)

@@ -17,7 +17,12 @@ public partial class SystemResetSettingPageViewModel : ViewModelBase, INavigatio
     public string _tempAppData = string.Empty;
     readonly NavigationService _mapPageNavigationService;
 
-    public SystemResetSettingPageViewModel(string tempAppData, ViewModelStore viewModelStore, UndaiSettingStorageService undaiSettingStorageService, NavigationService mapPageNavigationService)
+    public SystemResetSettingPageViewModel
+    (
+        string tempAppData, 
+        ViewModelStore viewModelStore, 
+        UndaiSettingStorageService undaiSettingStorageService, 
+        NavigationService mapPageNavigationService)
     {
         _tempAppData = tempAppData;
         _viewModelStore = viewModelStore;
@@ -86,7 +91,8 @@ public partial class SystemResetSettingPageViewModel : ViewModelBase, INavigatio
                 CurrentIPAddress = DefaultIPAddress;
                 ResetUndaiImgVisibility = true;
 
-                _undaiSettingStorageService.WriteDefaultSettings();
+                savedUndaiSettingEntry.CurrentUndaiIpAddress = CurrentIPAddress;
+                _undaiSettingStorageService.SaveSetting(savedUndaiSettingEntry);
                 _ = ErrorLoggingService.LogInfo($"Reset IP address to default: {DefaultIPAddress}");
             }
             else

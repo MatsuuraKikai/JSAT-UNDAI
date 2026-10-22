@@ -41,8 +41,10 @@ public partial class App : Application
     public MainPageViewModel _mainPageViewModel = null!;
     public SettingPageViewModel _settingPageViewModel = null!;
     public SystemResetSettingPageViewModel _systemResetSettingPageViewModel = null!;
+    public DeveloperPageViewModel _developerPageViewModel = null!;
 
     UndaiSettingStorageService _undaiSettingStorageService = null!;
+    PinStorageService _pinStorageService = null!;
 
     private string _appDataDirectory = string.Empty;
 
@@ -76,12 +78,15 @@ public partial class App : Application
             _viewModelStore = new ViewModelStore();
 
             _undaiSettingStorageService = new UndaiSettingStorageService(_appDataDirectory);
+            _pinStorageService = new PinStorageService(_appDataDirectory);
 
             _settingPageViewModel = new SettingPageViewModel(
                 _appDataDirectory,
                 _viewModelStore, 
                 _undaiSettingStorageService,
-                new NavigationService(_navigationStore, () => _mainPageViewModel));
+                _pinStorageService,
+                new NavigationService(_navigationStore, () => _mainPageViewModel),
+                new NavigationService(_navigationStore, () => _developerPageViewModel));
 
             _systemResetSettingPageViewModel = new SystemResetSettingPageViewModel(
                 _appDataDirectory,
@@ -92,16 +97,25 @@ public partial class App : Application
             _mainPageViewModel = new MainPageViewModel(
                 _appDataDirectory,
                 _viewModelStore,
+                _undaiSettingStorageService,
+                _pinStorageService,
                 new NavigationService(_navigationStore, () => _settingPageViewModel),
                 new NavigationService(_navigationStore, () => _systemResetSettingPageViewModel));
+
+            _developerPageViewModel = new DeveloperPageViewModel(
+                _viewModelStore,
+                new NavigationService(_navigationStore, () => _mainPageViewModel),
+                new NavigationService(_navigationStore, () => _settingPageViewModel));
 
             _viewModelStore.MainPageViewModel = _mainPageViewModel;
             _viewModelStore.SettingPageViewModel = _settingPageViewModel;
             _viewModelStore.SystemResetSettingPageViewModel = _systemResetSettingPageViewModel;
+            _viewModelStore.DeveloperPageViewModel = _developerPageViewModel;
 
             _mainPageViewModel.Initialize();
             _settingPageViewModel.Initialize();
             _systemResetSettingPageViewModel.Initialize();
+            _developerPageViewModel.Initialize();
 
             _navigationStore.CurrentViewModel = _mainPageViewModel;
 
