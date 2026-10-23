@@ -363,7 +363,9 @@
                             Height="50"
                             Appearance="Primary"
                             Command="{Binding ResetStatusMessageCommand}"
-                            Icon="{ui:SymbolIcon ArrowReset48}" />
+                            Icon="{ui:SymbolIcon ArrowReset48,
+                                                 Filled=True,
+                                                 FontSize=30}" />
                     </StackPanel>
                     <ScrollViewer Height="300" VerticalScrollBarVisibility="Auto">
                         <ui:TextBlock
@@ -385,7 +387,7 @@
                     Content="トップページ"
                     FontSize="30"
                     Style="{StaticResource SecondaryButtonStyle}" />
-                <Button
+                <ui:Button
                     Width="235"
                     Height="70"
                     Margin="30,0,0,0"

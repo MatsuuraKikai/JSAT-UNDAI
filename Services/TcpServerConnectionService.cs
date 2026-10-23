@@ -20,6 +20,8 @@ public class TcpServerConnectionService : IDisposable
     public string CurrentServerIP { get; private set; } = string.Empty;
     public int CurrentServerPort { get; private set; } = 5625; // default port
 
+    private static readonly string[] Prefixes = { "SY,", "A,", "SI,", "SA," };
+
     /// <summary>
     /// Raised whenever the connection state flips (true = connected).
     /// </summary>
@@ -31,6 +33,13 @@ public class TcpServerConnectionService : IDisposable
     /// Consume and interpret the payload downstream.
     /// </summary>
     public event Action<string>? MessageReceived;
+
+    // Connection health tracking
+    private DateTime _lastMessageTime = DateTime.UtcNow;
+    CancellationTokenSource _watchdogTimerCts;
+    int? _lastRandomNumber = null;
+    int _sameCount = 0;
+    const int MaxSameCount = 3;
 
     public TcpServerConnectionService(string appDataDirectory)
     {
@@ -67,7 +76,8 @@ public class TcpServerConnectionService : IDisposable
 
             var token = cts.Token;
             _ = Task.Run(() => ReceiveLoopAsync(client, token));
-            _ = Task.Run(() => ConnectionHealthLoopAsync(client, token));
+
+            StartWatchdogTimer();
         }
         catch (Exception ex)
         {
@@ -83,6 +93,7 @@ public class TcpServerConnectionService : IDisposable
         try
         {
             CleanupAfterDisconnect(); // cancels, closes, and disposes in the right order
+            StopWatchdogTimer();
         }
         catch (Exception ex)
         {
@@ -126,7 +137,7 @@ public class TcpServerConnectionService : IDisposable
         try
         {
             var stream = client.GetStream();
-            var buffer = new byte[8192];
+            var buffer = new byte[256];
 
             while (!token.IsCancellationRequested)
             {
@@ -180,7 +191,7 @@ public class TcpServerConnectionService : IDisposable
     private List<string> ExtractCompleteLines()
     {
         var lines = new List<string>();
-        string buffered = _messageBuffer.ToString();
+        string buffered = _messageBuffer.ToString().Replace("\0", "");
 
         int newlineIndex;
         int searchStart = 0;
@@ -188,11 +199,13 @@ public class TcpServerConnectionService : IDisposable
         while ((newlineIndex = buffered.IndexOf('\n', searchStart)) != -1)
         {
             string line = buffered.Substring(searchStart, newlineIndex - searchStart).TrimEnd('\r');
-            if (line.Length > 0)
-            {
-                lines.Add(line);
-            }
             searchStart = newlineIndex + 1;
+
+            int start = FindMessageStart(line);
+            if (start >= 0)
+            {
+                lines.Add(line.Substring(start));
+            }
         }
 
         _messageBuffer.Clear();
@@ -201,61 +214,75 @@ public class TcpServerConnectionService : IDisposable
         return lines;
     }
 
-    private async Task ConnectionHealthLoopAsync(TcpClient client, CancellationToken token)
+    private int FindMessageStart(string line)
     {
-        while (!token.IsCancellationRequested)
+        int best = -1;
+        foreach (string prefix in Prefixes)
         {
-            try
+            int idx = line.IndexOf(prefix, StringComparison.Ordinal);
+            if (idx >= 0 && (best == -1 || idx < best))
             {
-                await Task.Delay(2000, token);
-
-                if (!IsSocketStillConnected(client.Client))
-                {
-                    // Skip if this connection was already replaced or torn down
-                    if (!token.IsCancellationRequested && ReferenceEquals(_client, client))
-                    {
-                        _ = ErrorLoggingService.LogError("TCP connection lost (health check).");
-                        CleanupAfterDisconnect();
-                    }
-                    return;
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                return;
-            }
-            catch (Exception ex)
-            {
-                if (!token.IsCancellationRequested && ReferenceEquals(_client, client))
-                {
-                    _ = ErrorLoggingService.LogError("Error in TCP connection health check.", ex);
-                    CleanupAfterDisconnect();
-                }
-                return;
+                best = idx;
             }
         }
-    }
-
-    /// <summary>
-    /// TcpClient.Connected only reflects the last I/O operation, not real-time state.
-    /// Poll + Available==0 is the standard way to detect a half-closed socket.
-    /// </summary>
-    private static bool IsSocketStillConnected(Socket socket)
-    {
-        try
-        {
-            bool readable = socket.Poll(0, SelectMode.SelectRead);
-            bool noData = socket.Available == 0;
-            return !(readable && noData);
-        }
-        catch
-        {
-            return false;
-        }
+        return best;
     }
 
     public void Dispose()
     {
         Disconnect();
+    }
+
+    void StartWatchdogTimer()
+    {
+        _lastMessageTime = DateTime.UtcNow;
+        _watchdogTimerCts = new CancellationTokenSource();
+        _ = ConnectionWatchdog(_watchdogTimerCts.Token);
+    }
+
+    void StopWatchdogTimer()
+    {
+        _watchdogTimerCts?.Cancel();
+        _watchdogTimerCts?.Dispose();
+        _watchdogTimerCts = null;
+    }
+
+    public bool IsConnectionStale(int randomNumber)
+    {
+        _lastMessageTime = DateTime.UtcNow;
+        if(_lastRandomNumber == randomNumber)
+        {
+            _sameCount++;
+        }
+        else
+        {
+            _lastRandomNumber = randomNumber;
+            _sameCount = 0;
+        }
+
+        return _sameCount >= MaxSameCount;
+    }
+
+    async Task ConnectionWatchdog(CancellationToken token)
+    {
+        try
+        {
+            while (!token.IsCancellationRequested)
+            {
+                if (DateTime.UtcNow - _lastMessageTime > TimeSpan.FromSeconds(5))
+                {
+                    _ = ErrorLoggingService.LogError("TCP connection is stale. Disconnecting.");
+                    Disconnect();
+                    break;
+                }
+                await Task.Delay(1000, token); // check every second
+            }
+
+        }
+        catch (OperationCanceledException)
+        {
+            // expected on manual disconnect
+        }
+
     }
 }

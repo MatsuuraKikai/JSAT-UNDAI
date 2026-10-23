@@ -3,7 +3,7 @@
     /// <summary>
     /// Defines the DefaultUndaiIpAddress
     /// </summary>
-    public const string DefaultUndaiIpAddress = "192.168.1.10";
+    public const string DefaultUndaiIpAddress = "192.168.0.10";
 
     /// <summary>
     /// Defines the DefaultUndaiSubnetMask
@@ -13,12 +13,12 @@
     /// <summary>
     /// Defines the DefaultUndaiGateway
     /// </summary>
-    public const string DefaultUndaiGateway = "192.168.1.1";
+    public const string DefaultUndaiGateway = "192.168.0.1";
 
     /// <summary>
     /// Defines the DefaultModemIpAddress
     /// </summary>
-    public const string DefaultModemIpAddress = "192.168.1.1";
+    public const string DefaultModemIpAddress = "192.168.0.1";
 
     /// <summary>
     /// Defines the DefaultUndaiPort

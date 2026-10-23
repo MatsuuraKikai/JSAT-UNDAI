@@ -108,7 +108,7 @@ public partial class DeveloperPageViewModel : ViewModelBase, INavigationAware
 
             _activeJogDirection = direction;
             _ = ErrorLoggingService.LogInfo($"Jog start: {direction}");
-            StatusMessage += $"Jog start: {direction} , ";
+            UpdateStatusMessage($"Jog start: {direction}");
             // TODO: send "start jog" for this direction at the selected speed mode.
         });
     }
@@ -127,7 +127,7 @@ public partial class DeveloperPageViewModel : ViewModelBase, INavigationAware
             _activeJogDirection = null;
 
             _ = ErrorLoggingService.LogInfo($"Jog stop: {stopped}");
-            StatusMessage += $"Jog stop: {stopped} , ";
+            UpdateStatusMessage($"Jog stop: {stopped}");
             // TODO: send "stop jog" to the device.
         });
     }
@@ -229,5 +229,16 @@ public partial class DeveloperPageViewModel : ViewModelBase, INavigationAware
         {
             _ = ErrorLoggingService.LogError("Error during DeveloperPage navigation exit.", ex);
         }
+    }
+
+    void UpdateStatusMessage(string message)
+    {
+        int MaxLines = 20;
+
+        var lines = (message + Environment.NewLine + StatusMessage)
+        .Split(Environment.NewLine)
+        .Take(MaxLines);
+
+        StatusMessage = string.Join(Environment.NewLine, lines);
     }
 }

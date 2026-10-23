@@ -786,7 +786,7 @@
                                 <TextBlock
                                     FontSize="50"
                                     Style="{StaticResource ValueBoxTextStyle}"
-                                    Text="{Binding PeakElevation}" />
+                                    Text="{Binding PeakRssi}" />
                             </Border>
                             <Border
                                 Grid.Row="1"
@@ -795,7 +795,7 @@
                                 <TextBlock
                                     FontSize="50"
                                     Style="{StaticResource ValueBoxTextStyle}"
-                                    Text="{Binding PeakAzimuth}" />
+                                    Text="{Binding PeakElevation}" />
                             </Border>
                             <Border
                                 Grid.Row="1"
@@ -804,7 +804,7 @@
                                 <TextBlock
                                     FontSize="50"
                                     Style="{StaticResource ValueBoxTextStyle}"
-                                    Text="{Binding PeakRssi}" />
+                                    Text="{Binding PeakAzimuth}" />
                             </Border>
                         </Grid>
                     </Border>
@@ -900,14 +900,14 @@
                             Grid.Column="0"
                             Command="{Binding HomeCommand}"
                             Content="原点"
-                            Style="{StaticResource PanelButtonStyle}"
-                            Tag="{Binding IsHoming}" />
+                            Background="{Binding HomeBtnColor}"
+                            Style="{StaticResource PanelButtonStyle}"/>
                         <Button
                             Grid.Column="2"
                             Command="{Binding PeakSearchCommand}"
                             Content="ピークサーチ"
-                            Style="{StaticResource PanelButtonStyle}"
-                            Tag="{Binding IsPeakSearching}" />
+                            Background="{Binding PeakSearchBtnColor}"
+                            Style="{StaticResource PanelButtonStyle}"/>
                     </Grid>
 
                     <!--  STOP: fires on press (not on release)  -->

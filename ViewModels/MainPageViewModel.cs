@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using JSAT_UNDAI.Models;
 using JSAT_UNDAI.Services;
 using JSAT_UNDAI.Stores;
 using JSAT_UNDAI.ViewModels.Base;
@@ -15,6 +16,10 @@ namespace JSAT_UNDAI.ViewModels;
 public partial class MainPageViewModel : ViewModelBase, INavigationAware
 {
     SettingPageViewModel _settingPageViewModel;
+    DeveloperPageViewModel _developerPageViewModel;
+
+    MainPageModel _mainPageModel;
+
     readonly ViewModelStore _viewModelStore;
     public string _tempAppData = string.Empty;
     readonly NavigationService _settingPageNavigationService;
@@ -43,7 +48,7 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
     private double _manualLatitude;
     private double _manualLongitude;
 
-    private const int defaultPIN = 1056; // Default PIN for settings access
+    bool isDDvalue = true;
 
     // =====================================================================
     // Clock (top right)
@@ -77,6 +82,7 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
         {
             // Example: Load data or initialize properties
             _settingPageViewModel = _viewModelStore.SettingPageViewModel;
+            _developerPageViewModel = _viewModelStore.DeveloperPageViewModel;
             _ = ErrorLoggingService.LogInfo("MainPageViewModel initialized.");
 
             if (_settingPageViewModel != null)
@@ -88,6 +94,8 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
             InitializeTcpConnection();
 
             _undaiSettingEntry = _undaiSettingStorageService.LoadSetting();
+
+            _mainPageModel = new MainPageModel(_viewModelStore, _tcpServerConnectionService);
         }
         catch (Exception ex)
         {
@@ -221,6 +229,21 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
 
     [ObservableProperty]
     private bool _isManualGps;
+
+    [ObservableProperty]
+    private int _speedModeIndex = 2; // 0=Inching, 1=Low, 2=High
+
+    [ObservableProperty]
+    private string _homeBtnColor = "White";
+
+    [ObservableProperty]
+    private string _peakSearchBtnColor = "White";
+
+    [ObservableProperty]
+    private int _activeHomePeakSearchIndex = 0;
+
+    [ObservableProperty]
+    private string _alarmStatusCode = string.Empty;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(AlarmResetCommand))]
@@ -475,6 +498,16 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
     {
         Safe(nameof(ToggleUnit), () =>
         {
+            if (isDDvalue)
+            {
+                UnitLabel = "DMS";
+                isDDvalue = false;
+            }
+            else
+            {
+                UnitLabel = "DD";
+                isDDvalue = true;
+            }
             _ = ErrorLoggingService.LogInfo("Coordinate unit button pressed.");
             // TODO: switch the coordinate format and update UnitLabel / Latitude / Longitude.
         });
@@ -570,6 +603,32 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
         _tcpServerConnectionService.MessageReceived += OnTcpMessageReceived;
     }
 
+    private void OnSpeedModeindexChanged(int newIndex)
+    {
+        // 0=Inching, 1=Low, 2=High
+        switch (newIndex)
+        {
+            case 0:
+                IsInching = true;
+                IsLowSpeed = false;
+                IsHighSpeed = false;
+                break;
+            case 1:
+                IsInching = false;
+                IsLowSpeed = true;
+                IsHighSpeed = false;
+                break;
+            case 2:
+                IsInching = false;
+                IsLowSpeed = false;
+                IsHighSpeed = true;
+                break;
+            default:
+                _ = ErrorLoggingService.LogWarning($"Invalid SpeedModeIndex: {newIndex}");
+                break;
+        }
+    }
+
     private void OnTcpConnectionStatusChanged(bool connected)
     {
         try
@@ -593,6 +652,8 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
         {
             // Handle the received message here
             //_ = ErrorLoggingService.LogInfo($"Received TCP message: {rawMessage}");
+            StatusMessage = rawMessage.Length + " " + rawMessage; // Display the raw message in the status area for debugging
+            _ = _mainPageModel.TcpReceivedMessageProcess(rawMessage);
         }
         catch (Exception ex)
         {
@@ -671,6 +732,36 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
         {
             ModemStatusText = "モデム捕捉中";
             ModemStatusColor = "#D98280";
+        }
+    }
+
+    partial void OnActiveHomePeakSearchIndexChanged(int value)
+    {
+        switch (value)
+        {
+            case 0:
+                HomeBtnColor = "White";
+                PeakSearchBtnColor = "White";
+                break;
+            case 1:
+                HomeBtnColor = "#0077b6"; // blue
+                PeakSearchBtnColor = "White";
+                break;
+            case 2:
+                HomeBtnColor = "#fdcd75"; // orange
+                PeakSearchBtnColor = "White"; 
+                break;
+            case 3:
+                HomeBtnColor = "White";
+                PeakSearchBtnColor = "#0077b6"; // blue
+                break;
+            case 4:
+                HomeBtnColor = "White";
+                PeakSearchBtnColor = "#fdcd75"; // orange
+                break;
+            default:
+                _ = ErrorLoggingService.LogWarning($"Invalid ActiveHomePeakSearchIndex: {value}");
+                break;
         }
     }
 
@@ -815,5 +906,34 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
     private bool TryParseAngle(string? text, out double angle)
     {
         return double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out angle);
+    }
+
+    public void ChangePositionUnit(string value, int position)
+    {
+        if (isDDvalue)
+        {
+            if (position == 0)
+            {
+                Latitude = value;
+            }
+            else
+            {
+                Longitude = value;
+            }
+        }
+        else
+        {
+            int degrees = 0, wholeMinutes = 0, seconds = 0;
+            double fractional = 0, minutes = 0;
+            if (double.TryParse(value, out double ddLat))
+            {
+                degrees = (int)ddLat;
+                fractional = Math.Round(ddLat - degrees, 8); // Handle precision
+                minutes = fractional * 60;
+                wholeMinutes = (int)minutes;
+                seconds = (int)((minutes - wholeMinutes) * 60);
+            }
+            Latitude = $"{degrees}° {wholeMinutes}' {seconds}\"";
+        }
     }
 }
