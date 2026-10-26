@@ -179,8 +179,22 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
     {
         try
         {
-            _developerPageNavigationService.Navigate();
-            _ = ErrorLoggingService.LogInfo("Navigated to DeveloperPage from SettingPage.");
+            var pinViewModel = new PinEntryViewModel(_pinStorageService.Verify);
+            var dialog = new PinEntryDialog
+            {
+                DataContext = pinViewModel,
+                Owner = Application.Current?.MainWindow,
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                _developerPageNavigationService.Navigate();
+                _ = ErrorLoggingService.LogInfo("Navigated to DeveloperPage from SettingPage.");
+            }
+            else
+            {
+                _ = ErrorLoggingService.LogInfo("Navigation to DeveloperPage canceled by user.");
+            }
         }
         catch (Exception ex)
         {

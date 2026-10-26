@@ -149,6 +149,67 @@ public class MainPageModel
 
     }
 
+    public void SendTcpMessage(string message = "", bool isCommand = false, int commandNo = 0)
+    {
+        if (isCommand)
+        {
+            string sendMessage = string.Empty;
+            switch (commandNo)
+            {
+                case 1:
+                    sendMessage = "I,1";
+                    break;
+                case 2:
+                    sendMessage = "I,2";
+                    break;
+                case 3:
+                    sendMessage = "I,3";
+                    break;
+                case 4:
+                    sendMessage = "I,4";
+                    break;
+                case 5:
+                    sendMessage = "I,5";
+                    break;
+                case 6:
+                    sendMessage = "I,6";
+                    break;
+                case 7:
+                    sendMessage = "I,7";
+                    break;
+                case 8:
+                    sendMessage = "I,8";
+                    break;
+                case 9:
+                    sendMessage = message;
+                    break;
+                case 10:
+                    sendMessage = message;
+                    break;
+                case 18:
+                    sendMessage = "I,18";
+                    break;
+                case 19:
+                    sendMessage = "I,19";
+                    break;
+                case 20:
+                    sendMessage = "I,20";
+                    break;
+                case 21:
+                    sendMessage = "I,21";
+                    break;
+                case 22:
+                    sendMessage = "I,22";
+                    break;
+                case 30:
+                    sendMessage = "I,30";
+                    break;
+            }
+            ;
+            _tcpServerConnectionService.SendMessage(sendMessage);
+        }
+    }
+
     void InitializeViewModels()
     {
         _mainPageViewModel = _viewModelStore.MainPageViewModel;

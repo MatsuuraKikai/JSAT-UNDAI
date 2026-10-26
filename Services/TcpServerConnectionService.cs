@@ -1,6 +1,8 @@
-﻿using System.IO;
+﻿using JSAT_UNDAI.Models;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace JSAT_UNDAI.Services;
@@ -8,7 +10,9 @@ namespace JSAT_UNDAI.Services;
 public class TcpServerConnectionService : IDisposable
 {
     private readonly UndaiSettingStorageService _undaiSettingStorageService;
+    //TcpTrafficLogService tcpLog;
 
+    IPEndPoint endpoint;
     private TcpClient? _client;
     private CancellationTokenSource? _cts;
     private readonly StringBuilder _messageBuffer = new();
@@ -36,7 +40,7 @@ public class TcpServerConnectionService : IDisposable
 
     // Connection health tracking
     private DateTime _lastMessageTime = DateTime.UtcNow;
-    CancellationTokenSource _watchdogTimerCts;
+    CancellationTokenSource _watchdogTimerCts = new();
     int? _lastRandomNumber = null;
     int _sameCount = 0;
     const int MaxSameCount = 3;
@@ -59,7 +63,7 @@ public class TcpServerConnectionService : IDisposable
             CurrentServerIP = config.CurrentUndaiIpAddress;
             CurrentServerPort = UndaiSettingEntry.DefaultUndaiPort;
 
-            var endpoint = new IPEndPoint(IPAddress.Parse(CurrentServerIP), CurrentServerPort);
+            endpoint = new IPEndPoint(IPAddress.Parse(CurrentServerIP), CurrentServerPort);
 
             var cts = new CancellationTokenSource();
             var client = new TcpClient();
@@ -78,6 +82,8 @@ public class TcpServerConnectionService : IDisposable
             _ = Task.Run(() => ReceiveLoopAsync(client, token));
 
             StartWatchdogTimer();
+
+            App.TcpLog.LogEvent(TcpLogType.Connect, endpoint.ToString(), "Connected");
         }
         catch (Exception ex)
         {
@@ -94,6 +100,8 @@ public class TcpServerConnectionService : IDisposable
         {
             CleanupAfterDisconnect(); // cancels, closes, and disposes in the right order
             StopWatchdogTimer();
+
+            App.TcpLog.LogEvent(TcpLogType.Disconnect, endpoint.ToString(), "Disconnected");
         }
         catch (Exception ex)
         {
@@ -158,6 +166,7 @@ public class TcpServerConnectionService : IDisposable
 
                 foreach (var line in lines)
                 {
+                    App.TcpLog.LogRx(endpoint.ToString(), line);
                     MessageReceived?.Invoke(line);
                 }
             }
@@ -284,5 +293,25 @@ public class TcpServerConnectionService : IDisposable
             // expected on manual disconnect
         }
 
+    }
+
+    public async void SendMessage(string message)
+    {
+        if (!IsConnected || _client == null)
+        {
+            _ = ErrorLoggingService.LogError("Cannot send message. Not connected to TCP server.");
+            return;
+        }
+        try
+        {
+            var stream = _client.GetStream();
+            byte[] data = Encoding.UTF8.GetBytes(message + ",\n");
+            await stream.WriteAsync(data, 0, data.Length);
+            App.TcpLog.LogTx(endpoint.ToString(), message);
+        }
+        catch (Exception ex)
+        {
+            _ = ErrorLoggingService.LogError("Error sending TCP message.", ex);
+        }
     }
 }

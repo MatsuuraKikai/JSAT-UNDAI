@@ -178,22 +178,19 @@
                                 Command="{Binding SelectSpeedModeCommand}"
                                 CommandParameter="High"
                                 Content="高速"
-                                Style="{StaticResource PanelButtonStyle}"
-                                Tag="{Binding IsHighSpeed}" />
+                                Style="{StaticResource PanelButtonStyle}" />
                             <Button
                                 Grid.Column="2"
                                 Command="{Binding SelectSpeedModeCommand}"
                                 CommandParameter="Low"
                                 Content="低速"
-                                Style="{StaticResource PanelButtonStyle}"
-                                Tag="{Binding IsLowSpeed}" />
+                                Style="{StaticResource PanelButtonStyle}" />
                             <Button
                                 Grid.Column="4"
                                 Command="{Binding SelectSpeedModeCommand}"
                                 CommandParameter="Inching"
                                 Content="寸動"
-                                Style="{StaticResource PanelButtonStyle}"
-                                Tag="{Binding IsInching}" />
+                                Style="{StaticResource PanelButtonStyle}" />
                         </Grid>
 
                         <!--  Elevation card + Azimuth card  -->
@@ -574,10 +571,17 @@
                                         Grid.Column="1"
                                         Style="{StaticResource ValueBoxBorderStyle}">
                                         <Viewbox Stretch="Uniform" StretchDirection="DownOnly">
-                                            <TextBlock
-                                                FontSize="36"
-                                                Style="{StaticResource ValueBoxTextStyle}"
-                                                Text="{Binding Latitude}" />
+                                            <StackPanel Orientation="Horizontal">
+                                                <ui:SymbolIcon
+                                                    FontSize="30"
+                                                    Foreground="White"
+                                                    Symbol="ArrowRepeatAll16"
+                                                    Visibility="{Binding IsManualGps, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                                <TextBlock
+                                                    FontSize="36"
+                                                    Style="{StaticResource ValueBoxTextStyle}"
+                                                    Text="{Binding DisplayLatitude}" />
+                                            </StackPanel>
                                         </Viewbox>
                                     </Border>
 
@@ -594,10 +598,17 @@
                                         Grid.Column="1"
                                         Style="{StaticResource ValueBoxBorderStyle}">
                                         <Viewbox Stretch="Uniform" StretchDirection="DownOnly">
-                                            <TextBlock
-                                                FontSize="36"
-                                                Style="{StaticResource ValueBoxTextStyle}"
-                                                Text="{Binding Longitude}" />
+                                            <StackPanel Orientation="Horizontal">
+                                                <ui:SymbolIcon
+                                                    FontSize="30"
+                                                    Foreground="White"
+                                                    Symbol="ArrowRepeatAll16"
+                                                    Visibility="{Binding IsManualGps, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                                <TextBlock
+                                                    FontSize="36"
+                                                    Style="{StaticResource ValueBoxTextStyle}"
+                                                    Text="{Binding DisplayLongitude}" />
+                                            </StackPanel>
                                         </Viewbox>
                                     </Border>
                                 </Grid>
@@ -896,18 +907,99 @@
                             <ColumnDefinition Width="20" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <Button
-                            Grid.Column="0"
-                            Command="{Binding HomeCommand}"
-                            Content="原点"
-                            Background="{Binding HomeBtnColor}"
-                            Style="{StaticResource PanelButtonStyle}"/>
-                        <Button
-                            Grid.Column="2"
-                            Command="{Binding PeakSearchCommand}"
-                            Content="ピークサーチ"
-                            Background="{Binding PeakSearchBtnColor}"
-                            Style="{StaticResource PanelButtonStyle}"/>
+                        <Grid Grid.Column="0" VerticalAlignment="Bottom">
+                            <Button
+                                Background="{Binding HomeBtnColor}"
+                                Command="{Binding HomeCommand}"
+                                Content="原点"
+                                Style="{StaticResource PanelButtonStyle}"
+                                Stylus.IsFlicksEnabled="False"
+                                Stylus.IsPressAndHoldEnabled="False">
+                                <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                                        <i:InvokeCommandAction Command="{Binding HomePeakButtonPressedCommand}" CommandParameter="Home" />
+                                    </i:EventTrigger>
+                                    <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+                                        <i:InvokeCommandAction Command="{Binding HomePeakButtonReleasedCommand}" CommandParameter="Home" />
+                                    </i:EventTrigger>
+                                    <i:EventTrigger EventName="MouseLeave">
+                                        <i:InvokeCommandAction Command="{Binding HomePeakButtonReleasedCommand}" CommandParameter="Home" />
+                                    </i:EventTrigger>
+                                    <i:EventTrigger EventName="LostMouseCapture">
+                                        <i:InvokeCommandAction Command="{Binding HomePeakButtonReleasedCommand}" CommandParameter="Home" />
+                                    </i:EventTrigger>
+                                </i:Interaction.Triggers>
+                            </Button>
+
+                            <Border
+                                Height="6"
+                                Margin="20,0,20,10"
+                                VerticalAlignment="Bottom"
+                                Background="#33000000"
+                                CornerRadius="3"
+                                IsHitTestVisible="False"
+                                Visibility="{Binding IsHomePeakHolding, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <Border
+                                    HorizontalAlignment="Left"
+                                    Background="White"
+                                    CornerRadius="3"
+                                    Opacity="0.9">
+                                    <Border.Width>
+                                        <MultiBinding Converter="{StaticResource ProgressWidthConverter}">
+                                            <Binding ElementName="HomePeakHoldTrack" Path="ActualWidth" />
+                                            <Binding Path="HomePeakHoldProgress" />
+                                        </MultiBinding>
+                                    </Border.Width>
+                                </Border>
+                            </Border>
+                        </Grid>
+                        <Grid Grid.Column="2" VerticalAlignment="Bottom">
+                            <Button
+                                Background="{Binding PeakSearchBtnColor}"
+                                Command="{Binding PeakSearchCommand}"
+                                Content="ピークサーチ"
+                                Style="{StaticResource PanelButtonStyle}"
+                                Stylus.IsFlicksEnabled="False"
+                                Stylus.IsPressAndHoldEnabled="False">
+
+                                <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                                        <i:InvokeCommandAction Command="{Binding HomePeakButtonPressedCommand}" CommandParameter="Peak" />
+                                    </i:EventTrigger>
+                                    <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+                                        <i:InvokeCommandAction Command="{Binding HomePeakButtonReleasedCommand}" CommandParameter="Peak" />
+                                    </i:EventTrigger>
+                                    <i:EventTrigger EventName="MouseLeave">
+                                        <i:InvokeCommandAction Command="{Binding HomePeakButtonReleasedCommand}" CommandParameter="Peak" />
+                                    </i:EventTrigger>
+                                    <i:EventTrigger EventName="LostMouseCapture">
+                                        <i:InvokeCommandAction Command="{Binding HomePeakButtonReleasedCommand}" CommandParameter="Peak" />
+                                    </i:EventTrigger>
+                                </i:Interaction.Triggers>
+                            </Button>
+
+                            <Border
+                                Height="6"
+                                Margin="20,0,20,10"
+                                VerticalAlignment="Bottom"
+                                Background="#33000000"
+                                CornerRadius="3"
+                                IsHitTestVisible="False"
+                                Visibility="{Binding IsHomePeakHolding, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <Border
+                                    HorizontalAlignment="Left"
+                                    Background="White"
+                                    CornerRadius="3"
+                                    Opacity="0.9">
+                                    <Border.Width>
+                                        <MultiBinding Converter="{StaticResource ProgressWidthConverter}">
+                                            <Binding ElementName="HomePeakHoldTrack" Path="ActualWidth" />
+                                            <Binding Path="HomePeakHoldProgress" />
+                                        </MultiBinding>
+                                    </Border.Width>
+                                </Border>
+                            </Border>
+                        </Grid>
                     </Grid>
 
                     <!--  STOP: fires on press (not on release)  -->
@@ -987,6 +1079,9 @@
                                 <i:InvokeCommandAction Command="{Binding LogoutButtonPressedCommand}" />
                             </i:EventTrigger>
                             <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+                                <i:InvokeCommandAction Command="{Binding LogoutButtonReleasedCommand}" />
+                            </i:EventTrigger>
+                            <i:EventTrigger EventName="MouseLeave">
                                 <i:InvokeCommandAction Command="{Binding LogoutButtonReleasedCommand}" />
                             </i:EventTrigger>
                             <i:EventTrigger EventName="LostMouseCapture">

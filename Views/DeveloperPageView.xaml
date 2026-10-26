@@ -380,19 +380,19 @@
 
             </StackPanel>
             <StackPanel Grid.Row="1" Orientation="Horizontal">
-                <Button
+                <ui:Button
                     Width="235"
                     Height="70"
-                    Command="{Binding NavigateToMainPageCommand}"
-                    Content="トップページ"
+                    Command="{Binding NavigateToSettingPageCommand}"
+                    Content="戻る"
                     FontSize="30"
                     Style="{StaticResource SecondaryButtonStyle}" />
                 <ui:Button
                     Width="235"
                     Height="70"
                     Margin="30,0,0,0"
-                    Command="{Binding NavigateToSettingPageCommand}"
-                    Content="戻る"
+                    Command="{Binding NavigateToMainPageCommand}"
+                    Content="トップページ"
                     FontSize="30"
                     Style="{StaticResource SecondaryButtonStyle}" />
             </StackPanel>

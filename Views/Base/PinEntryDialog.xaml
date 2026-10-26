@@ -7,11 +7,11 @@
     xmlns:vm="clr-namespace:JSAT_UNDAI.ViewModels.Base"
     Title="暗証番号入力"
     Width="500"
+    Height="380"
     d:DataContext="{d:DesignInstance Type=vm:PinEntryViewModel}"
     Background="LightYellow"
     ResizeMode="NoResize"
     ShowInTaskbar="False"
-    Height="380"
     WindowStartupLocation="CenterOwner"
     mc:Ignorable="d">
 

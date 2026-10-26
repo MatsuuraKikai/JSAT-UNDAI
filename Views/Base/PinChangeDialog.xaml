@@ -3,7 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-    Title="ピン変更"
+    Title="暗証番号変更"
     Width="680"
     Height="460"
     Background="LightYellow"
@@ -38,7 +38,7 @@
             FontSize="32"
             FontWeight="Bold"
             Foreground="{StaticResource TextPrimaryBrush}"
-            Text="ピンの変更" />
+            Text="暗証番号の変更" />
 
         <!--  Current PIN  -->
         <Grid Grid.Row="2" Margin="0,0,0,12">

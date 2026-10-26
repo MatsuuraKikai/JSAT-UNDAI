@@ -537,14 +537,14 @@
                         Height="70"
                         Command="{Binding NavigateToMainPageCommand}"
                         Content="戻る"
-                        FontSize="28"
+                        FontSize="30"
                         Style="{StaticResource SecondaryButtonStyle}" />
                     <Button
                         Width="235"
                         Height="70"
                         Margin="30,0,0,0"
                         Command="{Binding PinResetCommand}"
-                        Content="PINリセット"
+                        Content="暗証番号リセット"
                         FontSize="28"
                         Style="{StaticResource SecondaryButtonStyle}" />
                     <Button
@@ -552,8 +552,8 @@
                         Height="70"
                         Margin="30,0,0,0"
                         Command="{Binding NavigateToDeveloperPageCommand}"
-                        Content="開発者ページ"
-                        FontSize="28"
+                        Content="保守モード"
+                        FontSize="30"
                         Style="{StaticResource SecondaryButtonStyle}" />
                 </StackPanel>
 

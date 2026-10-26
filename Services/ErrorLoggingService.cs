@@ -5,15 +5,8 @@ namespace JSAT_UNDAI.Services;
 
 public static class ErrorLoggingService
 {
-    /// <summary>
-    /// Defines the _errorLogger
-    /// </summary>
     private static readonly ErrorLogger _errorLogger = new();
 
-    /// <summary>
-    /// Initializes the error logging service.
-    /// </summary>
-    /// <param name="logDirectory">Directory to write ErrorLog_yyyy-MM.txt files into.</param>
     public static void Initialize(string logDirectory)
     {
         try
@@ -26,9 +19,6 @@ public static class ErrorLoggingService
         }
     }
 
-    /// <summary>
-    /// Logs informational messages.
-    /// </summary>
     public static Task LogInfo(
         string message,
         [CallerMemberName] string caller = "")
@@ -37,12 +27,10 @@ public static class ErrorLoggingService
             "INFO",
             message,
             null,
-            caller);
+            caller,
+            flushToDisk: false);
     }
 
-    /// <summary>
-    /// Logs warning messages.
-    /// </summary>
     public static Task LogWarning(
         string message,
         Exception? exception = null,
@@ -52,12 +40,10 @@ public static class ErrorLoggingService
             "WARN",
             message,
             exception,
-            caller);
+            caller,
+            flushToDisk: true);
     }
 
-    /// <summary>
-    /// Logs error messages.
-    /// </summary>
     public static Task LogError(
         string message,
         Exception? exception = null,
@@ -67,17 +53,16 @@ public static class ErrorLoggingService
             "ERROR",
             message,
             exception,
-            caller);
+            caller,
+            flushToDisk: true);
     }
 
-    /// <summary>
-    /// Internal logging implementation.
-    /// </summary>
     private static Task Log(
         string level,
         string message,
         Exception? exception,
-        string caller)
+        string caller,
+        bool flushToDisk)
     {
         try
         {
@@ -111,7 +96,7 @@ public static class ErrorLoggingService
                 }
             }
 
-            _errorLogger.Log(line);
+            _errorLogger.Log(line, flushToDisk);
         }
         catch
         {
@@ -121,9 +106,6 @@ public static class ErrorLoggingService
         return Task.CompletedTask;
     }
 
-    /// <summary>
-    /// Stops the error logging service.
-    /// </summary>
     public static void Shutdown()
     {
         try

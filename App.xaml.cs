@@ -46,6 +46,8 @@ public partial class App : Application
     UndaiSettingStorageService _undaiSettingStorageService = null!;
     PinStorageService _pinStorageService = null!;
 
+    public static TcpTrafficLogService TcpLog { get; private set; } = null!;
+
     private string _appDataDirectory = string.Empty;
 
     protected override void OnStartup(StartupEventArgs e)
@@ -73,6 +75,8 @@ public partial class App : Application
 
             ErrorLoggingService.Initialize(Path.Combine(_appDataDirectory, LogFolderName));
             _ = ErrorLoggingService.LogInfo("Application starting.");
+
+            TcpLog = new TcpTrafficLogService(Path.Combine(_appDataDirectory, LogFolderName));
 
             _navigationStore = new NavigationStore();
             _viewModelStore = new ViewModelStore();
@@ -165,6 +169,7 @@ public partial class App : Application
         }
         finally
         {
+            TcpLog.Dispose();
             base.OnExit(e);
         }
     }

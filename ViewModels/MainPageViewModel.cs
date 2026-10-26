@@ -57,11 +57,11 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
 
     public MainPageViewModel
     (
-        string tempAppData, 
-        ViewModelStore viewModelStore, 
+        string tempAppData,
+        ViewModelStore viewModelStore,
         UndaiSettingStorageService undaiSettingStorageService,
         PinStorageService pinStorageService,
-        NavigationService settingPageNavigationService, 
+        NavigationService settingPageNavigationService,
         NavigationService systemResetSettingPageNavigationService)
     {
         _tempAppData = tempAppData;
@@ -124,10 +124,16 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
     private double _logoutHoldProgress; // 0.0 to 1.0
 
     [ObservableProperty]
+    private double _homePeakHoldProgress; // 0.0 to 1.0
+
+    [ObservableProperty]
     private bool _isDisconnectHolding;
 
     [ObservableProperty]
     private bool _isLogoutHolding;
+
+    [ObservableProperty]
+    private bool _isHomePeakHolding;
 
     [ObservableProperty]
     private string _logoutButtonHoverColor = LogoutButtonHoverRedColor;
@@ -210,7 +216,13 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
     private string _latitude = "0.00000";
 
     [ObservableProperty]
+    private string _displayLatitude = "0.00000";
+
+    [ObservableProperty]
     private string _longitude = "0.00000";
+
+    [ObservableProperty]
+    private string _displayLongitude = "0.00000";
 
     [ObservableProperty]
     private bool _isHoming;
@@ -252,6 +264,8 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
     private string CurrentSpeedModeName => IsHighSpeed ? "High" : IsLowSpeed ? "Low" : "Inching";
 
     private string? _activeJogDirection;
+
+    private string? _activeOperation;
 
     private bool CanAlarmReset() => HasAlarm;
 
@@ -400,12 +414,20 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
     {
         Safe(nameof(SelectSpeedMode), () =>
         {
-            IsHighSpeed = mode == "High";
-            IsLowSpeed = mode == "Low";
-            IsInching = mode == "Inching";
+            switch (mode)
+            {
+                case "High":
+                    _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 18);
+                    break;
+                case "Low":
+                    _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 19);
+                    break;
+                case "Inching":
+                    _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 20);
+                    break;
+            }
 
             _ = ErrorLoggingService.LogInfo($"Speed mode: {CurrentSpeedModeName}");
-            // TODO: send speed mode to the device.
         });
     }
 
@@ -420,6 +442,21 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
             }
 
             _activeJogDirection = direction;
+            switch (_activeJogDirection)
+            {
+                case "Up":
+                    _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 1);
+                    break;
+                case "Down":
+                    _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 3);
+                    break;
+                case "CCW":
+                    _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 5);
+                    break;
+                case "CW":
+                    _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 7);
+                    break;
+            }
             _ = ErrorLoggingService.LogInfo($"Jog start: {direction} ({CurrentSpeedModeName})");
             // TODO: send "start jog" for this direction at the selected speed mode.
         });
@@ -436,6 +473,23 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
             }
 
             string stopped = _activeJogDirection;
+
+            switch (_activeJogDirection)
+            {
+                case "Up":
+                    _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 2);
+                    break;
+                case "Down":
+                    _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 4);
+                    break;
+                case "CCW":
+                    _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 6);
+                    break;
+                case "CW":
+                    _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 8);
+                    break;
+            }
+
             _activeJogDirection = null;
 
             _ = ErrorLoggingService.LogInfo($"Jog stop: {stopped}");
@@ -452,6 +506,7 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
             {
                 return;
             }
+            _mainPageModel.SendTcpMessage(message: $"R,1,{angle},0,0", isCommand: true, commandNo: 9);
 
             _ = ErrorLoggingService.LogInfo($"Go to elevation angle: {ElevationAngleInput}");
             // TODO: validate range, then send the position command.
@@ -467,6 +522,7 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
             {
                 return;
             }
+            _mainPageModel.SendTcpMessage(message: $"R,2,{angle},0,0", isCommand: true, commandNo: 10);
 
             _ = ErrorLoggingService.LogInfo($"Go to azimuth angle: {AzimuthAngleInput}");
             // TODO: validate range, then send the position command.
@@ -478,6 +534,7 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
     {
         Safe(nameof(SaveAngle), () =>
         {
+            _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 21);
             _ = ErrorLoggingService.LogInfo("Save angle requested.");
             // TODO: store the current angles.
         });
@@ -488,6 +545,7 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
     {
         Safe(nameof(LoadAngle), () =>
         {
+            _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 22);
             _ = ErrorLoggingService.LogInfo("Load angle requested.");
             // TODO: recall the stored angles.
         });
@@ -508,28 +566,105 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
                 UnitLabel = "DD";
                 isDDvalue = true;
             }
+            UpdatePositionValues();
             _ = ErrorLoggingService.LogInfo("Coordinate unit button pressed.");
-            // TODO: switch the coordinate format and update UnitLabel / Latitude / Longitude.
+            // TODO: switch the coordinate format and update UnitLabel / DisplayLatitude / DisplayLongitude.
         });
     }
 
     [RelayCommand]
-    private void Home()
+    private void EditInstallation()
     {
-        Safe(nameof(Home), () =>
+        if (
+        double.TryParse(Latitude, out double tempLatitude) && double.TryParse(Longitude, out double tempLongitude))
         {
-            _ = ErrorLoggingService.LogInfo("Home requested.");
-            // TODO: send home command, set IsHoming while it runs.
+            var dialogViewModel = new InstallationEditViewModel(IsManualGps, tempLatitude, tempLongitude);
+
+            var dialog = new InstallationEditDialog
+            {
+                DataContext = dialogViewModel,
+                Owner = Application.Current?.MainWindow,
+            };
+
+            // false = cancelled or closed: nothing changes on the main screen.
+            if (dialog.ShowDialog() != true)
+            {
+                return;
+            }
+
+            bool wasManual = IsManualGps;
+            IsManualGps = dialogViewModel.IsManualGps;
+
+            if (IsManualGps)
+            {
+                _manualLatitude = dialogViewModel.ResultLatitude;
+                _manualLongitude = dialogViewModel.ResultLongitude;
+
+                // Assumes Latitude / Longitude are string properties (the screen shows "0.00000").
+                Latitude = _manualLatitude.ToString("0.00000", CultureInfo.InvariantCulture);
+                Longitude = _manualLongitude.ToString("0.00000", CultureInfo.InvariantCulture);
+            }
+            else if (wasManual)
+            {
+                // Back to auto: clear the typed values so they are not mistaken for a live GPS fix.
+                // The next GPS receiver update fills them in again.
+                Latitude = "0.00000";
+                Longitude = "0.00000";
+            }
+            UpdatePositionValues();
+        }
+    }
+
+    [RelayCommand]
+    private void HomePeakButtonPressed(string? operation)
+    {
+        Safe(nameof(HomePeakButtonPressed), () =>
+        {
+            if (string.IsNullOrEmpty(operation))
+            {
+                return;
+            }
+
+            _activeOperation = operation;
+
+            switch (_activeOperation)
+            {
+                case "Home":
+                    _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 2);
+                    break;
+                case "Peak":
+                    _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 4);
+                    break;
+            }
+            _ = ErrorLoggingService.LogInfo($"Operation start: {operation}");
         });
     }
 
     [RelayCommand]
-    private void PeakSearch()
+    private void HomePeakButtonReleased(string? operation)
     {
-        Safe(nameof(PeakSearch), () =>
+        Safe(nameof(HomePeakButtonReleased), () =>
         {
-            _ = ErrorLoggingService.LogInfo("Peak search requested.");
-            // TODO: send peak search command, set IsPeakSearching while it runs.
+            if (_activeOperation is null)
+            {
+                return; // already released
+            }
+
+            string released = _activeOperation;
+
+            switch (_activeOperation)
+            {
+                case "Home":
+                    _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 2);
+                    break;
+                case "Peak":
+                    _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 4);
+                    break;
+            }
+
+            _activeOperation = null;
+
+            _ = ErrorLoggingService.LogInfo($"Operation released: {operation}");
         });
     }
 
@@ -542,7 +677,7 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
             _activeJogDirection = null;
             IsHoming = false;
             IsPeakSearching = false;
-
+            _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 30);
             _ = ErrorLoggingService.LogWarning("STOP pressed.");
             // TODO: send stop to the device FIRST, bypassing any queue.
         });
@@ -558,44 +693,6 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
         });
     }
 
-    [RelayCommand]
-    private void EditInstallation()
-    {
-        var dialogViewModel = new InstallationEditViewModel(IsManualGps, _manualLatitude, _manualLongitude);
-
-        var dialog = new InstallationEditDialog
-        {
-            DataContext = dialogViewModel,
-            Owner = Application.Current?.MainWindow,
-        };
-
-        // false = cancelled or closed: nothing changes on the main screen.
-        if (dialog.ShowDialog() != true)
-        {
-            return;
-        }
-
-        bool wasManual = IsManualGps;
-        IsManualGps = dialogViewModel.IsManualGps;
-
-        if (IsManualGps)
-        {
-            _manualLatitude = dialogViewModel.ResultLatitude;
-            _manualLongitude = dialogViewModel.ResultLongitude;
-
-            // Assumes Latitude / Longitude are string properties (the screen shows "0.00000").
-            Latitude = _manualLatitude.ToString("0.00000", CultureInfo.InvariantCulture);
-            Longitude = _manualLongitude.ToString("0.00000", CultureInfo.InvariantCulture);
-        }
-        else if (wasManual)
-        {
-            // Back to auto: clear the typed values so they are not mistaken for a live GPS fix.
-            // The next GPS receiver update fills them in again.
-            Latitude = "0.00000";
-            Longitude = "0.00000";
-        }
-    }
-
     private void InitializeTcpConnection()
     {
         _tcpServerConnectionService = new TcpServerConnectionService(_tempAppData);
@@ -603,10 +700,10 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
         _tcpServerConnectionService.MessageReceived += OnTcpMessageReceived;
     }
 
-    private void OnSpeedModeindexChanged(int newIndex)
+    partial void OnSpeedModeIndexChanged(int value)
     {
         // 0=Inching, 1=Low, 2=High
-        switch (newIndex)
+        switch (value)
         {
             case 0:
                 IsInching = true;
@@ -624,7 +721,7 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
                 IsHighSpeed = true;
                 break;
             default:
-                _ = ErrorLoggingService.LogWarning($"Invalid SpeedModeIndex: {newIndex}");
+                _ = ErrorLoggingService.LogWarning($"Invalid SpeedModeIndex: {value}");
                 break;
         }
     }
@@ -749,7 +846,7 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
                 break;
             case 2:
                 HomeBtnColor = "#fdcd75"; // orange
-                PeakSearchBtnColor = "White"; 
+                PeakSearchBtnColor = "White";
                 break;
             case 3:
                 HomeBtnColor = "White";
@@ -908,17 +1005,29 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
         return double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out angle);
     }
 
-    public void ChangePositionUnit(string value, int position)
+    void UpdatePositionValues()
     {
+        ChangePositionUnit(Latitude, 0, true);
+        ChangePositionUnit(Longitude, 1, true);
+    }
+
+    public void ChangePositionUnit(string value, int position, bool updateUnit = false) // position: 0=Latitude, 1=Longitude
+    {
+        if (IsManualGps && !updateUnit)
+        {
+            return;
+        }
         if (isDDvalue)
         {
             if (position == 0)
             {
                 Latitude = value;
+                DisplayLatitude = Latitude;
             }
             else
             {
                 Longitude = value;
+                DisplayLongitude = Longitude;
             }
         }
         else
@@ -933,7 +1042,16 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
                 wholeMinutes = (int)minutes;
                 seconds = (int)((minutes - wholeMinutes) * 60);
             }
-            Latitude = $"{degrees}° {wholeMinutes}' {seconds}\"";
+            if (position == 0)
+            {
+                Latitude = value;
+                DisplayLatitude = $"{degrees}° {wholeMinutes}' {seconds}\"";
+            }
+            else
+            {
+                Longitude = value;
+                DisplayLongitude = $"{degrees}° {wholeMinutes}' {seconds}\"";
+            }
         }
     }
 }
