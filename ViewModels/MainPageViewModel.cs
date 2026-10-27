@@ -39,6 +39,10 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
     private CancellationTokenSource? _logoutHoldCts;
     private const int LogoutHoldMs = 2000;
 
+    private Stopwatch? _homePeakButtonHoldStopwatch;
+    private CancellationTokenSource? _homePeakButtonHoldCts;
+    private const int HomePeakButtonHoldMs = 2000;
+
     private const string ConnectButtonRedColor = "#dc5349";
     private const string ConnectButtonBlueColor = "#0d35b2";
     private const string ConnectButtonHoverRedColor = "#873a35";
@@ -133,7 +137,10 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
     private bool _isLogoutHolding;
 
     [ObservableProperty]
-    private bool _isHomePeakHolding;
+    private bool _isHomeHolding;
+
+    [ObservableProperty]
+    private bool _isPeakHolding;
 
     [ObservableProperty]
     private string _logoutButtonHoverColor = LogoutButtonHoverRedColor;
@@ -620,23 +627,27 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
     {
         Safe(nameof(HomePeakButtonPressed), () =>
         {
-            if (string.IsNullOrEmpty(operation))
+            try
             {
-                return;
+                if (string.IsNullOrEmpty(operation))
+                {
+                    return;
+                }
+                _activeOperation = operation;
+
+                _homePeakButtonHoldCts = new CancellationTokenSource();
+                _homePeakButtonHoldStopwatch = Stopwatch.StartNew();
+                HomePeakHoldProgress = 0;
+                SetHolding(operation);
+
+                _ = MonitorHomePeakButtonHoldAsync(_homePeakButtonHoldCts.Token, operation);
+
+                _ = ErrorLoggingService.LogInfo($"Operation start: {operation}");
             }
-
-            _activeOperation = operation;
-
-            switch (_activeOperation)
+            catch (Exception ex)
             {
-                case "Home":
-                    _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 2);
-                    break;
-                case "Peak":
-                    _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 4);
-                    break;
+                _ = ErrorLoggingService.LogError($"Error starting {operation} hold.", ex);
             }
-            _ = ErrorLoggingService.LogInfo($"Operation start: {operation}");
         });
     }
 
@@ -651,20 +662,14 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
             }
 
             string released = _activeOperation;
-
-            switch (_activeOperation)
-            {
-                case "Home":
-                    _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 2);
-                    break;
-                case "Peak":
-                    _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 4);
-                    break;
-            }
-
             _activeOperation = null;
 
-            _ = ErrorLoggingService.LogInfo($"Operation released: {operation}");
+            _homePeakButtonHoldCts?.Cancel();
+            _homePeakButtonHoldStopwatch?.Stop();
+            SetHolding(null);
+            HomePeakHoldProgress = 0;
+
+            _ = ErrorLoggingService.LogInfo($"Operation released: {released}");
         });
     }
 
@@ -953,6 +958,68 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
         {
             IsLogoutHolding = false;
         }
+    }
+
+    private async Task MonitorHomePeakButtonHoldAsync(CancellationToken token, string? operation)
+    {
+        try
+        {
+            while (!token.IsCancellationRequested)
+            {
+                if (_homePeakButtonHoldStopwatch != null)
+                {
+                    double elapsed = _homePeakButtonHoldStopwatch.ElapsedMilliseconds;
+                    HomePeakHoldProgress = Math.Min(elapsed / HomePeakButtonHoldMs, 1.0);
+
+                    if (elapsed >= HomePeakButtonHoldMs)
+                    {
+                        _activeOperation = null;
+                        SetHolding(null);
+                        HomePeakHoldProgress = 0;
+
+                        if(operation is null)
+                        {
+                            return;
+                        }
+
+                        switch (operation)
+                        {
+                            case "Home":
+                                _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 2);
+                                break;
+                            case "Peak":
+                                _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 4);
+                                break;
+                        }
+
+                        return;
+                    }
+                }
+
+                await Task.Delay(50, token);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // released before 2s — normal, not an error
+        }
+        catch (Exception ex)
+        {
+            _ = ErrorLoggingService.LogError("Error monitoring HomePeak hold duration.", ex);
+        }
+        finally
+        {
+            if (!token.IsCancellationRequested)
+            {
+                SetHolding(null);
+            }
+        }
+    }
+
+    private void SetHolding(string? operation)
+    {
+        IsHomeHolding = operation == "Home";
+        IsPeakHolding = operation == "Peak";
     }
 
     private async Task ConfirmAndLogoutAsync()

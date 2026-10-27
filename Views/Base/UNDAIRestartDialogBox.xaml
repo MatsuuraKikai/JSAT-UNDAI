@@ -12,13 +12,22 @@
     ShowInTaskbar="False"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
+
+    <!--  =====================================================  -->
+    <!--  ROOT LAYOUT: dialog background (beige)  -->
+    <!--  =====================================================  -->
     <Grid Background="#e6e6ca">
+
+        <!--  =====================================================  -->
+        <!--  CONTENT: vertical stack (image / message / OK button)  -->
+        <!--  =====================================================  -->
         <StackPanel
             Width="800"
             Height="580"
             HorizontalAlignment="Center"
             VerticalAlignment="Center">
 
+            <!--  STACK 1) Restart guide image  -->
             <Image
                 Width="500"
                 Height="250"
@@ -29,12 +38,15 @@
                 Source="\RESOURCES\ResetUndaiForSettingChanged.png"
                 Stretch="UniformToFill" />
 
+            <!--  STACK 2) Message: "雲台を再起動して下さい。" (please restart the undai)  -->
             <TextBlock
                 Margin="10"
                 HorizontalAlignment="Center"
                 FontSize="40"
                 Foreground="Black"
                 Text="雲台を再起動して下さい。" />
+
+            <!--  STACK 3) OK button: "OK" (no Command is bound)  -->
             <Button
                 Width="150"
                 Height="50"

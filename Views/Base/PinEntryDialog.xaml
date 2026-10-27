@@ -15,15 +15,24 @@
     WindowStartupLocation="CenterOwner"
     mc:Ignorable="d">
 
+    <!--  =====================================================  -->
+    <!--  ROOT LAYOUT: prompt / PIN display / error message / buttons  -->
+    <!--  =====================================================  -->
     <Grid Margin="30">
         <Grid.RowDefinitions>
+            <!--  Row 0: prompt text  -->
             <RowDefinition Height="Auto" />
+            <!--  Row 1: PIN display box (with hidden input)  -->
             <RowDefinition Height="Auto" />
+            <!--  Row 2: error message  -->
             <RowDefinition Height="Auto" />
+            <!--  Row 3: OK / cancel buttons  -->
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!--  Prompt  -->
+        <!--  =====================================================  -->
+        <!--  ROW 0: PROMPT "暗証番号（4桁）を入力してください" (enter the 4 digit PIN)  -->
+        <!--  =====================================================  -->
         <TextBlock
             Grid.Row="0"
             HorizontalAlignment="Center"
@@ -32,11 +41,15 @@
             Foreground="{StaticResource TextPrimaryBrush}"
             Text="暗証番号（4桁）を入力してください" />
 
+        <!--  =====================================================  -->
+        <!--  ROW 1: PIN INPUT (visible display box overlaid by a transparent PasswordBox)  -->
+        <!--  =====================================================  -->
         <Grid
             Grid.Row="1"
             Width="300"
             Height="90"
             Margin="0,20,0,0">
+            <!--  Layer 1 (back): PIN display box (shows the masked PIN from the view model)  -->
             <Border
                 Background="#70000000"
                 CornerRadius="10"
@@ -46,6 +59,7 @@
                     Style="{StaticResource ValueBoxTextStyle}"
                     Text="{Binding PinDisplay}" />
             </Border>
+            <!--  Layer 2 (front): Hidden PasswordBox (Opacity 0, receives the key input, max 4 characters)  -->
             <PasswordBox
                 x:Name="PinBox"
                 FontSize="50"
@@ -55,7 +69,9 @@
                 PreviewTextInput="OnPinPreviewTextInput" />
         </Grid>
 
-        <!--  Error message (empty when everything is fine)  -->
+        <!--  =====================================================  -->
+        <!--  ROW 2: ERROR MESSAGE (empty when everything is fine)  -->
+        <!--  =====================================================  -->
         <TextBlock
             Grid.Row="2"
             MinHeight="44"
@@ -66,13 +82,19 @@
             Text="{Binding ErrorMessage}"
             TextWrapping="Wrap" />
 
-        <!--  OK / cancel  -->
+        <!--  =====================================================  -->
+        <!--  ROW 3: BUTTONS (OK on the left, cancel on the right)  -->
+        <!--  =====================================================  -->
         <Grid Grid.Row="3" Margin="0,8">
             <Grid.ColumnDefinitions>
+                <!--  Col 0: OK button  -->
                 <ColumnDefinition Width="*" />
+                <!--  Col 1: spacer  -->
                 <ColumnDefinition Width="30" />
+                <!--  Col 2: cancel button  -->
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
+            <!--  Col 0: OK button "OK" (default button, triggered by the Enter key)  -->
             <Button
                 Grid.Column="0"
                 Command="{Binding OkCommand}"
@@ -80,6 +102,7 @@
                 FontSize="30"
                 IsDefault="True"
                 Style="{StaticResource PrimaryButtonStyle}" />
+            <!--  Col 2: Cancel button "キャンセル" (cancel button, triggered by the Esc key, closes the dialog)  -->
             <Button
                 Grid.Column="2"
                 Content="キャンセル"

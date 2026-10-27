@@ -8,23 +8,38 @@
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     mc:Ignorable="d">
     <Viewbox Style="{StaticResource DesignCanvasViewboxStyle}">
+
+        <!--  =====================================================  -->
+        <!--  ROOT LAYOUT: IP address info / reset guide image / bottom bar  -->
+        <!--  =====================================================  -->
         <Grid Style="{StaticResource DesignCanvasGridStyle}">
             <Grid.RowDefinitions>
+                <!--  Row 0: IP address info (default / current)  -->
                 <RowDefinition Height="Auto" />
+                <!--  Row 1: reset guide image  -->
                 <RowDefinition Height="*" />
+                <!--  Row 2: bottom bar  -->
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
+            <!--  =====================================================  -->
+            <!--  ROW 0: IP ADDRESS INFO (default IP / current IP)  -->
+            <!--  =====================================================  -->
             <Grid Grid.Row="0">
                 <Grid.ColumnDefinitions>
+                    <!--  Col 0: labels  -->
                     <ColumnDefinition Width="400" />
+                    <!--  Col 1: value display boxes  -->
                     <ColumnDefinition Width="500" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
+                    <!--  Row 0: default IP address  -->
                     <RowDefinition Height="Auto" />
+                    <!--  Row 1: current IP address  -->
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
+                <!--  Row 0: Default IP address label and value  -->
                 <TextBlock
                     Grid.Row="0"
                     Grid.Column="0"
@@ -32,6 +47,7 @@
                     FontSize="30"
                     Text="Default IP Address" />
 
+                <!--  Row 0: Default IP address value box (read only display)  -->
                 <Border
                     Grid.Row="0"
                     Grid.Column="1"
@@ -46,6 +62,7 @@
                         Text="{Binding DefaultIPAddress}" />
                 </Border>
 
+                <!--  Row 1: Current IP address label and value  -->
                 <TextBlock
                     Grid.Row="1"
                     Grid.Column="0"
@@ -53,6 +70,7 @@
                     FontSize="30"
                     Text="Current IP Address" />
 
+                <!--  Row 1: Current IP address value box (read only display)  -->
                 <Border
                     Grid.Row="1"
                     Grid.Column="1"
@@ -68,6 +86,10 @@
                         Text="{Binding CurrentIPAddress}" />
                 </Border>
             </Grid>
+
+            <!--  =====================================================  -->
+            <!--  ROW 1: RESET GUIDE IMAGE (shown only when ResetUndaiImgVisibility is true)  -->
+            <!--  =====================================================  -->
             <Image
                 Grid.Row="1"
                 Width="1500"
@@ -75,7 +97,13 @@
                 Source="/Resources/ResetUndaiForDefaultIP.png"
                 Stretch="UniformToFill"
                 Visibility="{Binding ResetUndaiImgVisibility, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+            <!--  =====================================================  -->
+            <!--  ROW 2: BOTTOM BAR (back on the left, reset to default on the right)  -->
+            <!--  =====================================================  -->
             <Grid Grid.Row="2">
+
+                <!--  BOTTOM Right: Reset to default button: "デフォルトにリセット"  -->
                 <Border HorizontalAlignment="Right">
                     <ui:Button
                         Width="300"
@@ -84,6 +112,8 @@
                         FontSize="30"
                         Style="{StaticResource PrimaryButtonStyle}" />
                 </Border>
+
+                <!--  BOTTOM Left: Back button: "戻る" (returns to main page)  -->
                 <Border HorizontalAlignment="Left">
 
                     <ui:Button

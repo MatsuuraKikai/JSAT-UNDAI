@@ -13,17 +13,34 @@
     mc:Ignorable="d">
 
     <Viewbox Style="{StaticResource DesignCanvasViewboxStyle}">
+
+        <!--  =====================================================  -->
+        <!--  ROOT LAYOUT: content (jog cards / encoder reset / status) / bottom bar  -->
+        <!--  =====================================================  -->
         <Grid Style="{StaticResource DesignCanvasGridStyle}">
 
             <Grid.RowDefinitions>
+                <!--  Row 0: content  -->
                 <RowDefinition Height="*" />
+                <!--  Row 1: bottom bar  -->
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
+
+            <!--  =====================================================  -->
+            <!--  ROW 0: CONTENT (jog cards + encoder reset buttons + status message)  -->
+            <!--  =====================================================  -->
             <StackPanel Grid.Row="0">
+
+                <!--  =====================================================  -->
+                <!--  CONTENT 1) JOG CARDS (left = elevation, right = azimuth)  -->
+                <!--  =====================================================  -->
                 <Grid>
                     <Grid.RowDefinitions>
+                        <!--  Row 0: elevation card + azimuth card  -->
                         <RowDefinition Height="Auto" />
+                        <!--  Row 1: (unused)  -->
                         <RowDefinition Height="*" />
+                        <!--  Row 2: (unused)  -->
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
@@ -33,34 +50,49 @@
                         Margin="0,100,0,0"
                         HorizontalAlignment="Center">
                         <Grid.ColumnDefinitions>
+                            <!--  Col 0: elevation card  -->
                             <ColumnDefinition Width="600" />
+                            <!--  Col 1: spacer  -->
                             <ColumnDefinition Width="30" />
+                            <!--  Col 2: azimuth card  -->
                             <ColumnDefinition Width="600" />
                         </Grid.ColumnDefinitions>
 
-                        <!--  Elevation: [UP]  current angle  [DOWN]  -->
+                        <!--  =====================================================  -->
+                        <!--  CARD Col 0: ELEVATION "仰角" ([UP] current angle [DOWN])  -->
+                        <!--  =====================================================  -->
                         <Border
                             Grid.Column="0"
                             Padding="20,5,20,20"
                             Style="{StaticResource CardBorderStyle}">
                             <Grid>
                                 <Grid.RowDefinitions>
+                                    <!--  Row 0: card header (title + current value)  -->
                                     <RowDefinition Height="Auto" />
+                                    <!--  Row 1: spacer  -->
                                     <RowDefinition Height="10" />
+                                    <!--  Row 2: jog buttons (up / down)  -->
                                     <RowDefinition Height="*" />
+                                    <!--  Row 3: spacer  -->
                                     <RowDefinition Height="10" />
+                                    <!--  Row 4: go-to angle (position button + input)  -->
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
 
+                                <!--  Row 0: Card header (Col 0: title, Col 1: current value box)  -->
                                 <Grid Grid.Row="0" VerticalAlignment="Center">
                                     <Grid.ColumnDefinitions>
+                                        <!--  Col 0: title  -->
                                         <ColumnDefinition Width="*" />
+                                        <!--  Col 1: current value box  -->
                                         <ColumnDefinition Width="*" />
+                                        <!--  Col 2: (unused)  -->
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
+                                    <!--  Col 0: Card title "仰角" (elevation)  -->
                                     <TextBlock Style="{StaticResource CardHeaderTextStyle}" Text="仰角" />
 
-                                    <!--  Current elevation: same black value box as the rest of the screen  -->
+                                    <!--  Col 1: Current elevation: same black value box as the rest of the screen  -->
                                     <Border
                                         Grid.Column="1"
                                         Height="90"
@@ -69,15 +101,19 @@
                                         Style="{StaticResource ValueBoxBorderStyle}">
                                         <Grid Margin="0,2,0,4">
                                             <Grid.RowDefinitions>
+                                                <!--  Row 0: caption "現在値"  -->
                                                 <RowDefinition Height="Auto" />
+                                                <!--  Row 1: value (shrinks to fit)  -->
                                                 <RowDefinition Height="*" />
                                             </Grid.RowDefinitions>
+                                            <!--  Row 0: Caption "現在値" (current value)  -->
                                             <TextBlock
                                                 Grid.Row="0"
                                                 HorizontalAlignment="Center"
                                                 FontSize="20"
                                                 Foreground="#B0B0B0"
                                                 Text="現在値" />
+                                            <!--  Row 1: Current elevation value with degree sign  -->
                                             <Viewbox
                                                 Grid.Row="1"
                                                 Stretch="Uniform"
@@ -91,16 +127,21 @@
 
                                 </Grid>
 
+                                <!--  Row 2: Jog buttons (Col 0: up, Col 2: down)  -->
                                 <Grid
                                     Grid.Row="2"
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center">
                                     <Grid.ColumnDefinitions>
+                                        <!--  Col 0: up button  -->
                                         <ColumnDefinition Width="Auto" />
+                                        <!--  Col 1: spacer  -->
                                         <ColumnDefinition Width="50" />
+                                        <!--  Col 2: down button  -->
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
 
+                                    <!--  Col 0: Jog UP button (press = start jog, release / leave / lost capture = stop jog)  -->
                                     <Button
                                         Grid.Column="0"
                                         Width="170"
@@ -111,21 +152,26 @@
                                         Stylus.IsPressAndHoldEnabled="False">
                                         <Image Width="120" Source="/Resources/UP ARROW.png" />
                                         <i:Interaction.Triggers>
+                                            <!--  Mouse down: start jogging up  -->
                                             <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
                                                 <i:InvokeCommandAction Command="{Binding JogPressedCommand}" CommandParameter="Up" />
                                             </i:EventTrigger>
+                                            <!--  Mouse up: stop jogging  -->
                                             <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
                                                 <i:InvokeCommandAction Command="{Binding JogReleasedCommand}" CommandParameter="Up" />
                                             </i:EventTrigger>
+                                            <!--  Mouse left the button: stop jogging  -->
                                             <i:EventTrigger EventName="MouseLeave">
                                                 <i:InvokeCommandAction Command="{Binding JogReleasedCommand}" CommandParameter="Up" />
                                             </i:EventTrigger>
+                                            <!--  Mouse capture lost: stop jogging  -->
                                             <i:EventTrigger EventName="LostMouseCapture">
                                                 <i:InvokeCommandAction Command="{Binding JogReleasedCommand}" CommandParameter="Up" />
                                             </i:EventTrigger>
                                         </i:Interaction.Triggers>
                                     </Button>
 
+                                    <!--  Col 2: Jog DOWN button (press = start jog, release / leave / lost capture = stop jog)  -->
                                     <Button
                                         Grid.Column="2"
                                         Width="170"
@@ -136,15 +182,19 @@
                                         Stylus.IsPressAndHoldEnabled="False">
                                         <Image Width="120" Source="/Resources/DOWN ARROW.png" />
                                         <i:Interaction.Triggers>
+                                            <!--  Mouse down: start jogging down  -->
                                             <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
                                                 <i:InvokeCommandAction Command="{Binding JogPressedCommand}" CommandParameter="Down" />
                                             </i:EventTrigger>
+                                            <!--  Mouse up: stop jogging  -->
                                             <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
                                                 <i:InvokeCommandAction Command="{Binding JogReleasedCommand}" CommandParameter="Down" />
                                             </i:EventTrigger>
+                                            <!--  Mouse left the button: stop jogging  -->
                                             <i:EventTrigger EventName="MouseLeave">
                                                 <i:InvokeCommandAction Command="{Binding JogReleasedCommand}" CommandParameter="Down" />
                                             </i:EventTrigger>
+                                            <!--  Mouse capture lost: stop jogging  -->
                                             <i:EventTrigger EventName="LostMouseCapture">
                                                 <i:InvokeCommandAction Command="{Binding JogReleasedCommand}" CommandParameter="Down" />
                                             </i:EventTrigger>
@@ -152,23 +202,28 @@
                                     </Button>
                                 </Grid>
 
-                                <!--  Go-to angle: [位置決め] [value box -> keypad]  -->
+                                <!--  Row 4: Go-to angle: [位置決め] [value box -> keypad]  -->
                                 <Grid
                                     Grid.Row="4"
                                     Width="500"
                                     Height="70"
                                     Margin="0,10,0,0">
                                     <Grid.ColumnDefinitions>
+                                        <!--  Col 0: position button  -->
                                         <ColumnDefinition Width="*" />
+                                        <!--  Col 1: spacer  -->
                                         <ColumnDefinition Width="15" />
+                                        <!--  Col 2: angle input  -->
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
+                                    <!--  Col 0: Position button "位置決め" (moves to the entered elevation angle)  -->
                                     <Button
                                         Grid.Column="0"
                                         Command="{Binding SetElevationAngleCommand}"
                                         Content="位置決め"
                                         FontSize="30"
                                         Style="{StaticResource PanelButtonStyle}" />
+                                    <!--  Col 2: Elevation angle input (decimal only)  -->
                                     <ui:TextBox
                                         Grid.Column="2"
                                         VerticalContentAlignment="Center"
@@ -181,29 +236,41 @@
                             </Grid>
                         </Border>
 
-                        <!--  Azimuth: [CCW]  current angle  [CW]  -->
+                        <!--  =====================================================  -->
+                        <!--  CARD Col 2: AZIMUTH "水平角" ([CCW] current angle [CW])  -->
+                        <!--  =====================================================  -->
                         <Border
                             Grid.Column="2"
                             Padding="20,5,20,20"
                             Style="{StaticResource CardBorderStyle}">
                             <Grid>
                                 <Grid.RowDefinitions>
+                                    <!--  Row 0: card header (title + current value)  -->
                                     <RowDefinition Height="Auto" />
+                                    <!--  Row 1: spacer  -->
                                     <RowDefinition Height="10" />
+                                    <!--  Row 2: jog buttons (CCW / CW)  -->
                                     <RowDefinition Height="*" />
+                                    <!--  Row 3: spacer  -->
                                     <RowDefinition Height="10" />
+                                    <!--  Row 4: go-to angle (position button + input)  -->
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
 
+                                <!--  Row 0: Card header (Col 0: title, Col 1: current value box)  -->
                                 <Grid Grid.Row="0" VerticalAlignment="Center">
                                     <Grid.ColumnDefinitions>
+                                        <!--  Col 0: title  -->
                                         <ColumnDefinition Width="*" />
+                                        <!--  Col 1: current value box  -->
                                         <ColumnDefinition Width="*" />
+                                        <!--  Col 2: (unused)  -->
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
+                                    <!--  Col 0: Card title "水平角" (azimuth)  -->
                                     <TextBlock Style="{StaticResource CardHeaderTextStyle}" Text="水平角" />
 
-                                    <!--  Current azimuth: same black value box as the rest of the screen  -->
+                                    <!--  Col 1: Current azimuth: same black value box as the rest of the screen  -->
                                     <Border
                                         Grid.Column="1"
                                         Height="90"
@@ -212,15 +279,19 @@
                                         Style="{StaticResource ValueBoxBorderStyle}">
                                         <Grid Margin="0,2,0,4">
                                             <Grid.RowDefinitions>
+                                                <!--  Row 0: caption "現在値"  -->
                                                 <RowDefinition Height="Auto" />
+                                                <!--  Row 1: value (shrinks to fit)  -->
                                                 <RowDefinition Height="*" />
                                             </Grid.RowDefinitions>
+                                            <!--  Row 0: Caption "現在値" (current value)  -->
                                             <TextBlock
                                                 Grid.Row="0"
                                                 HorizontalAlignment="Center"
                                                 FontSize="20"
                                                 Foreground="#B0B0B0"
                                                 Text="現在値" />
+                                            <!--  Row 1: Current azimuth value with degree sign  -->
                                             <Viewbox
                                                 Grid.Row="1"
                                                 Stretch="Uniform"
@@ -233,16 +304,21 @@
                                     </Border>
                                 </Grid>
 
+                                <!--  Row 2: Jog buttons (Col 0: counter-clockwise, Col 2: clockwise)  -->
                                 <Grid
                                     Grid.Row="2"
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center">
                                     <Grid.ColumnDefinitions>
+                                        <!--  Col 0: CCW button  -->
                                         <ColumnDefinition Width="Auto" />
+                                        <!--  Col 1: spacer  -->
                                         <ColumnDefinition Width="50" />
+                                        <!--  Col 2: CW button  -->
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
 
+                                    <!--  Col 0: Jog CCW (counter-clockwise) button (press = start jog, release / leave / lost capture = stop jog)  -->
                                     <Button
                                         Grid.Column="0"
                                         Width="170"
@@ -253,21 +329,26 @@
                                         Stylus.IsPressAndHoldEnabled="False">
                                         <Image Width="120" Source="/Resources/CCW ROTATE.png" />
                                         <i:Interaction.Triggers>
+                                            <!--  Mouse down: start jogging CCW  -->
                                             <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
                                                 <i:InvokeCommandAction Command="{Binding JogPressedCommand}" CommandParameter="CCW" />
                                             </i:EventTrigger>
+                                            <!--  Mouse up: stop jogging  -->
                                             <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
                                                 <i:InvokeCommandAction Command="{Binding JogReleasedCommand}" CommandParameter="CCW" />
                                             </i:EventTrigger>
+                                            <!--  Mouse left the button: stop jogging  -->
                                             <i:EventTrigger EventName="MouseLeave">
                                                 <i:InvokeCommandAction Command="{Binding JogReleasedCommand}" CommandParameter="CCW" />
                                             </i:EventTrigger>
+                                            <!--  Mouse capture lost: stop jogging  -->
                                             <i:EventTrigger EventName="LostMouseCapture">
                                                 <i:InvokeCommandAction Command="{Binding JogReleasedCommand}" CommandParameter="CCW" />
                                             </i:EventTrigger>
                                         </i:Interaction.Triggers>
                                     </Button>
 
+                                    <!--  Col 2: Jog CW (clockwise) button (press = start jog, release / leave / lost capture = stop jog)  -->
                                     <Button
                                         Grid.Column="2"
                                         Width="170"
@@ -278,15 +359,19 @@
                                         Stylus.IsPressAndHoldEnabled="False">
                                         <Image Width="120" Source="/Resources/CW ROTATE.png" />
                                         <i:Interaction.Triggers>
+                                            <!--  Mouse down: start jogging CW  -->
                                             <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
                                                 <i:InvokeCommandAction Command="{Binding JogPressedCommand}" CommandParameter="CW" />
                                             </i:EventTrigger>
+                                            <!--  Mouse up: stop jogging  -->
                                             <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
                                                 <i:InvokeCommandAction Command="{Binding JogReleasedCommand}" CommandParameter="CW" />
                                             </i:EventTrigger>
+                                            <!--  Mouse left the button: stop jogging  -->
                                             <i:EventTrigger EventName="MouseLeave">
                                                 <i:InvokeCommandAction Command="{Binding JogReleasedCommand}" CommandParameter="CW" />
                                             </i:EventTrigger>
+                                            <!--  Mouse capture lost: stop jogging  -->
                                             <i:EventTrigger EventName="LostMouseCapture">
                                                 <i:InvokeCommandAction Command="{Binding JogReleasedCommand}" CommandParameter="CW" />
                                             </i:EventTrigger>
@@ -294,23 +379,28 @@
                                     </Button>
                                 </Grid>
 
-                                <!--  Go-to angle: [位置決め] [value box -> keypad]  -->
+                                <!--  Row 4: Go-to angle: [位置決め] [value box -> keypad]  -->
                                 <Grid
                                     Grid.Row="4"
                                     Width="500"
                                     Height="70"
                                     Margin="0,10,0,0">
                                     <Grid.ColumnDefinitions>
+                                        <!--  Col 0: position button  -->
                                         <ColumnDefinition Width="*" />
+                                        <!--  Col 1: spacer  -->
                                         <ColumnDefinition Width="15" />
+                                        <!--  Col 2: angle input  -->
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
+                                    <!--  Col 0: Position button "位置決め" (moves to the entered azimuth angle)  -->
                                     <Button
                                         Grid.Column="0"
                                         Command="{Binding SetAzimuthAngleCommand}"
                                         Content="位置決め"
                                         FontSize="30"
                                         Style="{StaticResource PanelButtonStyle}" />
+                                    <!--  Col 2: Azimuth angle input (decimal only)  -->
                                     <ui:TextBox
                                         Grid.Column="2"
                                         VerticalContentAlignment="Center"
@@ -326,12 +416,19 @@
 
                 </Grid>
 
+                <!--  =====================================================  -->
+                <!--  CONTENT 2) ENCODER RESET BUTTONS (elevation / azimuth)  -->
+                <!--  =====================================================  -->
                 <Grid Margin="20" HorizontalAlignment="Center">
                     <Grid.ColumnDefinitions>
+                        <!--  Col 0: elevation encoder reset  -->
                         <ColumnDefinition Width="Auto" />
+                        <!--  Col 1: spacer  -->
                         <ColumnDefinition Width="20" />
+                        <!--  Col 2: azimuth encoder reset  -->
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
+                    <!--  Col 0: Elevation encoder reset button  -->
                     <Button
                         Grid.Column="0"
                         Width="320"
@@ -340,6 +437,7 @@
                         Content="Ele. Encorder Reset"
                         FontSize="30"
                         Style="{StaticResource SecondaryButtonStyle}" />
+                    <!--  Col 2: Azimuth encoder reset button  -->
                     <Button
                         Grid.Column="2"
                         Width="320"
@@ -350,14 +448,20 @@
                         Style="{StaticResource SecondaryButtonStyle}" />
                 </Grid>
 
+                <!--  =====================================================  -->
+                <!--  CONTENT 3) STATUS MESSAGE (header with clear button + scrollable message)  -->
+                <!--  =====================================================  -->
                 <StackPanel Grid.Row="1" HorizontalAlignment="Center">
+                    <!--  Status message header: label and clear button  -->
                     <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
 
+                        <!--  Header label "Status Message: "  -->
                         <ui:TextBlock
                             HorizontalAlignment="Center"
                             FontWeight="Bold"
                             Style="{StaticResource SettingLabelStyle}"
                             Text="Status Message: " />
+                        <!--  Clear status message button (reset icon)  -->
                         <ui:Button
                             Width="50"
                             Height="50"
@@ -367,6 +471,7 @@
                                                  Filled=True,
                                                  FontSize=30}" />
                     </StackPanel>
+                    <!--  Status message body (scrolls when the text is long)  -->
                     <ScrollViewer Height="300" VerticalScrollBarVisibility="Auto">
                         <ui:TextBlock
                             Width="1500"
@@ -379,7 +484,12 @@
 
 
             </StackPanel>
+
+            <!--  =====================================================  -->
+            <!--  ROW 1: BOTTOM BAR (back / top page, left aligned)  -->
+            <!--  =====================================================  -->
             <StackPanel Grid.Row="1" Orientation="Horizontal">
+                <!--  Back button: "戻る" (returns to setting page)  -->
                 <ui:Button
                     Width="235"
                     Height="70"
@@ -387,6 +497,7 @@
                     Content="戻る"
                     FontSize="30"
                     Style="{StaticResource SecondaryButtonStyle}" />
+                <!--  Top page button: "トップページ" (returns to main page)  -->
                 <ui:Button
                     Width="235"
                     Height="70"

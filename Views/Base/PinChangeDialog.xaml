@@ -11,6 +11,9 @@
     ShowInTaskbar="False"
     WindowStartupLocation="CenterOwner">
 
+    <!--  =====================================================  -->
+    <!--  WINDOW RESOURCES: local label style  -->
+    <!--  =====================================================  -->
     <Window.Resources>
         <!--  Local key on purpose: a view style with the same key as a shared one would override it  -->
         <Style x:Key="PinLabelStyle" TargetType="TextBlock">
@@ -20,19 +23,32 @@
         </Style>
     </Window.Resources>
 
+    <!--  =====================================================  -->
+    <!--  ROOT LAYOUT: title / current PIN / new PIN / confirm PIN / message / buttons  -->
+    <!--  =====================================================  -->
     <Grid Margin="30,20,30,25">
         <Grid.RowDefinitions>
+            <!--  Row 0: title  -->
             <RowDefinition Height="Auto" />
+            <!--  Row 1: spacer  -->
             <RowDefinition Height="20" />
+            <!--  Row 2: current PIN  -->
             <RowDefinition Height="Auto" />
+            <!--  Row 3: new PIN  -->
             <RowDefinition Height="Auto" />
+            <!--  Row 4: confirm new PIN  -->
             <RowDefinition Height="Auto" />
+            <!--  Row 5: hint / error message  -->
             <RowDefinition Height="Auto" />
+            <!--  Row 6: flexible gap  -->
             <RowDefinition Height="*" />
+            <!--  Row 7: OK / cancel buttons  -->
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!--  Title  -->
+        <!--  =====================================================  -->
+        <!--  ROW 0: TITLE "暗証番号の変更" (change PIN)  -->
+        <!--  =====================================================  -->
         <TextBlock
             Grid.Row="0"
             FontSize="32"
@@ -40,13 +56,19 @@
             Foreground="{StaticResource TextPrimaryBrush}"
             Text="暗証番号の変更" />
 
-        <!--  Current PIN  -->
+        <!--  =====================================================  -->
+        <!--  ROW 2: CURRENT PIN "暗証番号" (label + input)  -->
+        <!--  =====================================================  -->
         <Grid Grid.Row="2" Margin="0,0,0,12">
             <Grid.ColumnDefinitions>
+                <!--  Col 0: label  -->
                 <ColumnDefinition Width="300" />
+                <!--  Col 1: input box  -->
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
+            <!--  Col 0: Current PIN label "暗証番号"  -->
             <TextBlock Style="{StaticResource PinLabelStyle}" Text="暗証番号" />
+            <!--  Col 1: Current PIN input (digits only, max 4, IME off, reveal button off)  -->
             <ui:PasswordBox
                 x:Name="CurrentPinBox"
                 Grid.Column="1"
@@ -62,13 +84,19 @@
                 RevealButtonEnabled="False" />
         </Grid>
 
-        <!--  New PIN  -->
+        <!--  =====================================================  -->
+        <!--  ROW 3: NEW PIN "新しい暗証番号" (label + input)  -->
+        <!--  =====================================================  -->
         <Grid Grid.Row="3" Margin="0,0,0,12">
             <Grid.ColumnDefinitions>
+                <!--  Col 0: label  -->
                 <ColumnDefinition Width="300" />
+                <!--  Col 1: input box  -->
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
+            <!--  Col 0: New PIN label "新しい暗証番号"  -->
             <TextBlock Style="{StaticResource PinLabelStyle}" Text="新しい暗証番号" />
+            <!--  Col 1: New PIN input (digits only, max 4, IME off, reveal button off)  -->
             <ui:PasswordBox
                 x:Name="NewPinBox"
                 Grid.Column="1"
@@ -84,13 +112,19 @@
                 RevealButtonEnabled="False" />
         </Grid>
 
-        <!--  Confirm new PIN  -->
+        <!--  =====================================================  -->
+        <!--  ROW 4: CONFIRM NEW PIN "確認新しい暗証番号" (label + input)  -->
+        <!--  =====================================================  -->
         <Grid Grid.Row="4">
             <Grid.ColumnDefinitions>
+                <!--  Col 0: label  -->
                 <ColumnDefinition Width="300" />
+                <!--  Col 1: input box  -->
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
+            <!--  Col 0: Confirm new PIN label "確認新しい暗証番号"  -->
             <TextBlock Style="{StaticResource PinLabelStyle}" Text="確認新しい暗証番号" />
+            <!--  Col 1: Confirm new PIN input (digits only, max 4, IME off, reveal button off)  -->
             <ui:PasswordBox
                 x:Name="ConfirmPinBox"
                 Grid.Column="1"
@@ -106,7 +140,9 @@
                 RevealButtonEnabled="False" />
         </Grid>
 
-        <!--  Hint + error (MinHeight so the buttons do not jump when an error appears)  -->
+        <!--  =====================================================  -->
+        <!--  ROW 5: HINT / ERROR MESSAGE (MinHeight so the buttons do not jump when an error appears)  -->
+        <!--  =====================================================  -->
         <TextBlock
             x:Name="MessageText"
             Grid.Row="5"
@@ -117,13 +153,19 @@
             Text="数字4桁で入力してください"
             TextWrapping="Wrap" />
 
-        <!--  OK / Cancel  -->
+        <!--  =====================================================  -->
+        <!--  ROW 7: BUTTONS (OK on the left, cancel on the right)  -->
+        <!--  =====================================================  -->
         <Grid Grid.Row="7" Height="64">
             <Grid.ColumnDefinitions>
+                <!--  Col 0: OK button  -->
                 <ColumnDefinition Width="*" />
+                <!--  Col 1: spacer  -->
                 <ColumnDefinition Width="30" />
+                <!--  Col 2: cancel button  -->
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
+            <!--  Col 0: OK button "OK" (default button, triggered by the Enter key)  -->
             <Button
                 Grid.Column="0"
                 Click="OnOkClick"
@@ -131,6 +173,7 @@
                 FontSize="30"
                 IsDefault="True"
                 Style="{StaticResource PrimaryButtonStyle}" />
+            <!--  Col 2: Cancel button "キャンセル" (cancel button, triggered by the Esc key, closes the dialog)  -->
             <Button
                 Grid.Column="2"
                 Content="キャンセル"

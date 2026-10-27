@@ -6,7 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     xmlns:vm="clr-namespace:JSAT_UNDAI.ViewModels"
-    Title="設置情報設定"
+    Title="GPS情報入力"
     Width="800"
     d:DataContext="{d:DesignInstance Type=vm:InstallationEditViewModel}"
     Background="LightYellow"
@@ -16,18 +16,28 @@
     WindowStartupLocation="CenterOwner"
     mc:Ignorable="d">
 
+    <!--  =====================================================  -->
+    <!--  ROOT LAYOUT: GPS group / error message / buttons  -->
+    <!--  =====================================================  -->
     <Grid Margin="30">
         <Grid.RowDefinitions>
+            <!--  Row 0: GPS source group  -->
             <RowDefinition Height="Auto" />
+            <!--  Row 1: error message  -->
             <RowDefinition Height="Auto" />
+            <!--  Row 2: save / cancel buttons  -->
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!--  =====================  UNDAI (雲台) : GPS source  =====================  -->
+        <!--  =====================================================  -->
+        <!--  ROW 0: UNDAI (雲台) GPS source group  -->
+        <!--  =====================================================  -->
         <GroupBox
             Grid.Row="0"
             Padding="20,20"
             Style="{StaticResource PanelGroupBoxStyle}">
+
+            <!--  Group header: "雲台"  -->
             <GroupBox.Header>
                 <TextBlock
                     FontSize="25"
@@ -36,15 +46,19 @@
                     Text="雲台" />
             </GroupBox.Header>
 
+            <!--  Group content: toggle row, explanation, manual entry  -->
             <StackPanel>
-                <!--  Auto / manual toggle  -->
+
+                <!--  AUTO / MANUAL TOGGLE ROW  -->
                 <StackPanel Orientation="Horizontal">
+                    <!--  Toggle label: "GPS情報入力"  -->
                     <TextBlock
                         Margin="0,0,40,0"
                         VerticalAlignment="Center"
                         FontSize="25"
                         Style="{StaticResource LabelTextStyle}"
                         Text="GPS情報入力" />
+                    <!--  Toggle switch: checked = manual input, unchecked = auto (GPS receiver)  -->
                     <ui:ToggleSwitch
                         VerticalAlignment="Center"
                         Content="{Binding GpsModeLabel}"
@@ -56,26 +70,32 @@
                     </ui:ToggleSwitch>
                 </StackPanel>
 
-                <!--  Auto mode: short explanation  -->
+                <!--  AUTO MODE: short explanation (hidden in manual mode)  -->
                 <TextBlock
                     Margin="5"
                     FontSize="20"
                     Foreground="#666666"
-                    Text="GPS受信機の値を使用します"
+                    Text="GPS値を手動で入力する"
                     Visibility="{Binding IsManualGps, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Invert}" />
 
-                <!--  Manual entry: only visible in manual mode  -->
+                <!--  MANUAL ENTRY: only visible in manual mode  -->
                 <Grid Visibility="{Binding IsManualGps, Converter={StaticResource BoolToVisibilityConverter}}">
                     <Grid.ColumnDefinitions>
+                        <!--  Col 0: labels  -->
                         <ColumnDefinition Width="Auto" />
+                        <!--  Col 1: input boxes  -->
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
+                        <!--  Row 0: latitude  -->
                         <RowDefinition Height="Auto" />
+                        <!--  Row 1: longitude  -->
                         <RowDefinition Height="Auto" />
+                        <!--  Row 2: input format hint  -->
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
+                    <!--  Latitude label: "緯度"  -->
                     <TextBlock
                         Grid.Row="0"
                         Grid.Column="0"
@@ -84,6 +104,7 @@
                         FontSize="25"
                         Style="{StaticResource LabelTextStyle}"
                         Text="緯度" />
+                    <!--  Latitude input box  -->
                     <ui:TextBox
                         Grid.Row="0"
                         Grid.Column="1"
@@ -93,6 +114,7 @@
                         PlaceholderText="例: 35.68520"
                         Text="{Binding LatitudeText, UpdateSourceTrigger=PropertyChanged}" />
 
+                    <!--  Longitude label: "経度"  -->
                     <TextBlock
                         Grid.Row="1"
                         Grid.Column="0"
@@ -101,6 +123,7 @@
                         FontSize="25"
                         Style="{StaticResource LabelTextStyle}"
                         Text="経度" />
+                    <!--  Longitude input box  -->
                     <ui:TextBox
                         Grid.Row="1"
                         Grid.Column="1"
@@ -110,6 +133,7 @@
                         PlaceholderText="例: 139.75268"
                         Text="{Binding LongitudeText, UpdateSourceTrigger=PropertyChanged}" />
 
+                    <!--  Input format hint: decimal degrees (DD)  -->
                     <TextBlock
                         Grid.Row="2"
                         Grid.Column="1"
@@ -121,7 +145,9 @@
             </StackPanel>
         </GroupBox>
 
-        <!--  Error message (empty when everything is fine)  -->
+        <!--  =====================================================  -->
+        <!--  ROW 1: Error message (empty when everything is fine)  -->
+        <!--  =====================================================  -->
         <TextBlock
             Grid.Row="1"
             MinHeight="44"
@@ -132,19 +158,28 @@
             Text="{Binding ErrorMessage}"
             TextWrapping="Wrap" />
 
-        <!--  Save / cancel  -->
+        <!--  =====================================================  -->
+        <!--  ROW 2: Save / cancel buttons  -->
+        <!--  =====================================================  -->
         <Grid Grid.Row="2" Margin="0,8">
             <Grid.ColumnDefinitions>
+                <!--  Col 0: save  -->
                 <ColumnDefinition Width="*" />
+                <!--  Col 1: spacer  -->
                 <ColumnDefinition Width="30" />
+                <!--  Col 2: cancel  -->
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
+
+            <!--  Save button: runs SaveCommand (validates, then closes with OK)  -->
             <Button
                 Grid.Column="0"
                 Command="{Binding SaveCommand}"
                 Content="保存"
                 FontSize="30"
                 Style="{StaticResource PrimaryButtonStyle}" />
+
+            <!--  Cancel button: IsCancel closes the dialog without changes  -->
             <Button
                 Grid.Column="2"
                 Content="キャンセル"

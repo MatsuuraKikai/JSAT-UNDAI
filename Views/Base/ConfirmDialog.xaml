@@ -10,14 +10,22 @@
     ShowInTaskbar="False"
     WindowStartupLocation="CenterOwner">
 
+    <!--  =====================================================  -->
+    <!--  ROOT LAYOUT: message / buttons  -->
+    <!--  =====================================================  -->
     <Grid Margin="30">
         <Grid.RowDefinitions>
+            <!--  Row 0: message text  -->
             <RowDefinition Height="Auto" />
+            <!--  Row 1: spacer  -->
             <RowDefinition Height="20" />
+            <!--  Row 2: Yes / No buttons  -->
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!--  Message  -->
+        <!--  =====================================================  -->
+        <!--  ROW 0: MESSAGE (text is set from code-behind)  -->
+        <!--  =====================================================  -->
         <TextBlock
             x:Name="MessageText"
             Grid.Row="0"
@@ -29,13 +37,19 @@
             TextAlignment="Center"
             TextWrapping="Wrap" />
 
-        <!--  Yes / No  -->
+        <!--  =====================================================  -->
+        <!--  ROW 2: BUTTONS (Yes on the left, No on the right)  -->
+        <!--  =====================================================  -->
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
+                <!--  Col 0: Yes button  -->
                 <ColumnDefinition Width="*" />
+                <!--  Col 1: spacer  -->
                 <ColumnDefinition Width="30" />
+                <!--  Col 2: No button  -->
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
+            <!--  Col 0: Yes button "OK" (confirms the action)  -->
             <Button
                 x:Name="YesButton"
                 Grid.Column="0"
@@ -44,6 +58,7 @@
                 FontSize="30"
                 Style="{StaticResource PrimaryButtonStyle}" />
             <!--  No = default + Esc, so an accidental Enter or touch does not confirm  -->
+            <!--  Col 2: No button "キャンセル" (default button and cancel button)  -->
             <Button
                 x:Name="NoButton"
                 Grid.Column="2"

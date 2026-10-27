@@ -14,32 +14,46 @@
     <!--  Fixed 1920x1080 design canvas, scaled uniformly (no distortion). Window background (LightYellow) fills the bars.  -->
     <Viewbox Style="{StaticResource DesignCanvasViewboxStyle}">
 
+        <!--  =====================================================  -->
+        <!--  ROOT LAYOUT: top bar / main area / bottom bar  -->
+        <!--  =====================================================  -->
         <Grid Style="{StaticResource DesignCanvasGridStyle}">
             <Grid.RowDefinitions>
+                <!--  Row 0: top bar  -->
                 <RowDefinition Height="Auto" />
+                <!--  Row 1: main area  -->
                 <RowDefinition Height="*" />
+                <!--  Row 2: bottom bar  -->
                 <RowDefinition Height="120" />
             </Grid.RowDefinitions>
 
             <!--  =====================================================  -->
-            <!--  TOP BAR: connect / GPS status / clock  -->
+            <!--  ROW 0: TOP BAR (connect / GPS status / modem status / clock)  -->
             <!--  =====================================================  -->
             <Grid Grid.Row="0">
                 <Grid.ColumnDefinitions>
+                    <!--  Col 0: connect button  -->
                     <ColumnDefinition Width="340" />
+                    <!--  Col 1: spacer  -->
                     <ColumnDefinition Width="30" />
+                    <!--  Col 2: GPS status  -->
                     <ColumnDefinition Width="340" />
+                    <!--  Col 3: spacer  -->
                     <ColumnDefinition Width="30" />
+                    <!--  Col 4: modem status  -->
                     <ColumnDefinition Width="340" />
+                    <!--  Col 5: flexible gap  -->
                     <ColumnDefinition Width="*" />
+                    <!--  Col 6: clock  -->
                     <ColumnDefinition Width="360" />
                 </Grid.ColumnDefinitions>
 
-                <!--  Connect button. While connected: hold 2 s to disconnect (progress bar shows the hold).  -->
+                <!--  TOP BAR Col 0: Connect button. While connected: hold 2 s to disconnect (progress bar shows the hold).  -->
                 <Grid
                     Grid.Column="0"
                     Height="90"
                     VerticalAlignment="Top">
+                    <!--  Connect button with press / release triggers for the hold  -->
                     <Button
                         x:Name="ConnectButton"
                         Background="{Binding ConnectionButtonColor}"
@@ -62,6 +76,7 @@
                         </i:Interaction.Triggers>
                     </Button>
 
+                    <!--  Disconnect hold progress bar: track (outer) and fill (inner)  -->
                     <Border
                         x:Name="ConnectHoldTrack"
                         Height="6"
@@ -86,7 +101,7 @@
                     </Border>
                 </Grid>
 
-                <!--  GPS status  -->
+                <!--  TOP BAR Col 2: GPS status badge  -->
                 <Border
                     Grid.Column="2"
                     Height="90"
@@ -103,7 +118,7 @@
                         Text="{Binding GpsStatusText}" />
                 </Border>
 
-                <!--  Modem status  -->
+                <!--  TOP BAR Col 4: Modem status badge  -->
                 <Border
                     Grid.Column="4"
                     Height="90"
@@ -120,17 +135,19 @@
                         Text="{Binding ModemStatusText}" />
                 </Border>
 
-                <!--  Clock  -->
+                <!--  TOP BAR Col 6: Clock (time on top, date below)  -->
                 <StackPanel
                     Grid.Column="6"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Center">
+                    <!--  Time  -->
                     <TextBlock
                         HorizontalAlignment="Right"
                         FontSize="56"
                         FontWeight="SemiBold"
                         Foreground="{StaticResource TextPrimaryBrush}"
                         Text="{Binding TimeText}" />
+                    <!--  Date  -->
                     <TextBlock
                         HorizontalAlignment="Right"
                         FontSize="30"
@@ -140,51 +157,69 @@
             </Grid>
 
             <!--  =====================================================  -->
-            <!--  MAIN AREA  -->
+            <!--  ROW 1: MAIN AREA (left = manual control, right = status and actions)  -->
             <!--  =====================================================  -->
             <Grid Grid.Row="1">
                 <Grid.ColumnDefinitions>
+                    <!--  Col 0: left side, manual control + installation position  -->
                     <ColumnDefinition Width="1000" />
+                    <!--  Col 1: spacer  -->
                     <ColumnDefinition Width="40" />
+                    <!--  Col 2: right side, SNR / peak / target / actions  -->
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
-                <!--  ================= LEFT: manual control + installation position =================  -->
+                <!--  =====================================================  -->
+                <!--  MAIN Col 0: LEFT SIDE (manual control + installation position)  -->
+                <!--  =====================================================  -->
                 <Grid Grid.Column="0">
                     <Grid.RowDefinitions>
+                        <!--  Left Row 0: manual control  -->
                         <RowDefinition Height="*" />
+                        <!--  Left Row 1: installation position  -->
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-                    <!--  Manual control: disabled as a whole when IsControlEnabled is false (not connected).  -->
+                    <!--  LEFT Row 0: Manual control. Disabled as a whole when IsControlEnabled is false (not connected).  -->
                     <Grid Grid.Row="0" IsEnabled="{Binding IsControlEnabled}">
                         <Grid.RowDefinitions>
+                            <!--  Manual Row 0: speed mode buttons  -->
                             <RowDefinition Height="Auto" />
+                            <!--  Manual Row 1: elevation card + azimuth card  -->
                             <RowDefinition Height="*" />
+                            <!--  Manual Row 2: save / load angle buttons  -->
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
-                        <!--  Speed mode (selected button turns blue via Tag)  -->
+                        <!--  MANUAL Row 0: Speed mode (selected button turns blue via Tag)  -->
                         <Grid Grid.Row="0" Height="70">
                             <Grid.ColumnDefinitions>
+                                <!--  Col 0: high speed  -->
                                 <ColumnDefinition Width="*" />
+                                <!--  Col 1: spacer  -->
                                 <ColumnDefinition Width="20" />
+                                <!--  Col 2: low speed  -->
                                 <ColumnDefinition Width="*" />
+                                <!--  Col 3: spacer  -->
                                 <ColumnDefinition Width="20" />
+                                <!--  Col 4: inching  -->
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
+                            <!--  High speed button  -->
                             <Button
                                 Grid.Column="0"
                                 Command="{Binding SelectSpeedModeCommand}"
                                 CommandParameter="High"
                                 Content="高速"
                                 Style="{StaticResource PanelButtonStyle}" />
+                            <!--  Low speed button  -->
                             <Button
                                 Grid.Column="2"
                                 Command="{Binding SelectSpeedModeCommand}"
                                 CommandParameter="Low"
                                 Content="低速"
                                 Style="{StaticResource PanelButtonStyle}" />
+                            <!--  Inching button  -->
                             <Button
                                 Grid.Column="4"
                                 Command="{Binding SelectSpeedModeCommand}"
@@ -193,35 +228,46 @@
                                 Style="{StaticResource PanelButtonStyle}" />
                         </Grid>
 
-                        <!--  Elevation card + Azimuth card  -->
+                        <!--  MANUAL Row 1: Elevation card + Azimuth card  -->
                         <Grid Grid.Row="1" Margin="0,20,0,0">
                             <Grid.ColumnDefinitions>
+                                <!--  Col 0: elevation card  -->
                                 <ColumnDefinition Width="*" />
+                                <!--  Col 1: spacer  -->
                                 <ColumnDefinition Width="30" />
+                                <!--  Col 2: azimuth card  -->
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
-                            <!--  Elevation: [UP]  current angle  [DOWN]  -->
+                            <!--  ================= ELEVATION CARD (Col 0): [UP]  current angle  [DOWN]  =================  -->
                             <Border
                                 Grid.Column="0"
                                 Padding="20,5,20,20"
                                 Style="{StaticResource CardBorderStyle}">
                                 <Grid>
                                     <Grid.RowDefinitions>
+                                        <!--  Card Row 0: title + current value  -->
                                         <RowDefinition Height="Auto" />
+                                        <!--  Card Row 1: jog buttons (up / down)  -->
                                         <RowDefinition Height="*" />
+                                        <!--  Card Row 2: go-to angle  -->
                                         <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
 
+                                    <!--  ELEVATION Row 0: title and current value  -->
                                     <Grid Grid.Row="0" VerticalAlignment="Center">
                                         <Grid.ColumnDefinitions>
+                                            <!--  Col 0: card title  -->
                                             <ColumnDefinition Width="*" />
+                                            <!--  Col 1: current value box  -->
                                             <ColumnDefinition Width="*" />
+                                            <!--  Col 2: empty (keeps the value box centered)  -->
                                             <ColumnDefinition Width="*" />
                                         </Grid.ColumnDefinitions>
+                                        <!--  Card title: "仰角" (elevation), Col 0  -->
                                         <TextBlock Style="{StaticResource CardHeaderTextStyle}" Text="仰角" />
 
-                                        <!--  Current elevation: same black value box as the rest of the screen  -->
+                                        <!--  Current elevation (Col 1): same black value box as the rest of the screen  -->
                                         <Border
                                             Grid.Column="1"
                                             Height="90"
@@ -230,15 +276,19 @@
                                             Style="{StaticResource ValueBoxBorderStyle}">
                                             <Grid Margin="0,2,0,4">
                                                 <Grid.RowDefinitions>
+                                                    <!--  Row 0: small caption  -->
                                                     <RowDefinition Height="Auto" />
+                                                    <!--  Row 1: value  -->
                                                     <RowDefinition Height="*" />
                                                 </Grid.RowDefinitions>
+                                                <!--  Caption: "現在値" (current value)  -->
                                                 <TextBlock
                                                     Grid.Row="0"
                                                     HorizontalAlignment="Center"
                                                     FontSize="20"
                                                     Foreground="#B0B0B0"
                                                     Text="現在値" />
+                                                <!--  Value with degree sign  -->
                                                 <Viewbox
                                                     Grid.Row="1"
                                                     Stretch="Uniform"
@@ -251,16 +301,22 @@
                                         </Border>
 
                                     </Grid>
+
+                                    <!--  ELEVATION Row 1: jog buttons  -->
                                     <Grid
                                         Grid.Row="1"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center">
                                         <Grid.ColumnDefinitions>
+                                            <!--  Col 0: UP button  -->
                                             <ColumnDefinition Width="Auto" />
+                                            <!--  Col 1: spacer  -->
                                             <ColumnDefinition Width="50" />
+                                            <!--  Col 2: DOWN button  -->
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
 
+                                        <!--  UP jog button (hold to move, release to stop)  -->
                                         <Button
                                             Grid.Column="0"
                                             Width="170"
@@ -286,6 +342,7 @@
                                             </i:Interaction.Triggers>
                                         </Button>
 
+                                        <!--  DOWN jog button (hold to move, release to stop)  -->
                                         <Button
                                             Grid.Column="2"
                                             Width="170"
@@ -312,22 +369,27 @@
                                         </Button>
                                     </Grid>
 
-                                    <!--  Go-to angle: [位置決め] [value box -> keypad]  -->
+                                    <!--  ELEVATION Row 2: Go-to angle: [位置決め] [value box -> keypad]  -->
                                     <Grid
                                         Grid.Row="2"
                                         Height="80"
                                         Margin="0,10,0,0">
                                         <Grid.ColumnDefinitions>
+                                            <!--  Col 0: go-to button  -->
                                             <ColumnDefinition Width="*" />
+                                            <!--  Col 1: spacer  -->
                                             <ColumnDefinition Width="15" />
+                                            <!--  Col 2: angle input  -->
                                             <ColumnDefinition Width="*" />
                                         </Grid.ColumnDefinitions>
+                                        <!--  Go-to button: "位置決め" (positioning)  -->
                                         <Button
                                             Grid.Column="0"
                                             Command="{Binding SetElevationAngleCommand}"
                                             Content="位置決め"
                                             FontSize="36"
                                             Style="{StaticResource PanelButtonStyle}" />
+                                        <!--  Target elevation input (decimal only)  -->
                                         <ui:TextBox
                                             Grid.Column="2"
                                             VerticalContentAlignment="Center"
@@ -340,27 +402,35 @@
                                 </Grid>
                             </Border>
 
-                            <!--  Azimuth: [CCW]  current angle  [CW]  -->
+                            <!--  ================= AZIMUTH CARD (Col 2): [CCW]  current angle  [CW]  =================  -->
                             <Border
                                 Grid.Column="2"
                                 Padding="20,5,20,20"
                                 Style="{StaticResource CardBorderStyle}">
                                 <Grid>
                                     <Grid.RowDefinitions>
+                                        <!--  Card Row 0: title + current value  -->
                                         <RowDefinition Height="Auto" />
+                                        <!--  Card Row 1: jog buttons (CCW / CW)  -->
                                         <RowDefinition Height="*" />
+                                        <!--  Card Row 2: go-to angle  -->
                                         <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
 
+                                    <!--  AZIMUTH Row 0: title and current value  -->
                                     <Grid Grid.Row="0" VerticalAlignment="Center">
                                         <Grid.ColumnDefinitions>
+                                            <!--  Col 0: card title  -->
                                             <ColumnDefinition Width="*" />
+                                            <!--  Col 1: current value box  -->
                                             <ColumnDefinition Width="*" />
+                                            <!--  Col 2: empty (keeps the value box centered)  -->
                                             <ColumnDefinition Width="*" />
                                         </Grid.ColumnDefinitions>
+                                        <!--  Card title: "水平角" (azimuth), Col 0  -->
                                         <TextBlock Style="{StaticResource CardHeaderTextStyle}" Text="水平角" />
 
-                                        <!--  Current azimuth: same black value box as the rest of the screen  -->
+                                        <!--  Current azimuth (Col 1): same black value box as the rest of the screen  -->
                                         <Border
                                             Grid.Column="1"
                                             Height="90"
@@ -369,15 +439,19 @@
                                             Style="{StaticResource ValueBoxBorderStyle}">
                                             <Grid Margin="0,2,0,4">
                                                 <Grid.RowDefinitions>
+                                                    <!--  Row 0: small caption  -->
                                                     <RowDefinition Height="Auto" />
+                                                    <!--  Row 1: value  -->
                                                     <RowDefinition Height="*" />
                                                 </Grid.RowDefinitions>
+                                                <!--  Caption: "現在値" (current value)  -->
                                                 <TextBlock
                                                     Grid.Row="0"
                                                     HorizontalAlignment="Center"
                                                     FontSize="20"
                                                     Foreground="#B0B0B0"
                                                     Text="現在値" />
+                                                <!--  Value with degree sign  -->
                                                 <Viewbox
                                                     Grid.Row="1"
                                                     Stretch="Uniform"
@@ -390,16 +464,21 @@
                                         </Border>
                                     </Grid>
 
+                                    <!--  AZIMUTH Row 1: jog buttons  -->
                                     <Grid
                                         Grid.Row="1"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center">
                                         <Grid.ColumnDefinitions>
+                                            <!--  Col 0: CCW button  -->
                                             <ColumnDefinition Width="Auto" />
+                                            <!--  Col 1: spacer  -->
                                             <ColumnDefinition Width="50" />
+                                            <!--  Col 2: CW button  -->
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
 
+                                        <!--  CCW (counter clockwise) jog button  -->
                                         <Button
                                             Grid.Column="0"
                                             Width="170"
@@ -425,6 +504,7 @@
                                             </i:Interaction.Triggers>
                                         </Button>
 
+                                        <!--  CW (clockwise) jog button  -->
                                         <Button
                                             Grid.Column="2"
                                             Width="170"
@@ -451,22 +531,27 @@
                                         </Button>
                                     </Grid>
 
-                                    <!--  Go-to angle: [位置決め] [value box -> keypad]  -->
+                                    <!--  AZIMUTH Row 2: Go-to angle: [位置決め] [value box -> keypad]  -->
                                     <Grid
                                         Grid.Row="2"
                                         Height="80"
                                         Margin="0,10,0,0">
                                         <Grid.ColumnDefinitions>
+                                            <!--  Col 0: go-to button  -->
                                             <ColumnDefinition Width="*" />
+                                            <!--  Col 1: spacer  -->
                                             <ColumnDefinition Width="15" />
+                                            <!--  Col 2: angle input  -->
                                             <ColumnDefinition Width="*" />
                                         </Grid.ColumnDefinitions>
+                                        <!--  Go-to button: "位置決め" (positioning)  -->
                                         <Button
                                             Grid.Column="0"
                                             Command="{Binding SetAzimuthAngleCommand}"
                                             Content="位置決め"
                                             FontSize="36"
                                             Style="{StaticResource PanelButtonStyle}" />
+                                        <!--  Target azimuth input (decimal only)  -->
                                         <ui:TextBox
                                             Grid.Column="2"
                                             VerticalContentAlignment="Center"
@@ -480,18 +565,23 @@
                             </Border>
                         </Grid>
 
-                        <!--  Save / load angle  -->
+                        <!--  MANUAL Row 2: Save / load angle  -->
                         <Grid Grid.Row="2" Margin="0,15,0,0">
                             <Grid.ColumnDefinitions>
+                                <!--  Col 0: save  -->
                                 <ColumnDefinition Width="*" />
+                                <!--  Col 1: spacer  -->
                                 <ColumnDefinition Width="30" />
+                                <!--  Col 2: load  -->
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
+                            <!--  Save angle button: "位置保存"  -->
                             <Button
                                 Grid.Column="0"
                                 Command="{Binding SaveAngleCommand}"
                                 Content="位置保存"
                                 Style="{StaticResource PanelButtonStyle}" />
+                            <!--  Load angle button: "位置復元"  -->
                             <Button
                                 Grid.Column="2"
                                 Command="{Binding LoadAngleCommand}"
@@ -500,7 +590,9 @@
                         </Grid>
                     </Grid>
 
-                    <!--  Installation position: unit button + latitude / longitude  -->
+                    <!--  =====================================================  -->
+                    <!--  LEFT Row 1: INSTALLATION POSITION (unit button + 雲台 GPS + 衛星)  -->
+                    <!--  =====================================================  -->
                     <Border
                         Grid.Row="1"
                         Margin="0,15,0,0"
@@ -510,16 +602,19 @@
                         Style="{StaticResource CardBorderStyle}">
                         <Grid>
                             <Grid.ColumnDefinitions>
+                                <!--  Col 0: unit toggle button  -->
                                 <ColumnDefinition Width="160" />
+                                <!--  Col 1: spacer  -->
                                 <ColumnDefinition Width="20" />
+                                <!--  Col 2: 雲台 GPS position group  -->
+                                <ColumnDefinition Width="1.3*" />
+                                <!--  Col 3: spacer  -->
+                                <ColumnDefinition Width="20" />
+                                <!--  Col 4: 衛星 satellite group  -->
                                 <ColumnDefinition Width="1*" />
-                                <ColumnDefinition Width="20" />
-                                <ColumnDefinition Width="1.0*" />
-                                <ColumnDefinition Width="20" />
-                                <ColumnDefinition Width="110" />
                             </Grid.ColumnDefinitions>
 
-                            <!--  Unit toggle  -->
+                            <!--  INSTALLATION Col 0: Unit toggle (DD / DMS)  -->
                             <Button
                                 Grid.Column="0"
                                 Width="150"
@@ -527,10 +622,12 @@
                                 Command="{Binding ToggleUnitCommand}"
                                 Style="{StaticResource PanelButtonStyle}">
                                 <StackPanel VerticalAlignment="Center">
+                                    <!--  Label: "ユニット"  -->
                                     <TextBlock
                                         FontSize="40"
                                         Text="ユニット"
                                         TextAlignment="Center" />
+                                    <!--  Current unit: DD or DMS  -->
                                     <TextBlock
                                         FontSize="34"
                                         FontWeight="SemiBold"
@@ -539,8 +636,9 @@
                                 </StackPanel>
                             </Button>
 
-                            <!--  雲台: GPS position  -->
+                            <!--  INSTALLATION Col 2: 雲台 GPS position group  -->
                             <GroupBox Grid.Column="2" Style="{StaticResource PanelGroupBoxStyle}">
+                                <!--  Group header: "雲台"  -->
                                 <GroupBox.Header>
                                     <TextBlock
                                         FontSize="24"
@@ -550,14 +648,23 @@
                                 </GroupBox.Header>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
+                                        <!--  Col 0: labels  -->
                                         <ColumnDefinition Width="Auto" />
+                                        <!--  Col 1: value boxes  -->
                                         <ColumnDefinition Width="*" />
+                                        <!--  Col 2: spacer  -->
+                                        <ColumnDefinition Width="10" />
+                                        <!--  Col 3: input button  -->
+                                        <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
                                     <Grid.RowDefinitions>
+                                        <!--  Row 0: latitude  -->
                                         <RowDefinition Height="80" />
+                                        <!--  Row 1: longitude  -->
                                         <RowDefinition Height="80" />
                                     </Grid.RowDefinitions>
 
+                                    <!--  Latitude label: "緯度" (Row 0, Col 0)  -->
                                     <TextBlock
                                         Grid.Row="0"
                                         Grid.Column="0"
@@ -566,17 +673,20 @@
                                         VerticalAlignment="Center"
                                         Style="{StaticResource LabelTextStyle}"
                                         Text="緯度" />
+                                    <!--  Latitude value box (Row 0, Col 1), manual icon shows when manual GPS is on  -->
                                     <Border
                                         Grid.Row="0"
                                         Grid.Column="1"
                                         Style="{StaticResource ValueBoxBorderStyle}">
                                         <Viewbox Stretch="Uniform" StretchDirection="DownOnly">
                                             <StackPanel Orientation="Horizontal">
+                                                <!--  Manual GPS indicator icon  -->
                                                 <ui:SymbolIcon
                                                     FontSize="30"
                                                     Foreground="White"
                                                     Symbol="ArrowRepeatAll16"
                                                     Visibility="{Binding IsManualGps, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                                <!--  Latitude text  -->
                                                 <TextBlock
                                                     FontSize="36"
                                                     Style="{StaticResource ValueBoxTextStyle}"
@@ -585,6 +695,7 @@
                                         </Viewbox>
                                     </Border>
 
+                                    <!--  Longitude label: "経度" (Row 1, Col 0)  -->
                                     <TextBlock
                                         Grid.Row="1"
                                         Grid.Column="0"
@@ -593,17 +704,20 @@
                                         VerticalAlignment="Center"
                                         Style="{StaticResource LabelTextStyle}"
                                         Text="経度" />
+                                    <!--  Longitude value box (Row 1, Col 1), manual icon shows when manual GPS is on  -->
                                     <Border
                                         Grid.Row="1"
                                         Grid.Column="1"
                                         Style="{StaticResource ValueBoxBorderStyle}">
                                         <Viewbox Stretch="Uniform" StretchDirection="DownOnly">
                                             <StackPanel Orientation="Horizontal">
+                                                <!--  Manual GPS indicator icon  -->
                                                 <ui:SymbolIcon
                                                     FontSize="30"
                                                     Foreground="White"
                                                     Symbol="ArrowRepeatAll16"
                                                     Visibility="{Binding IsManualGps, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                                <!--  Longitude text  -->
                                                 <TextBlock
                                                     FontSize="36"
                                                     Style="{StaticResource ValueBoxTextStyle}"
@@ -611,11 +725,25 @@
                                             </StackPanel>
                                         </Viewbox>
                                     </Border>
+
+
+                                    <!--  UNDAI GPS input button (Col 3, spans both rows): opens the GPS input dialog  -->
+                                    <Button
+                                        Grid.Row="0"
+                                        Grid.RowSpan="2"
+                                        Grid.Column="3"
+                                        Width="100"
+                                        Height="150"
+                                        Command="{Binding EditInstallationCommand}"
+                                        Content="入力"
+                                        FontSize="32"
+                                        Style="{StaticResource PanelButtonStyle}" />
                                 </Grid>
                             </GroupBox>
 
-                            <!--  衛星: geostationary satellite  -->
+                            <!--  INSTALLATION Col 4: 衛星 geostationary satellite group  -->
                             <GroupBox Grid.Column="4" Style="{StaticResource PanelGroupBoxStyle}">
+                                <!--  Group header: "衛星"  -->
                                 <GroupBox.Header>
                                     <TextBlock
                                         FontSize="24"
@@ -625,14 +753,19 @@
                                 </GroupBox.Header>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
+                                        <!--  Col 0: labels  -->
                                         <ColumnDefinition Width="Auto" />
+                                        <!--  Col 1: value boxes  -->
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <Grid.RowDefinitions>
+                                        <!--  Row 0: satellite name  -->
                                         <RowDefinition Height="80" />
+                                        <!--  Row 1: satellite longitude  -->
                                         <RowDefinition Height="80" />
                                     </Grid.RowDefinitions>
 
+                                    <!--  Satellite name label: "衛星名" (Row 0, Col 0)  -->
                                     <TextBlock
                                         Grid.Row="0"
                                         Grid.Column="0"
@@ -641,6 +774,7 @@
                                         VerticalAlignment="Center"
                                         Style="{StaticResource LabelTextStyle}"
                                         Text="衛星名" />
+                                    <!--  Satellite name value box (Row 0, Col 1)  -->
                                     <Border
                                         Grid.Row="0"
                                         Grid.Column="1"
@@ -653,6 +787,7 @@
                                         </Viewbox>
                                     </Border>
 
+                                    <!--  Satellite longitude label: "経度" (Row 1, Col 0)  -->
                                     <TextBlock
                                         Grid.Row="1"
                                         Grid.Column="0"
@@ -661,6 +796,7 @@
                                         VerticalAlignment="Center"
                                         Style="{StaticResource LabelTextStyle}"
                                         Text="経度" />
+                                    <!--  Satellite longitude value box (Row 1, Col 1)  -->
                                     <Border
                                         Grid.Row="1"
                                         Grid.Column="1"
@@ -674,32 +810,30 @@
                                     </Border>
                                 </Grid>
                             </GroupBox>
-
-                            <!--  UNDAI Satellite Edit button  -->
-                            <Button
-                                Grid.Column="6"
-                                Width="100"
-                                Height="150"
-                                Command="{Binding EditInstallationCommand}"
-                                Content="編集"
-                                FontSize="32"
-                                Style="{StaticResource PanelButtonStyle}" />
                         </Grid>
                     </Border>
                 </Grid>
 
-                <!--  ================= RIGHT: SNR / peak position / target / actions / stop / system setting =================  -->
+                <!--  =====================================================  -->
+                <!--  MAIN Col 2: RIGHT SIDE (SNR / peak position / target / actions / stop / system setting)  -->
+                <!--  =====================================================  -->
                 <Grid Grid.Column="2">
                     <Grid.RowDefinitions>
+                        <!--  Right Row 0: SNR current value  -->
                         <RowDefinition Height="Auto" />
+                        <!--  Right Row 1: peak search result  -->
                         <RowDefinition Height="Auto" />
+                        <!--  Right Row 2: target values  -->
                         <RowDefinition Height="Auto" />
+                        <!--  Right Row 3: home / peak search buttons  -->
                         <RowDefinition Height="Auto" />
+                        <!--  Right Row 4: stop button  -->
                         <RowDefinition Height="Auto" />
+                        <!--  Right Row 5: system setting button  -->
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-                    <!--  1) SNR: current and peak  -->
+                    <!--  RIGHT Row 0: 1) SNR current value  -->
                     <Border
                         Grid.Row="0"
                         Padding="20,10"
@@ -707,15 +841,22 @@
                         Style="{StaticResource CardBorderStyle}">
                         <Grid>
                             <Grid.ColumnDefinitions>
+                                <!--  Col 0: row label  -->
                                 <ColumnDefinition Width="190" />
+                                <!--  Col 1: SNR value  -->
                                 <ColumnDefinition Width="*" />
+                                <!--  Col 2: unused  -->
                                 <ColumnDefinition Width="*" />
+                                <!--  Col 3: unused  -->
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
+                                <!--  Row 0: column header  -->
                                 <RowDefinition Height="Auto" />
+                                <!--  Row 1: value  -->
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
+                            <!--  Header "SNR" (Row 0, Col 1)  -->
                             <TextBlock
                                 Grid.Row="0"
                                 Grid.Column="1"
@@ -724,6 +865,7 @@
                                 Text="SNR"
                                 TextAlignment="Center" />
 
+                            <!--  Row label: "現在値" (Row 1, Col 0)  -->
                             <TextBlock
                                 Grid.Row="1"
                                 Grid.Column="0"
@@ -732,6 +874,7 @@
                                 VerticalAlignment="Center"
                                 Style="{StaticResource LabelTextStyle}"
                                 Text="現在値" />
+                            <!--  Current SNR value box (Row 1, Col 1)  -->
                             <Border
                                 Grid.Row="1"
                                 Grid.Column="1"
@@ -744,7 +887,7 @@
                         </Grid>
                     </Border>
 
-                    <!--  2) Peak search result: elevation and azimuth where the peak was found  -->
+                    <!--  RIGHT Row 1: 2) Peak search result: SNR, elevation and azimuth where the peak was found  -->
                     <Border
                         Grid.Row="1"
                         Margin="0,5,0,0"
@@ -753,28 +896,37 @@
                         Style="{StaticResource CardBorderStyle}">
                         <Grid>
                             <Grid.ColumnDefinitions>
+                                <!--  Col 0: row label  -->
                                 <ColumnDefinition Width="190" />
+                                <!--  Col 1: SNR  -->
                                 <ColumnDefinition Width="*" />
+                                <!--  Col 2: elevation  -->
                                 <ColumnDefinition Width="*" />
+                                <!--  Col 3: azimuth  -->
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
+                                <!--  Row 0: column headers  -->
                                 <RowDefinition Height="Auto" />
+                                <!--  Row 1: values  -->
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
 
+                            <!--  Header "SNR" (Row 0, Col 1)  -->
                             <TextBlock
                                 Grid.Row="0"
                                 Grid.Column="1"
                                 HorizontalAlignment="Center"
                                 Style="{StaticResource LabelTextStyle}"
                                 Text="SNR" />
+                            <!--  Header "仰角" elevation (Row 0, Col 2)  -->
                             <TextBlock
                                 Grid.Row="0"
                                 Grid.Column="2"
                                 HorizontalAlignment="Center"
                                 Style="{StaticResource LabelTextStyle}"
                                 Text="仰角" />
+                            <!--  Header "水平角" azimuth (Row 0, Col 3)  -->
                             <TextBlock
                                 Grid.Row="0"
                                 Grid.Column="3"
@@ -782,6 +934,7 @@
                                 Style="{StaticResource LabelTextStyle}"
                                 Text="水平角" />
 
+                            <!--  Row label: "ピーク値" (Row 1, Col 0)  -->
                             <TextBlock
                                 Grid.Row="1"
                                 Grid.Column="0"
@@ -790,6 +943,7 @@
                                 VerticalAlignment="Center"
                                 Style="{StaticResource LabelTextStyle}"
                                 Text="ピーク値" />
+                            <!--  Peak SNR value box (Row 1, Col 1)  -->
                             <Border
                                 Grid.Row="1"
                                 Grid.Column="1"
@@ -799,6 +953,7 @@
                                     Style="{StaticResource ValueBoxTextStyle}"
                                     Text="{Binding PeakRssi}" />
                             </Border>
+                            <!--  Peak elevation value box (Row 1, Col 2)  -->
                             <Border
                                 Grid.Row="1"
                                 Grid.Column="2"
@@ -808,6 +963,7 @@
                                     Style="{StaticResource ValueBoxTextStyle}"
                                     Text="{Binding PeakElevation}" />
                             </Border>
+                            <!--  Peak azimuth value box (Row 1, Col 3)  -->
                             <Border
                                 Grid.Row="1"
                                 Grid.Column="3"
@@ -820,7 +976,7 @@
                         </Grid>
                     </Border>
 
-                    <!--  3) Target values  -->
+                    <!--  RIGHT Row 2: 3) Target values: polarization, elevation, azimuth  -->
                     <Border
                         Grid.Row="2"
                         Margin="0,5,0,0"
@@ -829,28 +985,37 @@
                         Style="{StaticResource CardBorderStyle}">
                         <Grid>
                             <Grid.ColumnDefinitions>
+                                <!--  Col 0: row label  -->
                                 <ColumnDefinition Width="190" />
+                                <!--  Col 1: polarization  -->
                                 <ColumnDefinition Width="*" />
+                                <!--  Col 2: elevation  -->
                                 <ColumnDefinition Width="*" />
+                                <!--  Col 3: azimuth  -->
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
+                                <!--  Row 0: column headers  -->
                                 <RowDefinition Height="Auto" />
+                                <!--  Row 1: values  -->
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
 
+                            <!--  Header "偏波角" polarization (Row 0, Col 1)  -->
                             <TextBlock
                                 Grid.Row="0"
                                 Grid.Column="1"
                                 HorizontalAlignment="Center"
                                 Style="{StaticResource LabelTextStyle}"
                                 Text="偏波角" />
+                            <!--  Header "仰角" elevation (Row 0, Col 2)  -->
                             <TextBlock
                                 Grid.Row="0"
                                 Grid.Column="2"
                                 HorizontalAlignment="Center"
                                 Style="{StaticResource LabelTextStyle}"
                                 Text="仰角" />
+                            <!--  Header "水平角" azimuth (Row 0, Col 3)  -->
                             <TextBlock
                                 Grid.Row="0"
                                 Grid.Column="3"
@@ -858,6 +1023,7 @@
                                 Style="{StaticResource LabelTextStyle}"
                                 Text="水平角" />
 
+                            <!--  Row label: "目的値" (Row 1, Col 0)  -->
                             <TextBlock
                                 Grid.Row="1"
                                 Grid.Column="0"
@@ -866,6 +1032,7 @@
                                 VerticalAlignment="Center"
                                 Style="{StaticResource LabelTextStyle}"
                                 Text="目的値" />
+                            <!--  Target polarization value box (Row 1, Col 1)  -->
                             <Border
                                 Grid.Row="1"
                                 Grid.Column="1"
@@ -875,6 +1042,7 @@
                                     Style="{StaticResource ValueBoxTextStyle}"
                                     Text="{Binding TargetPolarize}" />
                             </Border>
+                            <!--  Target elevation value box (Row 1, Col 2)  -->
                             <Border
                                 Grid.Row="1"
                                 Grid.Column="2"
@@ -884,6 +1052,7 @@
                                     Style="{StaticResource ValueBoxTextStyle}"
                                     Text="{Binding TargetElevation}" />
                             </Border>
+                            <!--  Target azimuth value box (Row 1, Col 3)  -->
                             <Border
                                 Grid.Row="1"
                                 Grid.Column="3"
@@ -896,21 +1065,26 @@
                         </Grid>
                     </Border>
 
-                    <!--  Home / peak search (disabled when not connected)  -->
+                    <!--  RIGHT Row 3: Home / peak search (disabled when not connected). Hold 2 s to run.  -->
                     <Grid
                         Grid.Row="3"
                         Height="80"
                         Margin="0,15,0,0"
                         IsEnabled="{Binding IsControlEnabled}">
                         <Grid.ColumnDefinitions>
+                            <!--  Col 0: home  -->
                             <ColumnDefinition Width="*" />
+                            <!--  Col 1: spacer  -->
                             <ColumnDefinition Width="20" />
+                            <!--  Col 2: peak search  -->
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
+
+                        <!--  HOME (Col 0): button + hold progress bar  -->
                         <Grid Grid.Column="0" VerticalAlignment="Bottom">
+                            <!--  Home button: "原点"  -->
                             <Button
                                 Background="{Binding HomeBtnColor}"
-                                Command="{Binding HomeCommand}"
                                 Content="原点"
                                 Style="{StaticResource PanelButtonStyle}"
                                 Stylus.IsFlicksEnabled="False"
@@ -931,14 +1105,16 @@
                                 </i:Interaction.Triggers>
                             </Button>
 
+                            <!--  Home hold progress bar: track (outer) and fill (inner)  -->
                             <Border
+                                x:Name="HomeHoldTrack"
                                 Height="6"
                                 Margin="20,0,20,10"
                                 VerticalAlignment="Bottom"
                                 Background="#33000000"
                                 CornerRadius="3"
                                 IsHitTestVisible="False"
-                                Visibility="{Binding IsHomePeakHolding, Converter={StaticResource BoolToVisibilityConverter}}">
+                                Visibility="{Binding IsHomeHolding, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <Border
                                     HorizontalAlignment="Left"
                                     Background="White"
@@ -946,17 +1122,19 @@
                                     Opacity="0.9">
                                     <Border.Width>
                                         <MultiBinding Converter="{StaticResource ProgressWidthConverter}">
-                                            <Binding ElementName="HomePeakHoldTrack" Path="ActualWidth" />
+                                            <Binding ElementName="HomeHoldTrack" Path="ActualWidth" />
                                             <Binding Path="HomePeakHoldProgress" />
                                         </MultiBinding>
                                     </Border.Width>
                                 </Border>
                             </Border>
                         </Grid>
+
+                        <!--  PEAK SEARCH (Col 2): button + hold progress bar  -->
                         <Grid Grid.Column="2" VerticalAlignment="Bottom">
+                            <!--  Peak search button: "ピークサーチ"  -->
                             <Button
                                 Background="{Binding PeakSearchBtnColor}"
-                                Command="{Binding PeakSearchCommand}"
                                 Content="ピークサーチ"
                                 Style="{StaticResource PanelButtonStyle}"
                                 Stylus.IsFlicksEnabled="False"
@@ -978,14 +1156,16 @@
                                 </i:Interaction.Triggers>
                             </Button>
 
+                            <!--  Peak search hold progress bar: track (outer) and fill (inner)  -->
                             <Border
+                                x:Name="PeakHoldTrack"
                                 Height="6"
                                 Margin="20,0,20,10"
                                 VerticalAlignment="Bottom"
                                 Background="#33000000"
                                 CornerRadius="3"
                                 IsHitTestVisible="False"
-                                Visibility="{Binding IsHomePeakHolding, Converter={StaticResource BoolToVisibilityConverter}}">
+                                Visibility="{Binding IsPeakHolding, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <Border
                                     HorizontalAlignment="Left"
                                     Background="White"
@@ -993,7 +1173,7 @@
                                     Opacity="0.9">
                                     <Border.Width>
                                         <MultiBinding Converter="{StaticResource ProgressWidthConverter}">
-                                            <Binding ElementName="HomePeakHoldTrack" Path="ActualWidth" />
+                                            <Binding ElementName="PeakHoldTrack" Path="ActualWidth" />
                                             <Binding Path="HomePeakHoldProgress" />
                                         </MultiBinding>
                                     </Border.Width>
@@ -1002,7 +1182,7 @@
                         </Grid>
                     </Grid>
 
-                    <!--  STOP: fires on press (not on release)  -->
+                    <!--  RIGHT Row 4: STOP button, fires on press (not on release)  -->
                     <Button
                         Grid.Row="4"
                         Height="180"
@@ -1013,7 +1193,7 @@
                         IsEnabled="{Binding IsControlEnabled}"
                         Style="{StaticResource StopButtonStyle}" />
 
-                    <!--  System setting  -->
+                    <!--  RIGHT Row 5: System setting button  -->
                     <Button
                         Grid.Row="5"
                         Height="80"
@@ -1026,17 +1206,23 @@
             </Grid>
 
             <!--  =====================================================  -->
-            <!--  BOTTOM BAR: alarm reset / status / logout  -->
+            <!--  ROW 2: BOTTOM BAR (alarm reset / status message / logout)  -->
             <!--  =====================================================  -->
             <Grid Grid.Row="2">
                 <Grid.ColumnDefinitions>
+                    <!--  Col 0: alarm reset button  -->
                     <ColumnDefinition Width="340" />
+                    <!--  Col 1: spacer  -->
                     <ColumnDefinition Width="20" />
+                    <!--  Col 2: status message bar  -->
                     <ColumnDefinition Width="*" />
+                    <!--  Col 3: spacer  -->
                     <ColumnDefinition Width="10" />
+                    <!--  Col 4: logout button  -->
                     <ColumnDefinition Width="240" />
                 </Grid.ColumnDefinitions>
 
+                <!--  BOTTOM Col 0: Alarm reset button: "アラームリセット"  -->
                 <Button
                     Grid.Column="0"
                     Height="90"
@@ -1046,6 +1232,7 @@
                     FontSize="34"
                     Style="{StaticResource PanelButtonStyle}" />
 
+                <!--  BOTTOM Col 2: Status message bar  -->
                 <Border
                     Grid.Column="2"
                     Height="90"
@@ -1061,11 +1248,12 @@
                         TextTrimming="CharacterEllipsis" />
                 </Border>
 
-                <!--  Logout: hold 2 s (progress bar shows the hold)  -->
+                <!--  BOTTOM Col 4: Logout: hold 2 s (progress bar shows the hold)  -->
                 <Grid
                     Grid.Column="4"
                     Height="90"
                     VerticalAlignment="Bottom">
+                    <!--  Logout button: "ログアウト"  -->
                     <Button
                         x:Name="LogoutButton"
                         Background="{StaticResource DangerBrush}"
@@ -1090,6 +1278,7 @@
                         </i:Interaction.Triggers>
                     </Button>
 
+                    <!--  Logout hold progress bar: track (outer) and fill (inner)  -->
                     <Border
                         x:Name="LogoutHoldTrack"
                         Height="6"

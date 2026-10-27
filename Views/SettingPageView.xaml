@@ -12,25 +12,43 @@
     mc:Ignorable="d">
 
     <Viewbox Style="{StaticResource DesignCanvasViewboxStyle}">
+
+        <!--  =====================================================  -->
+        <!--  ROOT LAYOUT: content / version / error message / bottom bar  -->
+        <!--  =====================================================  -->
         <Grid Style="{StaticResource DesignCanvasGridStyle}">
             <Grid.RowDefinitions>
+                <!--  Row 0: content (left and right columns)  -->
                 <RowDefinition Height="*" />
+                <!--  Row 1: undai version text  -->
                 <RowDefinition Height="40" />
+                <!--  Row 2: status / error message  -->
                 <RowDefinition Height="40" />
+                <!--  Row 3: bottom bar  -->
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <!--  ================= Content: left / right columns =================  -->
+            <!--  =====================================================  -->
+            <!--  ROW 0: CONTENT (left = network / gimbal / satellite, right = search / endurance)  -->
+            <!--  =====================================================  -->
             <Grid Grid.Row="0">
                 <Grid.ColumnDefinitions>
+                    <!--  Col 0: left side  -->
                     <ColumnDefinition Width="820" />
+                    <!--  Col 1: spacer  -->
                     <ColumnDefinition Width="100" />
+                    <!--  Col 2: right side  -->
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
-                <!--  ============ LEFT: network + gimbal ============  -->
+                <!--  =====================================================  -->
+                <!--  CONTENT Col 0: LEFT SIDE (network + gimbal + satellite + alarm buttons)  -->
+                <!--  =====================================================  -->
                 <StackPanel Grid.Column="0">
+
+                    <!--  LEFT 1) Network settings group: "ネットワーク設定"  -->
                     <GroupBox Style="{StaticResource PanelGroupBoxStyle}">
+                        <!--  Group header  -->
                         <GroupBox.Header>
                             <TextBlock
                                 FontSize="30"
@@ -42,16 +60,23 @@
 
                         <Grid>
                             <Grid.ColumnDefinitions>
+                                <!--  Col 0: labels  -->
                                 <ColumnDefinition Width="400" />
+                                <!--  Col 1: input boxes  -->
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
+                                <!--  Row 0: undai IP address  -->
                                 <RowDefinition Height="48" />
+                                <!--  Row 1: subnet mask  -->
                                 <RowDefinition Height="48" />
+                                <!--  Row 2: default gateway  -->
                                 <RowDefinition Height="48" />
+                                <!--  Row 3: modem IP address  -->
                                 <RowDefinition Height="48" />
                             </Grid.RowDefinitions>
 
+                            <!--  Row 0: Undai IP address label and input  -->
                             <TextBlock
                                 Grid.Row="0"
                                 Style="{StaticResource SettingLabelStyle}"
@@ -62,6 +87,7 @@
                                 Style="{StaticResource SettingUiTextBoxStyle}"
                                 Text="{Binding UndaiIpAddress, UpdateSourceTrigger=PropertyChanged}" />
 
+                            <!--  Row 1: Subnet mask label and input  -->
                             <TextBlock
                                 Grid.Row="1"
                                 Style="{StaticResource SettingLabelStyle}"
@@ -72,6 +98,7 @@
                                 Style="{StaticResource SettingUiTextBoxStyle}"
                                 Text="{Binding UndaiSubnetMask, UpdateSourceTrigger=PropertyChanged}" />
 
+                            <!--  Row 2: Default gateway label and input  -->
                             <TextBlock
                                 Grid.Row="2"
                                 Style="{StaticResource SettingLabelStyle}"
@@ -82,6 +109,7 @@
                                 Style="{StaticResource SettingUiTextBoxStyle}"
                                 Text="{Binding UndaiGateway, UpdateSourceTrigger=PropertyChanged}" />
 
+                            <!--  Row 3: Modem IP address label and input  -->
                             <TextBlock
                                 Grid.Row="3"
                                 Style="{StaticResource SettingLabelStyle}"
@@ -94,7 +122,9 @@
                         </Grid>
                     </GroupBox>
 
+                    <!--  LEFT 2) Gimbal settings group: "雲台設定"  -->
                     <GroupBox Margin="0,30,0,8" Style="{StaticResource PanelGroupBoxStyle}">
+                        <!--  Group header  -->
                         <GroupBox.Header>
                             <TextBlock
                                 FontSize="30"
@@ -105,26 +135,37 @@
                         </GroupBox.Header>
                         <Grid>
                             <Grid.ColumnDefinitions>
+                                <!--  Col 0: labels  -->
                                 <ColumnDefinition Width="250" />
+                                <!--  Col 1: azimuth inputs  -->
                                 <ColumnDefinition Width="*" />
+                                <!--  Col 2: spacer  -->
                                 <ColumnDefinition Width="10" />
+                                <!--  Col 3: elevation inputs  -->
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
+                                <!--  Row 0: column headers  -->
                                 <RowDefinition Height="48" />
+                                <!--  Row 1: origin offset  -->
                                 <RowDefinition Height="48" />
+                                <!--  Row 2: manual high speed  -->
                                 <RowDefinition Height="48" />
+                                <!--  Row 3: manual low speed  -->
                                 <RowDefinition Height="48" />
+                                <!--  Row 4: jog angle  -->
                                 <RowDefinition Height="48" />
                             </Grid.RowDefinitions>
 
-                            <!--  Column headers  -->
+                            <!--  Row 0: Column headers  -->
+                            <!--  Header "水平角" azimuth (Col 1)  -->
                             <TextBlock
                                 Grid.Row="0"
                                 Grid.Column="1"
                                 HorizontalAlignment="Center"
                                 Style="{StaticResource SettingLabelStyle}"
                                 Text="水平角" />
+                            <!--  Header "仰角" elevation (Col 3)  -->
                             <TextBlock
                                 Grid.Row="0"
                                 Grid.Column="3"
@@ -132,6 +173,7 @@
                                 Style="{StaticResource SettingLabelStyle}"
                                 Text="仰角" />
 
+                            <!--  Row 1: Origin offset label, azimuth input (Col 1), elevation input (Col 3)  -->
                             <TextBlock
                                 Grid.Row="1"
                                 Style="{StaticResource SettingLabelStyle}"
@@ -147,6 +189,7 @@
                                 Style="{StaticResource SettingUiNumberBoxStyle}"
                                 Text="{Binding OriginOffsetElevation, UpdateSourceTrigger=PropertyChanged}" />
 
+                            <!--  Row 2: Manual high speed label, azimuth input (Col 1), elevation input (Col 3)  -->
                             <TextBlock
                                 Grid.Row="2"
                                 Style="{StaticResource SettingLabelStyle}"
@@ -162,6 +205,7 @@
                                 Style="{StaticResource SettingUiNumberBoxStyle}"
                                 Text="{Binding ManualHighSpeedElevation, UpdateSourceTrigger=PropertyChanged}" />
 
+                            <!--  Row 3: Manual low speed label, azimuth input (Col 1), elevation input (Col 3)  -->
                             <TextBlock
                                 Grid.Row="3"
                                 Style="{StaticResource SettingLabelStyle}"
@@ -177,6 +221,7 @@
                                 Style="{StaticResource SettingUiNumberBoxStyle}"
                                 Text="{Binding ManualLowSpeedElevation, UpdateSourceTrigger=PropertyChanged}" />
 
+                            <!--  Row 4: Jog angle label, azimuth input (Col 1), elevation input (Col 3)  -->
                             <TextBlock
                                 Grid.Row="4"
                                 Style="{StaticResource SettingLabelStyle}"
@@ -195,7 +240,9 @@
 
                     </GroupBox>
 
+                    <!--  LEFT 3) Satellite settings group: "衛星設定"  -->
                     <GroupBox Margin="0,30,0,8" Style="{StaticResource PanelGroupBoxStyle}">
+                        <!--  Group header  -->
                         <GroupBox.Header>
                             <TextBlock
                                 FontSize="30"
@@ -206,14 +253,19 @@
                         </GroupBox.Header>
                         <Grid>
                             <Grid.ColumnDefinitions>
+                                <!--  Col 0: labels  -->
                                 <ColumnDefinition Width="400" />
+                                <!--  Col 1: input boxes  -->
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
+                                <!--  Row 0: satellite name  -->
                                 <RowDefinition Height="48" />
+                                <!--  Row 1: satellite longitude  -->
                                 <RowDefinition Height="48" />
                             </Grid.RowDefinitions>
 
+                            <!--  Row 0: Satellite name label and input  -->
                             <TextBlock
                                 Grid.Row="0"
                                 Style="{StaticResource SettingLabelStyle}"
@@ -224,6 +276,7 @@
                                 Style="{StaticResource SettingUiTextBoxStyle}"
                                 Text="{Binding SatelliteName, UpdateSourceTrigger=PropertyChanged}" />
 
+                            <!--  Row 1: Satellite longitude label and input  -->
                             <TextBlock
                                 Grid.Row="1"
                                 Style="{StaticResource SettingLabelStyle}"
@@ -237,16 +290,20 @@
 
                     </GroupBox>
 
-                    <!--  Alarm buttons  -->
+                    <!--  LEFT 4) Alarm buttons: reset (Col 0) and history (Col 1)  -->
                     <Grid>
                         <Grid.ColumnDefinitions>
+                            <!--  Col 0: alarm reset  -->
                             <ColumnDefinition Width="*" />
+                            <!--  Col 1: alarm history  -->
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
+                            <!--  Row 0: buttons  -->
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
 
+                        <!--  Alarm reset button: "アラームリセット"  -->
                         <Button
                             Grid.Row="0"
                             Grid.Column="0"
@@ -256,6 +313,7 @@
                             Content="アラームリセット"
                             FontSize="28"
                             Style="{StaticResource SecondaryButtonStyle}" />
+                        <!--  Alarm history button: "アラーム履歴"  -->
                         <Button
                             Grid.Row="0"
                             Grid.Column="1"
@@ -268,10 +326,14 @@
                     </Grid>
                 </StackPanel>
 
-                <!--  ============ RIGHT: search settings ============  -->
+                <!--  =====================================================  -->
+                <!--  CONTENT Col 2: RIGHT SIDE (wide search + detail search + endurance)  -->
+                <!--  =====================================================  -->
                 <StackPanel Grid.Column="2">
 
+                    <!--  RIGHT 1) Wide search settings group: "広域サーチ設定"  -->
                     <GroupBox Style="{StaticResource PanelGroupBoxStyle}">
+                        <!--  Group header  -->
                         <GroupBox.Header>
                             <TextBlock
                                 FontSize="30"
@@ -282,16 +344,23 @@
                         </GroupBox.Header>
                         <Grid>
                             <Grid.ColumnDefinitions>
+                                <!--  Col 0: labels  -->
                                 <ColumnDefinition Width="*" />
+                                <!--  Col 1: input boxes  -->
                                 <ColumnDefinition Width="270" />
                             </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
+                                <!--  Row 0: search speed  -->
                                 <RowDefinition Height="48" />
+                                <!--  Row 1: azimuth range  -->
                                 <RowDefinition Height="48" />
+                                <!--  Row 2: elevation range  -->
                                 <RowDefinition Height="48" />
+                                <!--  Row 3: success RSSI level  -->
                                 <RowDefinition Height="48" />
                             </Grid.RowDefinitions>
 
+                            <!--  Row 0: Wide search speed label and input  -->
                             <TextBlock
                                 Grid.Row="0"
                                 Style="{StaticResource SettingLabelStyle}"
@@ -302,6 +371,7 @@
                                 Style="{StaticResource SettingUiNumberBoxStyle}"
                                 Text="{Binding WideSearchSpeed, UpdateSourceTrigger=PropertyChanged}" />
 
+                            <!--  Row 1: Wide search azimuth range label and input  -->
                             <TextBlock
                                 Grid.Row="1"
                                 Style="{StaticResource SettingLabelStyle}"
@@ -312,6 +382,7 @@
                                 Style="{StaticResource SettingUiNumberBoxStyle}"
                                 Text="{Binding WideSearchAzimuthRange, UpdateSourceTrigger=PropertyChanged}" />
 
+                            <!--  Row 2: Wide search elevation range label and input  -->
                             <TextBlock
                                 Grid.Row="2"
                                 Style="{StaticResource SettingLabelStyle}"
@@ -322,6 +393,7 @@
                                 Style="{StaticResource SettingUiNumberBoxStyle}"
                                 Text="{Binding WideSearchElevationRange, UpdateSourceTrigger=PropertyChanged}" />
 
+                            <!--  Row 3: Wide search success RSSI label and input  -->
                             <TextBlock
                                 Grid.Row="3"
                                 Style="{StaticResource SettingLabelStyle}"
@@ -334,7 +406,10 @@
                         </Grid>
 
                     </GroupBox>
+
+                    <!--  RIGHT 2) Detail search settings group: "詳細サーチ設定"  -->
                     <GroupBox Margin="0,30,0,8" Style="{StaticResource PanelGroupBoxStyle}">
+                        <!--  Group header  -->
                         <GroupBox.Header>
                             <TextBlock
                                 FontSize="30"
@@ -345,19 +420,29 @@
                         </GroupBox.Header>
                         <Grid>
                             <Grid.ColumnDefinitions>
+                                <!--  Col 0: labels  -->
                                 <ColumnDefinition Width="*" />
+                                <!--  Col 1: input boxes  -->
                                 <ColumnDefinition Width="270" />
                             </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
+                                <!--  Row 0: search speed  -->
                                 <RowDefinition Height="48" />
+                                <!--  Row 1: step angle  -->
                                 <RowDefinition Height="48" />
+                                <!--  Row 2: azimuth range  -->
                                 <RowDefinition Height="48" />
+                                <!--  Row 3: elevation range  -->
                                 <RowDefinition Height="48" />
+                                <!--  Row 4: success RSSI level  -->
                                 <RowDefinition Height="48" />
+                                <!--  Row 5: step settle seconds  -->
                                 <RowDefinition Height="48" />
+                                <!--  Row 6: turnback threshold level  -->
                                 <RowDefinition Height="48" />
                             </Grid.RowDefinitions>
 
+                            <!--  Row 0: Detail search speed label and input  -->
                             <TextBlock
                                 Grid.Row="0"
                                 Style="{StaticResource SettingLabelStyle}"
@@ -368,6 +453,7 @@
                                 Style="{StaticResource SettingUiNumberBoxStyle}"
                                 Text="{Binding DetailSearchSpeed, UpdateSourceTrigger=PropertyChanged}" />
 
+                            <!--  Row 1: Detail search step angle label and input  -->
                             <TextBlock
                                 Grid.Row="1"
                                 Style="{StaticResource SettingLabelStyle}"
@@ -378,6 +464,7 @@
                                 Style="{StaticResource SettingUiNumberBoxStyle}"
                                 Text="{Binding DetailSearchStepAngle, UpdateSourceTrigger=PropertyChanged}" />
 
+                            <!--  Row 2: Detail search azimuth range label and input  -->
                             <TextBlock
                                 Grid.Row="2"
                                 Style="{StaticResource SettingLabelStyle}"
@@ -388,6 +475,7 @@
                                 Style="{StaticResource SettingUiNumberBoxStyle}"
                                 Text="{Binding DetailSearchAzimuthRange, UpdateSourceTrigger=PropertyChanged}" />
 
+                            <!--  Row 3: Detail search elevation range label and input  -->
                             <TextBlock
                                 Grid.Row="3"
                                 Style="{StaticResource SettingLabelStyle}"
@@ -398,6 +486,7 @@
                                 Style="{StaticResource SettingUiNumberBoxStyle}"
                                 Text="{Binding DetailSearchElevationRange, UpdateSourceTrigger=PropertyChanged}" />
 
+                            <!--  Row 4: Detail search success RSSI label and input  -->
                             <TextBlock
                                 Grid.Row="4"
                                 Style="{StaticResource SettingLabelStyle}"
@@ -408,6 +497,7 @@
                                 Style="{StaticResource SettingUiNumberBoxStyle}"
                                 Text="{Binding DetailSearchSuccessRssi, UpdateSourceTrigger=PropertyChanged}" />
 
+                            <!--  Row 5: Step settle seconds label and input  -->
                             <TextBlock
                                 Grid.Row="5"
                                 Style="{StaticResource SettingLabelStyle}"
@@ -418,6 +508,7 @@
                                 Style="{StaticResource SettingUiNumberBoxStyle}"
                                 Text="{Binding DetailSearchStepSettleSeconds, UpdateSourceTrigger=PropertyChanged}" />
 
+                            <!--  Row 6: Turnback threshold label and input  -->
                             <TextBlock
                                 Grid.Row="6"
                                 Style="{StaticResource SettingLabelStyle}"
@@ -430,7 +521,10 @@
                         </Grid>
 
                     </GroupBox>
+
+                    <!--  RIGHT 3) Endurance settings group: "体力設定" (continuous run)  -->
                     <GroupBox Margin="0,30,0,8" Style="{StaticResource PanelGroupBoxStyle}">
+                        <!--  Group header  -->
                         <GroupBox.Header>
                             <TextBlock
                                 FontSize="30"
@@ -442,15 +536,21 @@
 
                         <Grid>
                             <Grid.ColumnDefinitions>
+                                <!--  Col 0: labels  -->
                                 <ColumnDefinition Width="*" />
+                                <!--  Col 1: input boxes  -->
                                 <ColumnDefinition Width="270" />
                             </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
+                                <!--  Row 0: continuous run minutes  -->
                                 <RowDefinition Height="48" />
+                                <!--  Row 1: spacer  -->
                                 <RowDefinition Height="5" />
+                                <!--  Row 2: stop / start buttons  -->
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
 
+                            <!--  Row 0: Continuous run end time label and input  -->
                             <TextBlock
                                 Grid.Row="0"
                                 Grid.Column="0"
@@ -462,15 +562,19 @@
                                 Style="{StaticResource SettingUiNumberBoxStyle}"
                                 Text="{Binding ContinuousRunMinutes, UpdateSourceTrigger=PropertyChanged}" />
 
+                            <!--  Row 2: Stop and start buttons (spans both columns)  -->
                             <Grid
                                 Grid.Row="2"
                                 Grid.Column="0"
                                 Grid.ColumnSpan="2">
                                 <Grid.ColumnDefinitions>
+                                    <!--  Col 0: stop  -->
                                     <ColumnDefinition Width="*" />
+                                    <!--  Col 1: start continuous run  -->
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
 
+                                <!--  Stop button: "停止"  -->
                                 <Button
                                     Grid.Column="0"
                                     Width="235"
@@ -480,6 +584,7 @@
                                     Content="停止"
                                     FontSize="30"
                                     Style="{StaticResource SecondaryButtonStyle}" />
+                                <!--  Start continuous run button: "連続運転開始"  -->
                                 <Button
                                     Grid.Column="1"
                                     Width="235"
@@ -495,7 +600,9 @@
                 </StackPanel>
             </Grid>
 
-            <!--  ================= Undai Version =================  -->
+            <!--  =====================================================  -->
+            <!--  ROW 1: UNDAI VERSION (right aligned)  -->
+            <!--  =====================================================  -->
             <Grid Grid.Row="1">
                 <TextBlock
                     Grid.Row="0"
@@ -507,13 +614,17 @@
                     Text="{Binding UndaiVersionText, StringFormat=雲台Ver {0}}" />
             </Grid>
 
-            <!--  ================= Error Message =================  -->
+            <!--  =====================================================  -->
+            <!--  ROW 2: STATUS / ERROR MESSAGE (red when IsStatusError is true)  -->
+            <!--  =====================================================  -->
             <Grid Grid.Row="2" HorizontalAlignment="Right">
                 <TextBlock FontSize="24" Text="{Binding StatusMessage}">
                     <TextBlock.Style>
                         <Style TargetType="TextBlock">
+                            <!--  Default color  -->
                             <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
                             <Style.Triggers>
+                                <!--  Error state: red text  -->
                                 <DataTrigger Binding="{Binding IsStatusError}" Value="True">
                                     <Setter Property="Foreground" Value="Red" />
                                 </DataTrigger>
@@ -523,15 +634,22 @@
                 </TextBlock>
             </Grid>
 
-            <!--  ================= Bottom bar =================  -->
+            <!--  =====================================================  -->
+            <!--  ROW 3: BOTTOM BAR (back / PIN reset / maintenance on the left, register on the right)  -->
+            <!--  =====================================================  -->
             <Grid Grid.Row="3">
                 <Grid.ColumnDefinitions>
+                    <!--  Col 0: left button group  -->
                     <ColumnDefinition Width="Auto" />
+                    <!--  Col 1: flexible gap  -->
                     <ColumnDefinition Width="*" />
+                    <!--  Col 2: register button  -->
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
+                <!--  BOTTOM Col 0: Left button group (back / PIN reset / maintenance mode)  -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <!--  Back button: "戻る" (returns to main page)  -->
                     <Button
                         Width="235"
                         Height="70"
@@ -539,6 +657,7 @@
                         Content="戻る"
                         FontSize="30"
                         Style="{StaticResource SecondaryButtonStyle}" />
+                    <!--  PIN reset button: "暗証番号リセット"  -->
                     <Button
                         Width="235"
                         Height="70"
@@ -547,6 +666,7 @@
                         Content="暗証番号リセット"
                         FontSize="28"
                         Style="{StaticResource SecondaryButtonStyle}" />
+                    <!--  Maintenance mode button: "保守モード" (opens developer page)  -->
                     <Button
                         Width="235"
                         Height="70"
@@ -557,6 +677,7 @@
                         Style="{StaticResource SecondaryButtonStyle}" />
                 </StackPanel>
 
+                <!--  BOTTOM Col 2: Register button: "登録" (saves settings)  -->
                 <Button
                     Grid.Column="2"
                     Width="235"
