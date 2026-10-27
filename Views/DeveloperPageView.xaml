@@ -22,7 +22,9 @@
             <Grid.RowDefinitions>
                 <!--  Row 0: content  -->
                 <RowDefinition Height="*" />
-                <!--  Row 1: bottom bar  -->
+                <!--  Row 1: Status bar  -->
+                <RowDefinition Height="Auto" />
+                <!--  Row 2: bottom bar  -->
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
@@ -76,6 +78,10 @@
                                     <!--  Row 3: spacer  -->
                                     <RowDefinition Height="10" />
                                     <!--  Row 4: go-to angle (position button + input)  -->
+                                    <RowDefinition Height="Auto" />
+                                    <!--  Row 3: spacer  -->
+                                    <RowDefinition Height="20" />
+                                    <!--  Row 4: Step Angle  -->
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
 
@@ -233,6 +239,34 @@
                                         Text="{Binding ElevationAngleInput, UpdateSourceTrigger=PropertyChanged}"
                                         TextAlignment="Center" />
                                 </Grid>
+
+                                <Grid Grid.Row="6">
+                                    <Grid.ColumnDefinitions>
+                                        <!--  Col 0: labels  -->
+                                        <ColumnDefinition Width="*" />
+                                        <!--  Col 1: input boxes  -->
+                                        <ColumnDefinition Width="270" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <!--  Row 0: Continuous run end time label and input  -->
+                                    <TextBlock
+                                        Grid.Row="0"
+                                        Grid.Column="0"
+                                        Margin="30,0"
+                                        Style="{StaticResource SettingLabelStyle}"
+                                        Text="ステップ度" />
+                                    <ui:NumberBox
+                                        Grid.Row="0"
+                                        Grid.Column="1"
+                                        Margin="0,0,30,0"
+                                        LargeChange="0.1"
+                                        MaxDecimalPlaces="1"
+                                        Minimum="0"
+                                        SmallChange="0.1"
+                                        SpinButtonPlacementMode="Inline"
+                                        Style="{StaticResource SettingUiNumberBoxStyle}"
+                                        Text="{Binding WideSearchElevationStep, UpdateSourceTrigger=PropertyChanged}" />
+                                </Grid>
                             </Grid>
                         </Border>
 
@@ -254,6 +288,10 @@
                                     <!--  Row 3: spacer  -->
                                     <RowDefinition Height="10" />
                                     <!--  Row 4: go-to angle (position button + input)  -->
+                                    <RowDefinition Height="Auto" />
+                                    <!--  Row 3: spacer  -->
+                                    <RowDefinition Height="20" />
+                                    <!--  Row 4: Step Angle  -->
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
 
@@ -410,6 +448,34 @@
                                         Text="{Binding AzimuthAngleInput, UpdateSourceTrigger=PropertyChanged}"
                                         TextAlignment="Center" />
                                 </Grid>
+
+                                <Grid Grid.Row="6">
+                                    <Grid.ColumnDefinitions>
+                                        <!--  Col 0: labels  -->
+                                        <ColumnDefinition Width="*" />
+                                        <!--  Col 1: input boxes  -->
+                                        <ColumnDefinition Width="270" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <!--  Row 0: Continuous run end time label and input  -->
+                                    <TextBlock
+                                        Grid.Row="0"
+                                        Grid.Column="0"
+                                        Margin="30,0"
+                                        Style="{StaticResource SettingLabelStyle}"
+                                        Text="ステップ度" />
+                                    <ui:NumberBox
+                                        Grid.Row="0"
+                                        Grid.Column="1"
+                                        Margin="0,0,30,0"
+                                        LargeChange="0.1"
+                                        MaxDecimalPlaces="1"
+                                        Minimum="0"
+                                        SmallChange="0.1"
+                                        SpinButtonPlacementMode="Inline"
+                                        Style="{StaticResource SettingUiNumberBoxStyle}"
+                                        Text="{Binding WideSearchAzimuthStep, UpdateSourceTrigger=PropertyChanged}" />
+                                </Grid>
                             </Grid>
                         </Border>
                     </Grid>
@@ -477,36 +543,76 @@
                             Width="1500"
                             VerticalAlignment="Top"
                             Style="{StaticResource SettingLabelStyle}"
-                            Text="{Binding StatusMessage}"
+                            Text="{Binding LogMessage}"
                             TextWrapping="WrapWithOverflow" />
                     </ScrollViewer>
                 </StackPanel>
 
-
             </StackPanel>
+
+            <!--  =====================================================  -->
+            <!--  ROW 2: STATUS / ERROR MESSAGE (red when IsStatusError is true)  -->
+            <!--  =====================================================  -->
+            <Grid Grid.Row="1" HorizontalAlignment="Right">
+                <TextBlock FontSize="24" Text="{Binding StatusMessage}">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <!--  Default color  -->
+                            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+                            <Style.Triggers>
+                                <!--  Error state: red text  -->
+                                <DataTrigger Binding="{Binding IsStatusError}" Value="True">
+                                    <Setter Property="Foreground" Value="Red" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </Grid>
 
             <!--  =====================================================  -->
             <!--  ROW 1: BOTTOM BAR (back / top page, left aligned)  -->
             <!--  =====================================================  -->
-            <StackPanel Grid.Row="1" Orientation="Horizontal">
-                <!--  Back button: "戻る" (returns to setting page)  -->
-                <ui:Button
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <!--  Col 0: left button group  -->
+                    <ColumnDefinition Width="Auto" />
+                    <!--  Col 1: flexible gap  -->
+                    <ColumnDefinition Width="*" />
+                    <!--  Col 2: register button  -->
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <!--  Back button: "戻る" (returns to setting page)  -->
+                    <ui:Button
+                        Width="235"
+                        Height="70"
+                        Command="{Binding NavigateToSettingPageCommand}"
+                        Content="戻る"
+                        FontSize="30"
+                        Style="{StaticResource SecondaryButtonStyle}" />
+                    <!--  Top page button: "トップページ" (returns to main page)  -->
+                    <ui:Button
+                        Width="235"
+                        Height="70"
+                        Margin="30,0,0,0"
+                        Command="{Binding NavigateToMainPageCommand}"
+                        Content="トップページ"
+                        FontSize="30"
+                        Style="{StaticResource SecondaryButtonStyle}" />
+                </StackPanel>
+
+                <!--  BOTTOM Col 2: Register button: "登録" (saves settings)  -->
+                <Button
+                    Grid.Column="2"
                     Width="235"
                     Height="70"
-                    Command="{Binding NavigateToSettingPageCommand}"
-                    Content="戻る"
-                    FontSize="30"
-                    Style="{StaticResource SecondaryButtonStyle}" />
-                <!--  Top page button: "トップページ" (returns to main page)  -->
-                <ui:Button
-                    Width="235"
-                    Height="70"
-                    Margin="30,0,0,0"
-                    Command="{Binding NavigateToMainPageCommand}"
-                    Content="トップページ"
-                    FontSize="30"
-                    Style="{StaticResource SecondaryButtonStyle}" />
-            </StackPanel>
+                    HorizontalAlignment="Right"
+                    Command="{Binding SaveCommand}"
+                    Content="登録"
+                    FontSize="28"
+                    Style="{StaticResource PrimaryButtonStyle}" />
+            </Grid>
         </Grid>
     </Viewbox>
 </UserControl>

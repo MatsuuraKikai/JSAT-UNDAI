@@ -41,18 +41,19 @@ public class MainPageModel
                 case "A":
                     if(int.TryParse(messageList[2], out int dataCount))
                     {
-                        string[] newMessage = messageList[3..(3 + dataCount)];
-                        ProcessRealTimeMessages(newMessage, dataCount);
+                        string[] newRealtimeMessage = messageList[3..(3 + dataCount)];
+                        ProcessRealTimeMessages(newRealtimeMessage, dataCount);
                     }
                     break;
                 case "SY":
-                    ProcessSystemMessages(_message);
+                    string[] newSystemMessage = messageList[1..];
+                    ProcessSystemMessages(1, newSystemMessage);
                     break;
                 case "SI":
-                    ProcessSystemMessages(_message);
+                    //ProcessSystemMessages(_message);
                     break;
                 case "SA":
-                    ProcessSystemMessages(_message);
+                    //ProcessSystemMessages(_message);
                     break;
             }
         }
@@ -66,46 +67,46 @@ public class MainPageModel
 
     void ProcessRealTimeMessages(string[] message, int dataCount)
     {
-        for (int i = 0; i < dataCount; i++)
+        for (int idx = 0; idx < dataCount; idx++)
         {
-            switch (i)
+            switch (idx)
             {
                 case 0:
-                    _mainPageViewModel.CurrentElevation = message[i];
+                    _mainPageViewModel.CurrentElevation = message[idx];
                     break;
                 case 1:
-                    _mainPageViewModel.CurrentAzimuth = message[i];
+                    _mainPageViewModel.CurrentAzimuth = message[idx];
                     break;
                 case 2:
-                    _mainPageViewModel.ChangePositionUnit(message[i], 0);
+                    _mainPageViewModel.ChangePositionUnit(message[idx], 0);
                     break;
                 case 3:
-                    _mainPageViewModel.ChangePositionUnit(message[i], 1);
+                    _mainPageViewModel.ChangePositionUnit(message[idx], 1);
                     break;
                 case 4:
-                    _mainPageViewModel.SpeedModeIndex = int.Parse(message[i]);
+                    _mainPageViewModel.SpeedModeIndex = int.Parse(message[idx]);
                     break;
                 case 5:
-                    if(int.TryParse(message[i], out int linkUpDown))
+                    if(int.TryParse(message[idx], out int linkUpDown))
                     {
                         _mainPageViewModel.ModemStatus = (linkUpDown == 1);
                     }
                     else
                     {
-                        _ = ErrorLoggingService.LogError($"Failed to parse ModemStatus: {message[i]}");
+                        _ = ErrorLoggingService.LogError($"Failed to parse ModemStatus: {message[idx]}");
                     }
                     break;
                 case 6:
-                    _mainPageViewModel.CurrentRssi = message[i];
+                    _mainPageViewModel.CurrentRssi = message[idx];
                     break;
                 case 7:
-                    _mainPageViewModel.PeakRssi = message[i];
+                    _mainPageViewModel.PeakRssi = message[idx];
                     break;
                 case 8:
-                    _mainPageViewModel.PeakElevation = message[i];
+                    _mainPageViewModel.PeakElevation = message[idx];
                     break;
                 case 9:
-                    _mainPageViewModel.PeakAzimuth = message[i];
+                    _mainPageViewModel.PeakAzimuth = message[idx];
                     break;
                 case 10:
                     break;
@@ -114,25 +115,25 @@ public class MainPageModel
                 case 12:
                     break;
                 case 13:
-                    if(int.TryParse(message[i], out int gpsStatus))
+                    if(int.TryParse(message[idx], out int gpsStatus))
                     {
                         _mainPageViewModel.GpsStatus = (gpsStatus == 1);
                     }
                     else
                     {
-                        _ = ErrorLoggingService.LogError($"Failed to parse GpsStatus: {message[i]}");
+                        _ = ErrorLoggingService.LogError($"Failed to parse GpsStatus: {message[idx]}");
                     }
                     break;
                 case 14:
-                    _mainPageViewModel.ActiveHomePeakSearchIndex = int.Parse(message[i]);
+                    _mainPageViewModel.ActiveHomePeakSearchIndex = int.Parse(message[idx]);
                     break;
                 case 15:
                     break;
                 case 16:
-                    _mainPageViewModel.AlarmStatusCode = message[i];
+                    _mainPageViewModel.AlarmStatusCode = message[idx];
                     break;
                 case 17:
-                    if (int.TryParse(message[i], out int randomNumber))
+                    if (int.TryParse(message[idx], out int randomNumber))
                     {
                         if(_tcpServerConnectionService.IsConnectionStale(randomNumber))
                         {
@@ -144,9 +145,101 @@ public class MainPageModel
         }
     }
 
-    void ProcessSystemMessages(string message)
+    void ProcessSystemMessages(int systemMessageType, string[] message)
     {
-
+        if(systemMessageType == 1)
+        {
+            for (int idx = 0; idx < message.Length; idx++)
+            {
+                switch (idx)
+                {
+                    case 0:
+                        _settingPageViewModel.UndaiIpAddress = message[idx];
+                        break;
+                    case 1:
+                        _settingPageViewModel.UndaiSubnetMask = message[idx];
+                        break;
+                    case 2:
+                        _settingPageViewModel.UndaiGateway = message[idx];
+                        break;
+                    case 3:
+                        _settingPageViewModel.ModemIpAddress = message[idx];
+                        break;
+                    case 4:
+                        _settingPageViewModel.OriginOffsetAzimuth = message[idx];
+                        break;
+                    case 5:
+                        _settingPageViewModel.OriginOffsetElevation = message[idx];
+                        break;
+                    case 6:
+                        _settingPageViewModel.ManualHighSpeedAzimuth = message[idx];
+                        break;
+                    case 7:
+                        _settingPageViewModel.ManualHighSpeedElevation = message[idx];
+                        break;
+                    case 8:
+                        _settingPageViewModel.ManualLowSpeedAzimuth = message[idx];
+                        break;
+                    case 9:
+                        _settingPageViewModel.ManualLowSpeedElevation = message[idx];
+                        break;
+                    case 10:
+                        _settingPageViewModel.JogAngleAzimuth = message[idx];
+                        break;
+                    case 11:
+                        _settingPageViewModel.JogAngleElevation = message[idx];
+                        break;
+                    case 12:
+                        _settingPageViewModel.SatelliteName = message[idx];
+                        break;
+                    case 13:
+                        _settingPageViewModel.SatelliteLongitude= message[idx];
+                        break;
+                    case 14:
+                        _settingPageViewModel.WideSearchSpeed = message[idx];
+                        break;
+                    case 15:
+                        _settingPageViewModel.WideSearchAzimuthRange = message[idx];
+                        break;
+                    case 16:
+                        _settingPageViewModel.WideSearchElevationRange = message[idx];
+                        break;
+                    case 17:
+                        _settingPageViewModel.WideSearchSuccessRssi = message[idx];
+                        break;
+                    case 18:
+                        _settingPageViewModel.DetailSearchSpeed = message[idx];
+                        break;
+                    case 19:
+                        _settingPageViewModel.DetailSearchStepAngle = message[idx];
+                        break;
+                    case 20:
+                        _settingPageViewModel.DetailSearchAzimuthRange = message[idx];
+                        break;
+                    case 21:
+                        _settingPageViewModel.DetailSearchElevationRange = message[idx];
+                        break;
+                    case 22:
+                        _settingPageViewModel.DetailSearchSuccessRssi = message[idx];
+                        break;
+                    case 23:
+                        _settingPageViewModel.DetailSearchStepSettleSeconds = message[idx];
+                        break;
+                    case 24:
+                        _settingPageViewModel.DetailSearchTurnbackThresholdLevel = message[idx];
+                        break;
+                    case 25:
+                        _developerPageViewModel.WideSearchElevationStep = message[idx];
+                        break;
+                    case 26:
+                        _developerPageViewModel.WideSearchAzimuthStep = message[idx];
+                        break;
+                    case 27:
+                        _settingPageViewModel.UndaiVersionText = message[idx];
+                        break;
+                }
+            }
+        }
     }
 
     public void SendTcpMessage(string message = "", bool isCommand = false, int commandNo = 0)
@@ -186,6 +279,9 @@ public class MainPageModel
                 case 10:
                     sendMessage = message;
                     break;
+                case 11:
+                    sendMessage = message;
+                    break;
                 case 18:
                     sendMessage = "I,18";
                     break;
@@ -203,6 +299,9 @@ public class MainPageModel
                     break;
                 case 30:
                     sendMessage = "I,30";
+                    break;
+                case 31:
+                    sendMessage = "I,31";
                     break;
             }
             ;

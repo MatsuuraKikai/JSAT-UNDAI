@@ -34,6 +34,7 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
     private CancellationTokenSource? _disconnectHoldCts;
     private const int DisconnectHoldMs = 2000;
     private bool _disconnectHoldCompleted;
+    int tcpMessageCount = 0;
 
     private Stopwatch? _logoutHoldStopwatch;
     private CancellationTokenSource? _logoutHoldCts;
@@ -53,6 +54,7 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
     private double _manualLongitude;
 
     bool isDDvalue = true;
+    private const string SpinnerFrames = "◐◓◑◒";
 
     // =====================================================================
     // Clock (top right)
@@ -238,7 +240,7 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
     private bool _isPeakSearching;
 
     [ObservableProperty]
-    private string _statusMessage = "READY";
+    private string _statusMessage = "Connect to UNDAI";
 
     [ObservableProperty]
     private string _satelliteName = "-----";
@@ -273,8 +275,6 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
     private string? _activeJogDirection;
 
     private string? _activeOperation;
-
-    private bool CanAlarmReset() => HasAlarm;
 
     private bool CanSetElevationAngle() => TryParseAngle(ElevationAngleInput, out _);
 
@@ -513,7 +513,7 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
             {
                 return;
             }
-            _mainPageModel.SendTcpMessage(message: $"R,1,{angle},0,0", isCommand: true, commandNo: 9);
+            _mainPageModel.SendTcpMessage(message: $"R,1,{angle},0,0,0", isCommand: true, commandNo: 9);
 
             _ = ErrorLoggingService.LogInfo($"Go to elevation angle: {ElevationAngleInput}");
             // TODO: validate range, then send the position command.
@@ -529,7 +529,7 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
             {
                 return;
             }
-            _mainPageModel.SendTcpMessage(message: $"R,2,{angle},0,0", isCommand: true, commandNo: 10);
+            _mainPageModel.SendTcpMessage(message: $"R,2,{angle},0,0,0", isCommand: true, commandNo: 10);
 
             _ = ErrorLoggingService.LogInfo($"Go to azimuth angle: {AzimuthAngleInput}");
             // TODO: validate range, then send the position command.
@@ -610,6 +610,8 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
                 // Assumes Latitude / Longitude are string properties (the screen shows "0.00000").
                 Latitude = _manualLatitude.ToString("0.00000", CultureInfo.InvariantCulture);
                 Longitude = _manualLongitude.ToString("0.00000", CultureInfo.InvariantCulture);
+
+                _mainPageModel.SendTcpMessage(message: $"R,3,1,{Latitude},{Longitude}", isCommand: true, commandNo: 11);
             }
             else if (wasManual)
             {
@@ -617,6 +619,8 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
                 // The next GPS receiver update fills them in again.
                 Latitude = "0.00000";
                 Longitude = "0.00000";
+
+                _mainPageModel.SendTcpMessage(message: $"R,3,0,{Latitude},{Longitude}", isCommand: true, commandNo: 11);
             }
             UpdatePositionValues();
         }
@@ -694,7 +698,7 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
         Safe(nameof(AlarmReset), () =>
         {
             _ = ErrorLoggingService.LogInfo("Alarm reset requested.");
-            // TODO: send alarm reset; clear HasAlarm when the device confirms.
+            _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 31);
         });
     }
 
@@ -750,17 +754,25 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
 
     private void OnTcpMessageReceived(string rawMessage)
     {
-        try
+        RunOnUi(() =>
         {
-            // Handle the received message here
-            //_ = ErrorLoggingService.LogInfo($"Received TCP message: {rawMessage}");
-            StatusMessage = rawMessage.Length + " " + rawMessage; // Display the raw message in the status area for debugging
-            _ = _mainPageModel.TcpReceivedMessageProcess(rawMessage);
-        }
-        catch (Exception ex)
-        {
-            _ = ErrorLoggingService.LogError("Error handling received TCP message.", ex);
-        }
+            try
+            {
+                // Handle the received message here
+                //_ = ErrorLoggingService.LogInfo($"Received TCP message: {rawMessage}");
+                tcpMessageCount++;
+                if (!HasAlarm)
+                {
+                    //StatusMessage = SpinnerFrames[tcpMessageCount % 4] + "Receiving" + new string('.', (tcpMessageCount % 3) + 1);
+                    StatusMessage = SpinnerFrames[tcpMessageCount % 4] + " Receiving";
+                }
+                _ = _mainPageModel.TcpReceivedMessageProcess(rawMessage);
+            }
+            catch (Exception ex)
+            {
+                _ = ErrorLoggingService.LogError("Error handling received TCP message.", ex);
+            }
+        });
     }
 
     /// <summary>Starts the 1 s clock. Call once from Initialize().</summary>
@@ -806,6 +818,12 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
             _ = ErrorLoggingService.LogWarning("TCP connection lost. Controls disabled.");
             GpsStatus = false;
             ModemStatus = false;
+
+            tcpMessageCount = 0;
+
+            HasAlarm = false;
+
+            StatusMessage = "Connect to UNDAI";
         }
     }
 
@@ -865,6 +883,74 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
                 _ = ErrorLoggingService.LogWarning($"Invalid ActiveHomePeakSearchIndex: {value}");
                 break;
         }
+    }
+
+    partial void OnAlarmStatusCodeChanging(string value)
+    {
+        RunOnUi(() =>
+        {
+            try
+            {
+                if (value is null)
+                {
+                    _ = ErrorLoggingService.LogError($"Alarm code is null");
+                    return;
+                }
+                if (int.TryParse(value, out int alarmCode))
+                {
+                    switch (alarmCode)
+                    {
+                        case 0:
+                            HasAlarm = false;
+                            break;
+                        case 1:
+                            HasAlarm = true;
+                            StatusMessage = "SD カード オープン エラー";
+                            _ = ErrorLoggingService.LogError(StatusMessage);
+                            break;
+                        case 2:
+                            HasAlarm = true;
+                            StatusMessage = "SD カード 読み取りエラー";
+                            _ = ErrorLoggingService.LogError(StatusMessage);
+                            break;
+                        case 3:
+                            HasAlarm = true;
+                            StatusMessage = "SD カード 書き込みエラー";
+                            _ = ErrorLoggingService.LogError(StatusMessage);
+                            break;
+                        case 4:
+                            HasAlarm = true;
+                            StatusMessage = "パン角度制限超過エラー";
+                            _ = ErrorLoggingService.LogError(StatusMessage);
+                            break;
+                        case 5:
+                            HasAlarm = true;
+                            StatusMessage = "チルト角度制限超過エラー";
+                            _ = ErrorLoggingService.LogError(StatusMessage);
+                            break;
+                        case 6:
+                            HasAlarm = true;
+                            StatusMessage = "モデム エラー";
+                            _ = ErrorLoggingService.LogError(StatusMessage);
+                            break;
+                        case 7:
+                            HasAlarm = true;
+                            StatusMessage = "エンコーダ エラー";
+                            _ = ErrorLoggingService.LogError(StatusMessage);
+                            break;
+                        case 8:
+                            HasAlarm = true;
+                            StatusMessage = "ピークサーチ NG";
+                            _ = ErrorLoggingService.LogError(StatusMessage);
+                            break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _ = ErrorLoggingService.LogError($"Error in alarm.", ex);
+            }
+        });
     }
 
     public void DisconnectAndShutdown()
@@ -1119,6 +1205,32 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
                 Longitude = value;
                 DisplayLongitude = $"{degrees}° {wholeMinutes}' {seconds}\"";
             }
+        }
+    }
+
+    private static void RunOnUi(Action action)
+    {
+        Dispatcher? dispatcher = Application.Current?.Dispatcher;
+
+        if (dispatcher is null || dispatcher.CheckAccess())
+        {
+            action();
+        }
+        else
+        {
+            dispatcher.BeginInvoke(action);
+        }
+    }
+
+    private bool CanAlarmReset()
+    {
+        if(IsServerConnected && HasAlarm)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
         }
     }
 }

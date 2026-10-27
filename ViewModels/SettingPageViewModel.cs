@@ -29,6 +29,7 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
     PinStorageService _pinStorageService;
 
     MainPageViewModel _mainPageViewModel;
+    DeveloperPageViewModel _developerPageViewModel;
 
     readonly ViewModelStore _viewModelStore;
     public string _tempAppData = string.Empty;
@@ -117,6 +118,7 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
         try
         {
             _mainPageViewModel = _viewModelStore.MainPageViewModel;
+            _developerPageViewModel = _viewModelStore.DeveloperPageViewModel;
             _ = ErrorLoggingService.LogInfo("SettingPageViewModel initialized.");
 
             if (_mainPageViewModel != null)
@@ -204,7 +206,7 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
 
     // 登録: validate everything first, write nothing if any field is bad
     [RelayCommand(CanExecute = nameof(CanSave))]
-    private void Save()
+    public void Save()
     {
         try
         {
@@ -452,6 +454,8 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
     {
         StatusMessage = message;
         IsStatusError = isError;
+
+        _developerPageViewModel.SetStatus(StatusMessage, IsStatusError);
     }
 
     // "0.0", "0.1", "0.25": at least one decimal, up to three

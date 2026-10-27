@@ -58,7 +58,19 @@ public partial class DeveloperPageViewModel : ViewModelBase, INavigationAware
     private string _azimuthAngleInput = string.Empty;
 
     [ObservableProperty]
+    private string _logMessage = string.Empty;
+
+    [ObservableProperty]
     private string _statusMessage = string.Empty;
+
+    [ObservableProperty]
+    private bool _isStatusError = false;
+
+    [ObservableProperty]
+    private string _wideSearchElevationStep = "1.0";
+
+    [ObservableProperty]
+    private string _wideSearchAzimuthStep = "1.0";
 
     private string? _activeJogDirection;
 
@@ -189,6 +201,20 @@ public partial class DeveloperPageViewModel : ViewModelBase, INavigationAware
             _ = ErrorLoggingService.LogInfo("Status message reset.");
         });
     }
+    // 登録: validate everything first, write nothing if any field is bad
+    [RelayCommand]
+    private void Save()
+    {
+        try
+        {
+            _settingPageViewModel.Save();
+        }
+        catch (Exception ex)
+        {
+            _ = ErrorLoggingService.LogError("Error saving UNDAI settings.", ex);
+            SetStatus("登録に失敗しました", true);
+        }
+    }
 
     private static void Safe(string commandName, Action action)
     {
@@ -235,10 +261,18 @@ public partial class DeveloperPageViewModel : ViewModelBase, INavigationAware
     {
         int MaxLines = 20;
 
-        var lines = (message + Environment.NewLine + StatusMessage)
+        var lines = (message + Environment.NewLine + LogMessage)
         .Split(Environment.NewLine)
         .Take(MaxLines);
 
-        StatusMessage = string.Join(Environment.NewLine, lines);
+        LogMessage = string.Join(Environment.NewLine, lines);
+    }
+
+    // ================= Helpers =================
+
+    public void SetStatus(string message, bool isError)
+    {
+        StatusMessage = message;
+        IsStatusError = isError;
     }
 }

@@ -1230,7 +1230,7 @@
                     Command="{Binding AlarmResetCommand}"
                     Content="アラームリセット"
                     FontSize="34"
-                    Style="{StaticResource PanelButtonStyle}" />
+                    Style="{StaticResource AlarmButtonStyle}" />
 
                 <!--  BOTTOM Col 2: Status message bar  -->
                 <Border
@@ -1245,7 +1245,7 @@
                         FontSize="40"
                         Foreground="White"
                         Text="{Binding StatusMessage}"
-                        TextTrimming="CharacterEllipsis" />
+                        TextTrimming="CharacterEllipsis"/>
                 </Border>
 
                 <!--  BOTTOM Col 4: Logout: hold 2 s (progress bar shows the hold)  -->
