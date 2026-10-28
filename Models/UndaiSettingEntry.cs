@@ -51,9 +51,9 @@
     public string UndaiVersion { get; set; } = "0.0";
 
     /// <summary>
-    /// Gets or sets the ContinuousRunMinutes
+    /// Gets or sets the ContinuousRunSeconds
     /// </summary>
-    public string ContinuousRunMinutes { get; set; } = "0.0";// 連続運転時間(分)
+    public string ContinuousRunSeconds { get; set; } = "1";// 連続運転時間(分)
 
     /// <summary>
     /// Gets or sets the OriginOffsetAzimuth
@@ -153,6 +153,16 @@
     /// Gets or sets the DetailSearchTurnbackThresholdLevel
     /// </summary>
     public string DetailSearchTurnbackThresholdLevel { get; set; } = "0.0";// 打切り減衰(dBm)
+
+    /// <summary>
+    /// Gets or sets the WideSearchElevationStep
+    /// </summary>
+    public string WideSearchElevationStep { get; set; } = "1.0";
+
+    /// <summary>
+    /// Gets or sets the WideSearchAzimuthStep
+    /// </summary>
+    public string WideSearchAzimuthStep { get; set; } = "1.0";
 
     // ---- Satellite情報 ----
 

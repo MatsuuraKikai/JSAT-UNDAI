@@ -1,20 +1,22 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using JSAT_UNDAI.Models;
 using JSAT_UNDAI.Services;
 using JSAT_UNDAI.Stores;
 using JSAT_UNDAI.ViewModels.Base;
 using JSAT_UNDAI.Views.Base;
+using System.Diagnostics;
 using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Windows;
+using System.Windows.Threading;
 
 namespace JSAT_UNDAI.ViewModels;
 
 public partial class SettingPageViewModel : ViewModelBase, INavigationAware
 {
-    // ---- Input limits (ASSUMED) ----
     private const double SpeedMin = 1, SpeedMax = 100;      // [1-100] from the screen labels
     private const double OffsetLimit = 180;                  // origin offset: -180..180 deg
     private const double AngleRangeMax = 180;                // search range (±): 0..180 deg
@@ -22,14 +24,21 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
     private const double RssiMin = -150, RssiMax = 0;        // dBm
     private const double SettleSecondsMax = 60;
     private const double TurnbackThresholdMax = 100;         // dBm
-    private const int ContinuousRunMinutesMin = 1, ContinuousRunMinutesMax = 1440;
+    private const int ContinuousRunSecondsMin = 1, ContinuousRunSecondsMax = 3600;
     private const int SatelliteNameMaxLength = 32;
+    int backupContinuousRunSeconds = 0;
+
+    // ---- Continuous-run countdown ----
+    private DispatcherTimer? _runTimer;
+    private readonly Stopwatch _runStopwatch = new();
+    private long _runTotalMs;
 
     UndaiSettingStorageService _undaiSettingStorageService;
     PinStorageService _pinStorageService;
 
     MainPageViewModel _mainPageViewModel;
     DeveloperPageViewModel _developerPageViewModel;
+    MainPageModel _mainPageModel;
 
     readonly ViewModelStore _viewModelStore;
     public string _tempAppData = string.Empty;
@@ -74,7 +83,7 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
     [ObservableProperty] private string _detailSearchTurnbackThresholdLevel = string.Empty;   // 打切り減衰(dBm)
 
     // Endurance Test
-    [ObservableProperty] private string _continuousRunMinutes = string.Empty;
+    [ObservableProperty] private string _continuousRunSeconds = "1";
 
     // Undai Version
     [ObservableProperty] private string _undaiVersionText = "0.0";
@@ -91,17 +100,31 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
     // 停止 is greyed out while no continuous run is active
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(StopCommand))]
+    [NotifyCanExecuteChangedFor(nameof(StartContinuousRunCommand))]
     private bool _isContinuousRunning;
 
-    [ObservableProperty] private string _statusMessage = string.Empty;
-    [ObservableProperty] private bool _isStatusError;
+    [ObservableProperty]
+    private bool _isContinuousRunSecondsOn = true;
+
+    [ObservableProperty]
+    private int _remainingSeconds;
+
+    [ObservableProperty]
+    private string _statusMessage = string.Empty;
+
+    [ObservableProperty]
+    private bool _isStatusError;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(AlarmResetCommand))]
+    private bool _hasAlarm;
 
     public SettingPageViewModel
     (
-        string tempAppData, 
-        ViewModelStore viewModelStore, 
+        string tempAppData,
+        ViewModelStore viewModelStore,
         UndaiSettingStorageService undaiSettingStorageService,
-        PinStorageService pinStorageService, 
+        PinStorageService pinStorageService,
         NavigationService mainPageNavigationService,
         NavigationService developerPageNavigationService)
     {
@@ -119,6 +142,7 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
         {
             _mainPageViewModel = _viewModelStore.MainPageViewModel;
             _developerPageViewModel = _viewModelStore.DeveloperPageViewModel;
+            _mainPageModel = _mainPageViewModel._mainPageModel;
             _ = ErrorLoggingService.LogInfo("SettingPageViewModel initialized.");
 
             if (_mainPageViewModel != null)
@@ -227,6 +251,55 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
             if (IsLoaded)
             {
                 SetStatus("登録しました", false);
+
+                string systemMessage = string.Join(",", new[]
+                {
+                    "SY",
+
+                    // Network
+                    UndaiIpAddress,                    // 0
+                    UndaiSubnetMask,                   // 1
+                    UndaiGateway,                      // 2
+                    ModemIpAddress,                    // 3
+
+                    // Undai
+                    OriginOffsetAzimuth,               // 4
+                    OriginOffsetElevation,             // 5
+                    ManualHighSpeedAzimuth,            // 6
+                    ManualHighSpeedElevation,          // 7
+                    ManualLowSpeedAzimuth,             // 8
+                    ManualLowSpeedElevation,           // 9
+                    JogAngleAzimuth,                   // 10
+                    JogAngleElevation,                 // 11
+
+                    // Satellite
+                    SatelliteName,                     // 12
+                    SatelliteLongitude,                // 13
+
+                    // Wide search
+                    WideSearchSpeed,                   // 14
+                    WideSearchAzimuthRange,            // 15
+                    WideSearchElevationRange,          // 16
+                    WideSearchSuccessRssi,             // 17
+
+                    // Detail search
+                    DetailSearchSpeed,                 // 18
+                    DetailSearchStepAngle,             // 19
+                    DetailSearchAzimuthRange,          // 20
+                    DetailSearchElevationRange,        // 21
+                    DetailSearchSuccessRssi,           // 22
+                    DetailSearchStepSettleSeconds,     // 23
+                    DetailSearchTurnbackThresholdLevel,// 24
+
+                    // Developer page
+                    _developerPageViewModel.WideSearchElevationStep,   // 25
+                    _developerPageViewModel.WideSearchAzimuthStep,     // 26
+
+                    // Version
+                    UndaiVersionText                   // 27
+                });
+
+                _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 13, message: systemMessage);
             }
         }
         catch (Exception ex)
@@ -238,26 +311,106 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
 
     private bool CanSave() => IsLoaded;
 
-    // 停止: TODO wire to the device. Stop must never be gated by anything except "a run is active" (UI only).
     [RelayCommand(CanExecute = nameof(CanStop))]
     private void Stop()
     {
+        StopCountdown();
+
         _ = ErrorLoggingService.LogInfo("TODO: Stop command (device protocol not implemented).");
     }
 
     private bool CanStop() => IsContinuousRunning;
 
-    // 連続運転開始: TODO. IsContinuousRunning is intentionally NOT set here, since nothing is really running yet.
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanStartContinuousRun))]
     private void StartContinuousRun()
     {
-        _ = ErrorLoggingService.LogInfo("TODO: StartContinuousRun command (device protocol not implemented).");
+        try
+        {
+            if (IsContinuousRunning)
+            {
+                return;   // ignore double-press
+            }
+
+            if (!TryParseInteger("連続運転終了時間", ContinuousRunSeconds,
+                ContinuousRunSecondsMin, ContinuousRunSecondsMax, out var runValue, out string error))
+            {
+                SetStatus(error, true);
+                _ = ErrorLoggingService.LogError(error);
+                return;
+            }
+            _runTotalMs = (long)runValue * 1000;
+            StartCountdown();
+            backupContinuousRunSeconds = runValue;
+
+            SetStatus(string.Empty, false);
+
+            _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 12);
+
+            _ = ErrorLoggingService.LogInfo($"Continuous run started. Duration: {runValue} s");
+        }
+        catch (Exception ex)
+        {
+            StopCountdown();
+            _ = ErrorLoggingService.LogError("Error starting continuous run.", ex);
+            SetStatus("連続運転の開始に失敗しました", true);
+        }
+        _ = ErrorLoggingService.LogInfo("StartContinuousRun command executed");
     }
 
-    [RelayCommand]
+    private bool CanStartContinuousRun() => !IsContinuousRunning;
+
+    // ================= Countdown =================
+
+    private void StartCountdown()
+    {
+        _runTimer ??= new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
+        _runTimer.Tick += OnRunTimerTick;
+
+        _runStopwatch.Restart();
+        UpdateRemainingSeconds(_runTotalMs);
+
+        IsContinuousRunning = true;
+        _runTimer.Start();
+    }
+
+    private void OnRunTimerTick(object? sender, EventArgs e)
+    {
+        try
+        {
+            long remainingMs = _runTotalMs - _runStopwatch.ElapsedMilliseconds;
+
+            if (remainingMs <= 0)
+            {
+                StopCountdown();
+                _ = ErrorLoggingService.LogInfo("Continuous run completed.");
+                SetStatus("連続運転が完了しました", false);
+                return;
+            }
+
+            UpdateRemainingSeconds(remainingMs);
+        }
+        catch (Exception ex)
+        {
+            _ = ErrorLoggingService.LogError("Error in continuous-run timer tick.", ex);
+        }
+    }
+
+    private void StopCountdown()
+    {
+        _runTimer?.Stop();
+        _runStopwatch.Stop();
+        UpdateRemainingSeconds(0);
+        IsContinuousRunning = false;
+
+        ContinuousRunSeconds = backupContinuousRunSeconds.ToString();
+        _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 31);
+    }
+
+    [RelayCommand(CanExecute = nameof(_mainPageViewModel.CanAlarmReset))]
     private void AlarmReset()
     {
-        _ = ErrorLoggingService.LogInfo("TODO: AlarmReset command (device protocol not implemented).");
+        _mainPageViewModel.AlarmReset();
+        _ = ErrorLoggingService.LogInfo("AlarmReset command executed.");
     }
 
     [RelayCommand]
@@ -283,6 +436,12 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
         {
             _ = ErrorLoggingService.LogInfo("TODO: PinReset command (PIN storage not decided).");
         }
+    }
+
+    private void UpdateRemainingSeconds(long remainingMs)
+    {
+        RemainingSeconds = (int)((remainingMs + 999) / 1000);
+        ContinuousRunSeconds = RemainingSeconds.ToString();
     }
 
     // ================= Load: UndaiSettingEntry -> text boxes =================
@@ -323,11 +482,14 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
             DetailSearchStepSettleSeconds = s.DetailSearchStepSettleSeconds;
             DetailSearchTurnbackThresholdLevel = s.DetailSearchTurnbackThresholdLevel;
 
-            ContinuousRunMinutes = s.ContinuousRunMinutes;
+            ContinuousRunSeconds = s.ContinuousRunSeconds;
             UndaiVersionText = s.UndaiVersion;
 
             IsLoaded = true;
             SetStatus(string.Empty, false);
+
+            _mainPageViewModel.SatelliteName = SatelliteName;
+            _mainPageViewModel.SatelliteLongitude = SatelliteLongitude;
         }
         catch (Exception ex)
         {
@@ -404,7 +566,7 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
         if (!TryParseNumber("打切り減衰", DetailSearchTurnbackThresholdLevel, 0, TurnbackThresholdMax, out var turnback, out error)) return false;
 
         // ---- Continuous run ----
-        if (!TryParseInteger("連続運転終了時間", ContinuousRunMinutes, ContinuousRunMinutesMin, ContinuousRunMinutesMax, out var runMinutes, out error)) return false;
+        if (!TryParseInteger("連続運転終了時間", ContinuousRunSeconds, ContinuousRunSecondsMin, ContinuousRunSecondsMax, out var runSeconds, out error)) return false;
 
         // ---- Satellite ----
         // Name: free text, trimmed, max 32 chars. Empty = not set.
@@ -444,7 +606,7 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
         entry.DetailSearchStepSettleSeconds = FormatNumber(settle);
         entry.DetailSearchTurnbackThresholdLevel = FormatNumber(turnback);
 
-        entry.ContinuousRunMinutes = runMinutes.ToString(CultureInfo.InvariantCulture);
+        entry.ContinuousRunSeconds = runSeconds.ToString(CultureInfo.InvariantCulture);
         return true;
     }
 
@@ -458,13 +620,73 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
         _developerPageViewModel.SetStatus(StatusMessage, IsStatusError);
     }
 
+    public void SystemMessageUpdate()
+    {
+        try
+        {
+            var entry = _undaiSettingStorageService.LoadSetting();
+
+            // Network
+            entry.CurrentUndaiIpAddress = Normalize(UndaiIpAddress);
+            entry.CurrentUndaiSubnetMask = Normalize(UndaiSubnetMask);
+            entry.CurrentUndaiGateway = Normalize(UndaiGateway);
+            entry.ModemIpAddress = Normalize(ModemIpAddress);
+
+            // Undai
+            entry.OriginOffsetAzimuth = Normalize(OriginOffsetAzimuth);
+            entry.OriginOffsetElevation = Normalize(OriginOffsetElevation);
+            entry.ManualHighSpeedAzimuth = Normalize(ManualHighSpeedAzimuth);
+            entry.ManualHighSpeedElevation = Normalize(ManualHighSpeedElevation);
+            entry.ManualLowSpeedAzimuth = Normalize(ManualLowSpeedAzimuth);
+            entry.ManualLowSpeedElevation = Normalize(ManualLowSpeedElevation);
+            entry.JogAngleAzimuth = Normalize(JogAngleAzimuth);
+            entry.JogAngleElevation = Normalize(JogAngleElevation);
+
+            // Satellite
+            entry.SatelliteName = (SatelliteName ?? string.Empty).Trim();
+            entry.SatelliteLongitude = Normalize(SatelliteLongitude);
+
+            // Wide search
+            entry.WideSearchSpeed = Normalize(WideSearchSpeed);
+            entry.WideSearchAzimuthRange = Normalize(WideSearchAzimuthRange);
+            entry.WideSearchElevationRange = Normalize(WideSearchElevationRange);
+            entry.WideSearchSuccessRssi = Normalize(WideSearchSuccessRssi);
+
+            // Detail search
+            entry.DetailSearchSpeed = Normalize(DetailSearchSpeed);
+            entry.DetailSearchStepAngle = Normalize(DetailSearchStepAngle);
+            entry.DetailSearchAzimuthRange = Normalize(DetailSearchAzimuthRange);
+            entry.DetailSearchElevationRange = Normalize(DetailSearchElevationRange);
+            entry.DetailSearchSuccessRssi = Normalize(DetailSearchSuccessRssi);
+            entry.DetailSearchStepSettleSeconds = Normalize(DetailSearchStepSettleSeconds);
+            entry.DetailSearchTurnbackThresholdLevel = Normalize(DetailSearchTurnbackThresholdLevel);
+
+            // Developer-page values
+            entry.WideSearchElevationStep = Normalize(_developerPageViewModel.WideSearchElevationStep);
+            entry.WideSearchAzimuthStep = Normalize(_developerPageViewModel.WideSearchAzimuthStep);
+
+            entry.UndaiVersion = Normalize(UndaiVersionText);
+
+            _undaiSettingStorageService.SaveSetting(entry);
+            _ = ErrorLoggingService.LogInfo("UNDAI settings updated from device message.");
+        }
+        catch (Exception ex)
+        {
+            _ = ErrorLoggingService.LogError("Error saving device settings message.", ex);
+        }
+    }
+
     // "0.0", "0.1", "0.25": at least one decimal, up to three
-    private static string FormatNumber(double value) =>
-        value.ToString("0.0###", CultureInfo.InvariantCulture);
+    private static string FormatNumber(double value)
+    {
+        return value.ToString("0.0###", CultureInfo.InvariantCulture);
+    }
 
     // Touch-panel IME input: full-width digits / "．" / "－" / ideographic space become ASCII (Unicode FormKC)
-    private static string Normalize(string? text) =>
-        (text ?? string.Empty).Normalize(NormalizationForm.FormKC).Trim();
+    private static string Normalize(string? text)
+    {
+        return (text ?? string.Empty).Normalize(NormalizationForm.FormKC).Trim();
+    }
 
     private static bool TryParseNumber(string label, string? text, double min, double max, out double value, out string error)
     {
@@ -484,6 +706,21 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
         }
 
         return true;
+    }
+
+    partial void OnIsContinuousRunningChanged(bool value)
+    {
+        IsContinuousRunSecondsOn = !value;
+    }
+
+    partial void OnSatelliteNameChanged(string value)
+    {
+        _mainPageViewModel.SatelliteName = value;
+    }
+
+    partial void OnSatelliteLongitudeChanged(string value)
+    {
+        _mainPageViewModel.SatelliteLongitude = value;
     }
 
     private static bool TryParseInteger(string label, string? text, int min, int max, out int value, out string error)
@@ -549,5 +786,17 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
         }
 
         return true;
+    }
+
+    public bool CanAlarmReset()
+    {
+        if (_mainPageViewModel.IsServerConnected && HasAlarm)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 }

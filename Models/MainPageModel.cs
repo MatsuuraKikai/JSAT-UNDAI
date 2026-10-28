@@ -39,15 +39,10 @@ public class MainPageModel
             switch (messageList[0])
             {
                 case "A":
-                    if(int.TryParse(messageList[2], out int dataCount))
-                    {
-                        string[] newRealtimeMessage = messageList[3..(3 + dataCount)];
-                        ProcessRealTimeMessages(newRealtimeMessage, dataCount);
-                    }
+                    ProcessRealTimeMessages(messageList[1..]);
                     break;
                 case "SY":
-                    string[] newSystemMessage = messageList[1..];
-                    ProcessSystemMessages(1, newSystemMessage);
+                    ProcessSystemMessages(1, messageList[1..]);
                     break;
                 case "SI":
                     //ProcessSystemMessages(_message);
@@ -65,9 +60,9 @@ public class MainPageModel
 
     }
 
-    void ProcessRealTimeMessages(string[] message, int dataCount)
+    void ProcessRealTimeMessages(string[] message)
     {
-        for (int idx = 0; idx < dataCount; idx++)
+        for (int idx = 0; idx < message.Length; idx++)
         {
             switch (idx)
             {
@@ -109,10 +104,13 @@ public class MainPageModel
                     _mainPageViewModel.PeakAzimuth = message[idx];
                     break;
                 case 10:
+                    _mainPageViewModel.TargetElevation = message[idx];
                     break;
                 case 11:
+                    _mainPageViewModel.TargetAzimuth = message[idx];
                     break;
                 case 12:
+                    _mainPageViewModel.TargetPolarize = message[idx];
                     break;
                 case 13:
                     if(int.TryParse(message[idx], out int gpsStatus))
@@ -128,11 +126,9 @@ public class MainPageModel
                     _mainPageViewModel.ActiveHomePeakSearchIndex = int.Parse(message[idx]);
                     break;
                 case 15:
-                    break;
-                case 16:
                     _mainPageViewModel.AlarmStatusCode = message[idx];
                     break;
-                case 17:
+                case 16:
                     if (int.TryParse(message[idx], out int randomNumber))
                     {
                         if(_tcpServerConnectionService.IsConnectionStale(randomNumber))
@@ -239,6 +235,7 @@ public class MainPageModel
                         break;
                 }
             }
+            _settingPageViewModel.SystemMessageUpdate();
         }
     }
 
@@ -282,6 +279,12 @@ public class MainPageModel
                 case 11:
                     sendMessage = message;
                     break;
+                case 12:
+                    sendMessage = "I,12";
+                    break;
+                case 13:
+                    sendMessage = message;
+                    break;
                 case 18:
                     sendMessage = "I,18";
                     break;
@@ -303,9 +306,11 @@ public class MainPageModel
                 case 31:
                     sendMessage = "I,31";
                     break;
+            };
+            if (!string.IsNullOrWhiteSpace(sendMessage))
+            {
+                _tcpServerConnectionService.SendMessage(sendMessage);
             }
-            ;
-            _tcpServerConnectionService.SendMessage(sendMessage);
         }
     }
 

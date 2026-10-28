@@ -18,7 +18,7 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
     SettingPageViewModel _settingPageViewModel;
     DeveloperPageViewModel _developerPageViewModel;
 
-    MainPageModel _mainPageModel;
+    public MainPageModel _mainPageModel;
 
     readonly ViewModelStore _viewModelStore;
     public string _tempAppData = string.Empty;
@@ -693,7 +693,7 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
     }
 
     [RelayCommand(CanExecute = nameof(CanAlarmReset))]
-    private void AlarmReset()
+    public void AlarmReset()
     {
         Safe(nameof(AlarmReset), () =>
         {
@@ -737,19 +737,22 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
 
     private void OnTcpConnectionStatusChanged(bool connected)
     {
-        try
+        RunOnUi(() =>
         {
-            IsServerConnected = connected;
-            ConnectionButtonLabel = connected ? "雲台通信" : "雲台接続";
-            ConnectionButtonColor = connected ? ConnectButtonBlueColor : ConnectButtonRedColor;
-            ConnectionButtonHoverColor = connected ? ConnectButtonHoverBlueColor : ConnectButtonHoverRedColor;
+            try
+            {
+                IsServerConnected = connected;
+                ConnectionButtonLabel = connected ? "雲台通信" : "雲台接続";
+                ConnectionButtonColor = connected ? ConnectButtonBlueColor : ConnectButtonRedColor;
+                ConnectionButtonHoverColor = connected ? ConnectButtonHoverBlueColor : ConnectButtonHoverRedColor;
 
-            _ = ErrorLoggingService.LogInfo($"TCP connection status changed: {(connected ? "Connected" : "Disconnected")}");
-        }
-        catch (Exception ex)
-        {
-            _ = ErrorLoggingService.LogError("Error updating TCP connection status UI.", ex);
-        }
+                _ = ErrorLoggingService.LogInfo($"TCP connection status changed: {(connected ? "Connected" : "Disconnected")}");
+            }
+            catch (Exception ex)
+            {
+                _ = ErrorLoggingService.LogError("Error updating TCP connection status UI.", ex);
+            }
+        });
     }
 
     private void OnTcpMessageReceived(string rawMessage)
@@ -1222,7 +1225,12 @@ public partial class MainPageViewModel : ViewModelBase, INavigationAware
         }
     }
 
-    private bool CanAlarmReset()
+    partial void OnHasAlarmChanged(bool value)
+    {
+        _settingPageViewModel.HasAlarm = value;
+    }
+
+    public bool CanAlarmReset()
     {
         if(IsServerConnected && HasAlarm)
         {

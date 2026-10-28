@@ -555,12 +555,18 @@
                                 Grid.Row="0"
                                 Grid.Column="0"
                                 Style="{StaticResource SettingLabelStyle}"
-                                Text="連続運転終了時間(分)" />
+                                Text="連続運転終了時間(秒)" />
                             <ui:NumberBox
                                 Grid.Row="0"
                                 Grid.Column="1"
+                                IsEnabled="{Binding IsContinuousRunSecondsOn}"
+                                LargeChange="1"
+                                MaxDecimalPlaces="1"
+                                Minimum="0"
+                                SmallChange="1"
+                                SpinButtonPlacementMode="Inline"
                                 Style="{StaticResource SettingUiNumberBoxStyle}"
-                                Text="{Binding ContinuousRunMinutes, UpdateSourceTrigger=PropertyChanged}" />
+                                Text="{Binding ContinuousRunSeconds, UpdateSourceTrigger=PropertyChanged}" />
 
                             <!--  Row 2: Stop and start buttons (spans both columns)  -->
                             <Grid

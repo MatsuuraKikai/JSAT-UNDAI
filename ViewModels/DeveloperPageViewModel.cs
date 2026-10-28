@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using JSAT_UNDAI.Models;
 using JSAT_UNDAI.Services;
 using JSAT_UNDAI.Stores;
 using JSAT_UNDAI.ViewModels.Base;
@@ -15,6 +16,7 @@ public partial class DeveloperPageViewModel : ViewModelBase, INavigationAware
 
     private MainPageViewModel _mainPageViewModel;
     private SettingPageViewModel _settingPageViewModel;
+    private MainPageModel _mainPageModel;
 
     public DeveloperPageViewModel(ViewModelStore viewModelStore, NavigationService mainPageNavigationService, NavigationService settingPageNavigationService)
     {
@@ -30,6 +32,7 @@ public partial class DeveloperPageViewModel : ViewModelBase, INavigationAware
         {
             _mainPageViewModel = _viewModelStore.MainPageViewModel;
             _settingPageViewModel = _viewModelStore.SettingPageViewModel;
+            _mainPageModel = _mainPageViewModel._mainPageModel;
 
             _ = ErrorLoggingService.LogInfo("DeveloperPageViewModel initialized successfully.");
 
@@ -119,6 +122,21 @@ public partial class DeveloperPageViewModel : ViewModelBase, INavigationAware
             }
 
             _activeJogDirection = direction;
+            switch (_activeJogDirection)
+            {
+                case "Up":
+                    _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 38);
+                    break;
+                case "Down":
+                    _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 39);
+                    break;
+                case "CCW":
+                    _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 36);
+                    break;
+                case "CW":
+                    _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 37);
+                    break;
+            }
             _ = ErrorLoggingService.LogInfo($"Jog start: {direction}");
             UpdateStatusMessage($"Jog start: {direction}");
             // TODO: send "start jog" for this direction at the selected speed mode.
@@ -136,6 +154,21 @@ public partial class DeveloperPageViewModel : ViewModelBase, INavigationAware
             }
 
             string stopped = _activeJogDirection;
+            switch (_activeJogDirection)
+            {
+                case "Up":
+                    _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 0);
+                    break;
+                case "Down":
+                    _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 0);
+                    break;
+                case "CCW":
+                    _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 0);
+                    break;
+                case "CW":
+                    _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 0);
+                    break;
+            }
             _activeJogDirection = null;
 
             _ = ErrorLoggingService.LogInfo($"Jog stop: {stopped}");
@@ -155,7 +188,6 @@ public partial class DeveloperPageViewModel : ViewModelBase, INavigationAware
             }
 
             _ = ErrorLoggingService.LogInfo($"Go to elevation angle: {ElevationAngleInput}");
-            // TODO: validate range, then send the position command.
         });
     }
 
@@ -170,7 +202,6 @@ public partial class DeveloperPageViewModel : ViewModelBase, INavigationAware
             }
 
             _ = ErrorLoggingService.LogInfo($"Go to azimuth angle: {AzimuthAngleInput}");
-            // TODO: validate range, then send the position command.
         });
     }
 
@@ -197,11 +228,11 @@ public partial class DeveloperPageViewModel : ViewModelBase, INavigationAware
     {
         Safe(nameof(ResetStatusMessage), () =>
         {
-            StatusMessage = string.Empty;
+            LogMessage = string.Empty;
             _ = ErrorLoggingService.LogInfo("Status message reset.");
         });
     }
-    // 登録: validate everything first, write nothing if any field is bad
+
     [RelayCommand]
     private void Save()
     {
