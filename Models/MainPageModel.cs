@@ -1,7 +1,9 @@
 ﻿using JSAT_UNDAI.Services;
 using JSAT_UNDAI.Stores;
 using JSAT_UNDAI.ViewModels;
+using JSAT_UNDAI.Views.Base;
 using System.Runtime.Serialization;
+using System.Windows;
 
 namespace JSAT_UNDAI.Models;
 
@@ -42,7 +44,14 @@ public class MainPageModel
                     ProcessRealTimeMessages(messageList[1..]);
                     break;
                 case "SY":
-                    ProcessSystemMessages(1, messageList[1..]);
+                    if(messageList.Length > 3)
+                    {
+                        ProcessSystemMessages(1, messageList[1..]);
+                    }
+                    else
+                    {
+                        ProcessSystemMessages(2, messageList[1..]);
+                    }
                     break;
                 case "SI":
                     //ProcessSystemMessages(_message);
@@ -68,9 +77,11 @@ public class MainPageModel
             {
                 case 0:
                     _mainPageViewModel.CurrentElevation = message[idx];
+                    _developerPageViewModel.CurrentElevation = message[idx];
                     break;
                 case 1:
                     _mainPageViewModel.CurrentAzimuth = message[idx];
+                    _developerPageViewModel.CurrentAzimuth = message[idx];
                     break;
                 case 2:
                     _mainPageViewModel.ChangePositionUnit(message[idx], 0);
@@ -135,6 +146,8 @@ public class MainPageModel
                         {
                             _tcpServerConnectionService.Disconnect();
                         }
+
+                        _developerPageViewModel.SetStatus(randomNumber.ToString(), false);
                     }
                     break;
             }
@@ -143,7 +156,7 @@ public class MainPageModel
 
     void ProcessSystemMessages(int systemMessageType, string[] message)
     {
-        if(systemMessageType == 1)
+        if (systemMessageType == 1)
         {
             for (int idx = 0; idx < message.Length; idx++)
             {
@@ -189,7 +202,7 @@ public class MainPageModel
                         _settingPageViewModel.SatelliteName = message[idx];
                         break;
                     case 13:
-                        _settingPageViewModel.SatelliteLongitude= message[idx];
+                        _settingPageViewModel.SatelliteLongitude = message[idx];
                         break;
                     case 14:
                         _settingPageViewModel.WideSearchSpeed = message[idx];
@@ -237,6 +250,51 @@ public class MainPageModel
             }
             _settingPageViewModel.SystemMessageUpdate();
         }
+        else if (systemMessageType == 2)
+        {
+            int restartNeed = 0;
+            int fieldCount = 0;
+            for (int idx = 0; idx < message.Length; idx++)
+            {
+                switch (idx)
+                {
+                    case 0:
+                        if(int.TryParse(message[idx], out int outRestartNeed))
+                        {
+                            restartNeed = outRestartNeed;
+                        }
+                        break;
+                    case 1:
+                        if (int.TryParse(message[idx], out int outFieldCount))
+                        {
+                            fieldCount = outFieldCount;
+                        }
+                        break;
+                }
+            }
+            if (fieldCount != _settingPageViewModel.systemMessageFieldCount)
+            {
+                return;
+            }
+            if(restartNeed == 2)
+            {
+                UNDAIRestartDialogBox uNDAIRestartDialogBox = new UNDAIRestartDialogBox()
+                {
+                    Owner = Application.Current.MainWindow
+                };
+
+                if (_mainPageViewModel.IsServerConnected)
+                {
+                    _tcpServerConnectionService?.Disconnect();
+                }
+
+                uNDAIRestartDialogBox.ShowDialog();
+                _ = ErrorLoggingService.LogInfo("User confirmed logout. Disconnecting and shutting down.");
+            }
+            _settingPageViewModel.isSaveNeed = true;
+            _settingPageViewModel.Save();
+
+        }
     }
 
     public void SendTcpMessage(string message = "", bool isCommand = false, int commandNo = 0)
@@ -246,6 +304,9 @@ public class MainPageModel
             string sendMessage = string.Empty;
             switch (commandNo)
             {
+                case 0:
+                    sendMessage = "I,0";
+                    break;
                 case 1:
                     sendMessage = "I,1";
                     break;
@@ -285,6 +346,12 @@ public class MainPageModel
                 case 13:
                     sendMessage = message;
                     break;
+                case 14:
+                    sendMessage = "I,14";
+                    break;
+                case 15:
+                    sendMessage = "I,15";
+                    break;
                 case 18:
                     sendMessage = "I,18";
                     break;
@@ -306,10 +373,24 @@ public class MainPageModel
                 case 31:
                     sendMessage = "I,31";
                     break;
-            };
+                case 36:
+                    sendMessage = "I,36";
+                    break;
+                case 37:
+                    sendMessage = "I,37";
+                    break;
+                case 38:
+                    sendMessage = "I,38";
+                    break;
+                case 39:
+                    sendMessage = "I,39";
+                    break;
+            }
+            ;
             if (!string.IsNullOrWhiteSpace(sendMessage))
             {
                 _tcpServerConnectionService.SendMessage(sendMessage);
+                _developerPageViewModel.UpdateStatusMessage(sendMessage);
             }
         }
     }

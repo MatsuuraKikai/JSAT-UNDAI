@@ -1,0 +1,100 @@
+﻿<UserControl
+    x:Class="JSAT_UNDAI.Views.AlarmPageView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:JSAT_UNDAI.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    mc:Ignorable="d">
+    <Viewbox Style="{StaticResource DesignCanvasViewboxStyle}">
+
+        <Grid Style="{StaticResource DesignCanvasGridStyle}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <ui:DataGrid
+                Grid.Row="1"
+                AutoGenerateColumns="False"
+                CanUserReorderColumns="False"
+                CanUserResizeColumns="False"
+                CanUserResizeRows="False"
+                GridLinesVisibility="All"
+                IsReadOnly="True"
+                ItemsSource="{Binding AlarmRecords}"
+                SelectedItem="{Binding SelectedAlarm, Mode=TwoWay}"
+                VirtualizingPanel.IsVirtualizing="True">
+
+                <ui:DataGrid.ColumnHeaderStyle>
+                    <Style BasedOn="{StaticResource {x:Type DataGridColumnHeader}}" TargetType="DataGridColumnHeader">
+                        <Setter Property="FontSize" Value="20" />
+                        <Setter Property="FontWeight" Value="Bold" />
+                        <Setter Property="HorizontalContentAlignment" Value="Center" />
+                        <Setter Property="Background" Value="Transparent" />
+                        <Setter Property="Foreground" Value="Black" />
+                    </Style>
+                </ui:DataGrid.ColumnHeaderStyle>
+
+                <ui:DataGrid.Columns>
+                    <DataGridTextColumn
+                        Width="80"
+                        Binding="{Binding DisplayNo}"
+                        Header="No." />
+                    <DataGridTextColumn
+                        Width="*"
+                        Binding="{Binding AlarmName}"
+                        Header="Alarm" />
+                    <DataGridTextColumn
+                        Width="110"
+                        Binding="{Binding DateText}"
+                        Header="Date" />
+                    <DataGridTextColumn
+                        Width="100"
+                        Binding="{Binding TimeText}"
+                        Header="Time" />
+                </ui:DataGrid.Columns>
+            </ui:DataGrid>
+
+            <Grid Grid.Row="2">
+                <StackPanel Orientation="Horizontal">
+                    <ui:Button
+                        Width="235"
+                        Height="70"
+                        Command="{Binding NavigateToSettingPageCommand}"
+                        Content="戻る"
+                        FontSize="30"
+                        Style="{StaticResource SecondaryButtonStyle}" />
+                    <ui:Button
+                        Width="235"
+                        Height="70"
+                        Margin="30,0,0,0"
+                        Command="{Binding NavigateToMainPageCommand}"
+                        Content="トップページ"
+                        FontSize="30"
+                        Style="{StaticResource SecondaryButtonStyle}" />
+                </StackPanel>
+                <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                    <ui:Button
+                        Width="235"
+                        Height="70"
+                        Margin="30,0,0,0"
+                        Command="{Binding DeleteSelectedCommand}"
+                        Content="Delete"
+                        FontSize="30"
+                        Style="{StaticResource SecondaryButtonStyle}" />
+                    <ui:Button
+                        Width="235"
+                        Height="70"
+                        Margin="30,0,0,0"
+                        Command="{Binding ClearAllCommand}"
+                        Content="Clear All"
+                        FontSize="30"
+                        Style="{StaticResource SecondaryButtonStyle}" />
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </Viewbox>
+</UserControl>

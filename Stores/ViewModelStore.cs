@@ -11,4 +11,6 @@ public class ViewModelStore
     public SystemResetSettingPageViewModel SystemResetSettingPageViewModel { get; set; } = null!;
 
     public DeveloperPageViewModel DeveloperPageViewModel { get; set; } = null!;
+
+    public AlarmPageViewModel AlarmPageViewModel { get; set; } = null!;
 }

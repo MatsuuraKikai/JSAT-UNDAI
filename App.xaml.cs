@@ -42,6 +42,7 @@ public partial class App : Application
     public SettingPageViewModel _settingPageViewModel = null!;
     public SystemResetSettingPageViewModel _systemResetSettingPageViewModel = null!;
     public DeveloperPageViewModel _developerPageViewModel = null!;
+    public AlarmPageViewModel _alarmPageViewModel = null!;
 
     UndaiSettingStorageService _undaiSettingStorageService = null!;
     PinStorageService _pinStorageService = null!;
@@ -73,7 +74,7 @@ public partial class App : Application
                 AppDataFolderName);
             Directory.CreateDirectory(_appDataDirectory);
 
-            ErrorLoggingService.Initialize(Path.Combine(_appDataDirectory, LogFolderName));
+            ErrorLoggingService.Initialize(this, Path.Combine(_appDataDirectory, LogFolderName));
             _ = ErrorLoggingService.LogInfo("Application starting.");
 
             TcpLog = new TcpTrafficLogService(Path.Combine(_appDataDirectory, LogFolderName));
@@ -90,7 +91,8 @@ public partial class App : Application
                 _undaiSettingStorageService,
                 _pinStorageService,
                 new NavigationService(_navigationStore, () => _mainPageViewModel),
-                new NavigationService(_navigationStore, () => _developerPageViewModel));
+                new NavigationService(_navigationStore, () => _developerPageViewModel),
+                new NavigationService(_navigationStore, () => _alarmPageViewModel));
 
             _systemResetSettingPageViewModel = new SystemResetSettingPageViewModel(
                 _appDataDirectory,
@@ -111,15 +113,22 @@ public partial class App : Application
                 new NavigationService(_navigationStore, () => _mainPageViewModel),
                 new NavigationService(_navigationStore, () => _settingPageViewModel));
 
+            _alarmPageViewModel = new AlarmPageViewModel(
+                _viewModelStore,
+                new NavigationService(_navigationStore, () => _mainPageViewModel),
+                new NavigationService(_navigationStore, () => _settingPageViewModel));
+
             _viewModelStore.MainPageViewModel = _mainPageViewModel;
             _viewModelStore.SettingPageViewModel = _settingPageViewModel;
             _viewModelStore.SystemResetSettingPageViewModel = _systemResetSettingPageViewModel;
             _viewModelStore.DeveloperPageViewModel = _developerPageViewModel;
+            _viewModelStore.AlarmPageViewModel = _alarmPageViewModel;
 
             _mainPageViewModel.Initialize();
             _settingPageViewModel.Initialize();
             _systemResetSettingPageViewModel.Initialize();
             _developerPageViewModel.Initialize();
+            _ = _alarmPageViewModel.Initialize();
 
             _navigationStore.CurrentViewModel = _mainPageViewModel;
 

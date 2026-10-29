@@ -5,12 +5,14 @@ namespace JSAT_UNDAI.Services;
 
 public static class ErrorLoggingService
 {
+    static App? _app;
     private static readonly ErrorLogger _errorLogger = new();
 
-    public static void Initialize(string logDirectory)
+    public static void Initialize(App app, string logDirectory)
     {
         try
         {
+            _app = app;
             _errorLogger.Start(logDirectory);
         }
         catch
@@ -49,6 +51,11 @@ public static class ErrorLoggingService
         Exception? exception = null,
         [CallerMemberName] string caller = "")
     {
+        if(_app is not null)
+        {
+            _ = _app._alarmPageViewModel.RaiseAlarmAsync(message);
+        }
+
         return Log(
             "ERROR",
             message,

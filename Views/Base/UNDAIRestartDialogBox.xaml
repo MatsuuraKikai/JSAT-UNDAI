@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:JSAT_UNDAI.Views.Base"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     Title="UNDAIRestartDialogBox"
     Width="800"
     Height="600"
@@ -21,18 +22,11 @@
         <!--  =====================================================  -->
         <!--  CONTENT: vertical stack (image / message / OK button)  -->
         <!--  =====================================================  -->
-        <StackPanel
-            Width="800"
-            Height="580"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center">
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
 
             <!--  STACK 1) Restart guide image  -->
-            <Image
-                Width="500"
-                Height="250"
-                MaxWidth="600"
-                Margin="0,80"
+            <ui:Image
+                Margin="10"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 Source="\RESOURCES\ResetUndaiForSettingChanged.png"
@@ -42,16 +36,16 @@
             <TextBlock
                 Margin="10"
                 HorizontalAlignment="Center"
-                FontSize="40"
+                FontSize="30"
                 Foreground="Black"
                 Text="雲台を再起動して下さい。" />
 
-            <!--  STACK 3) OK button: "OK" (no Command is bound)  -->
-            <Button
+            <ui:Button
                 Width="150"
-                Height="50"
+                Click="OkButton_Click"
                 Content="OK"
                 FontSize="30"
+                IsDefault="True"
                 Style="{StaticResource PrimaryButtonStyle}" />
 
         </StackPanel>

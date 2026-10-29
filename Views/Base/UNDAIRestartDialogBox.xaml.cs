@@ -21,5 +21,10 @@ namespace JSAT_UNDAI.Views.Base
         {
             InitializeComponent();
         }
+
+        private void OkButton_Click(object sender, RoutedEventArgs e)
+        {
+            DialogResult = true;
+        }
     }
 }

@@ -319,7 +319,7 @@
                             Grid.Column="1"
                             Width="235"
                             Height="70"
-                            Command="{Binding AlarmHistoryCommand}"
+                            Command="{Binding NavigateToAlarmRecordPageCommand}"
                             Content="アラーム履歴"
                             FontSize="28"
                             Style="{StaticResource SecondaryButtonStyle}" />

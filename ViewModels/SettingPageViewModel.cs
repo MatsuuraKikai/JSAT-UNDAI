@@ -27,6 +27,8 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
     private const int ContinuousRunSecondsMin = 1, ContinuousRunSecondsMax = 3600;
     private const int SatelliteNameMaxLength = 32;
     int backupContinuousRunSeconds = 0;
+    public int systemMessageFieldCount = 0;
+    public bool isSaveNeed = false;
 
     // ---- Continuous-run countdown ----
     private DispatcherTimer? _runTimer;
@@ -38,12 +40,14 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
 
     MainPageViewModel _mainPageViewModel;
     DeveloperPageViewModel _developerPageViewModel;
+    AlarmPageViewModel _alarmPageViewModel;
     MainPageModel _mainPageModel;
 
     readonly ViewModelStore _viewModelStore;
     public string _tempAppData = string.Empty;
     readonly NavigationService _mainPageNavigationService;
     readonly NavigationService _developerPageNavigationService;
+    readonly NavigationService _alarmPageNavigationService;
 
     // ================= Bindable text fields =================
 
@@ -126,7 +130,8 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
         UndaiSettingStorageService undaiSettingStorageService,
         PinStorageService pinStorageService,
         NavigationService mainPageNavigationService,
-        NavigationService developerPageNavigationService)
+        NavigationService developerPageNavigationService,
+        NavigationService alarmPageNavigationService)
     {
         _tempAppData = tempAppData;
         _viewModelStore = viewModelStore;
@@ -134,6 +139,7 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
         _pinStorageService = pinStorageService;
         _mainPageNavigationService = mainPageNavigationService;
         _developerPageNavigationService = developerPageNavigationService;
+        _alarmPageNavigationService = alarmPageNavigationService;
     }
 
     public void Initialize()
@@ -142,6 +148,7 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
         {
             _mainPageViewModel = _viewModelStore.MainPageViewModel;
             _developerPageViewModel = _viewModelStore.DeveloperPageViewModel;
+            _alarmPageViewModel = _viewModelStore.AlarmPageViewModel;
             _mainPageModel = _mainPageViewModel._mainPageModel;
             _ = ErrorLoggingService.LogInfo("SettingPageViewModel initialized.");
 
@@ -228,6 +235,22 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
         }
     }
 
+    [RelayCommand]
+    private void NavigateToAlarmRecordPage()
+    {
+        try
+        {
+            _alarmPageNavigationService.Navigate();
+            _ = ErrorLoggingService.LogInfo("Navigated to Alarm from SettingPage.");
+        }
+        catch (Exception ex)
+        {
+            _ = ErrorLoggingService.LogError("Error navigating to Alarm from SettingPage.", ex);
+        }
+    }
+
+    private bool CanSave() => IsLoaded;
+
     // 登録: validate everything first, write nothing if any field is bad
     [RelayCommand(CanExecute = nameof(CanSave))]
     public void Save()
@@ -243,11 +266,17 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
                 return;
             }
 
-            _undaiSettingStorageService.SaveSetting(entry);
-            _ = ErrorLoggingService.LogInfo("UNDAI settings saved.");
+            if (isSaveNeed)
+            {
+                _undaiSettingStorageService.SaveSetting(entry);
+                _ = ErrorLoggingService.LogInfo("UNDAI settings saved.");
 
-            // Reload from disk: shows exactly what was stored (normalized numbers) and proves the round trip
-            LoadSettings();
+                // Reload from disk: shows exactly what was stored (normalized numbers) and proves the round trip
+                LoadSettings();
+                isSaveNeed = false;
+                return;
+            }
+
             if (IsLoaded)
             {
                 SetStatus("登録しました", false);
@@ -298,7 +327,7 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
                     // Version
                     UndaiVersionText                   // 27
                 });
-
+                systemMessageFieldCount = systemMessage.Split(",").Length - 1;
                 _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 13, message: systemMessage);
             }
         }
@@ -308,8 +337,6 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
             SetStatus("登録に失敗しました", true);
         }
     }
-
-    private bool CanSave() => IsLoaded;
 
     [RelayCommand(CanExecute = nameof(CanStop))]
     private void Stop()
@@ -411,12 +438,6 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
     {
         _mainPageViewModel.AlarmReset();
         _ = ErrorLoggingService.LogInfo("AlarmReset command executed.");
-    }
-
-    [RelayCommand]
-    private void AlarmHistory()
-    {
-        _ = ErrorLoggingService.LogInfo("TODO: AlarmHistory command (not implemented).");
     }
 
     [RelayCommand]
@@ -745,17 +766,27 @@ public partial class SettingPageViewModel : ViewModelBase, INavigationAware
     // IPAddress.TryParse accepts "1" or "1.2", so require exactly 4 dot-separated parts
     private static bool TryParseIPv4(string? text, out IPAddress address)
     {
+        address = IPAddress.None;
+
         string normalized = Normalize(text);
-        if (normalized.Count(c => c == '.') == 3 &&
-            IPAddress.TryParse(normalized, out var parsed) &&
-            parsed.AddressFamily == AddressFamily.InterNetwork)
+        string[] parts = normalized.Split('.');
+        if (parts.Length != 4) return false;
+
+        var bytes = new byte[4];
+        for (int i = 0; i < 4; i++)
         {
-            address = parsed;
-            return true;
+            // 1 to 3 plain digits only: rejects hex, signs, spaces, and empty parts
+            if (parts[i].Length is < 1 or > 3 || !parts[i].All(c => c is >= '0' and <= '9'))
+                return false;
+
+            // NumberStyles.None parses decimal only, so "010" = 10, never octal.
+            // byte.TryParse also rejects values above 255.
+            if (!byte.TryParse(parts[i], NumberStyles.None, CultureInfo.InvariantCulture, out bytes[i]))
+                return false;
         }
 
-        address = IPAddress.None;
-        return false;
+        address = new IPAddress(bytes);   // does not go through IPAddress.TryParse, so no octal risk
+        return true;
     }
 
     // Valid mask = ones followed by zeros only (255.255.0.0 yes, 255.0.255.0 no)

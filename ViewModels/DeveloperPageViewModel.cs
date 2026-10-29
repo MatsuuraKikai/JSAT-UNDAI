@@ -38,7 +38,7 @@ public partial class DeveloperPageViewModel : ViewModelBase, INavigationAware
 
             if (_mainPageViewModel != null && _settingPageViewModel != null)
             {
-                // Additional initialization logic can be added here if needed
+
             }
         }
         catch (Exception ex)
@@ -55,9 +55,11 @@ public partial class DeveloperPageViewModel : ViewModelBase, INavigationAware
     private string _currentAzimuth = string.Empty;
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SetElevationAngleCommand))]
     private string _elevationAngleInput = string.Empty;
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SetAzimuthAngleCommand))]
     private string _azimuthAngleInput = string.Empty;
 
     [ObservableProperty]
@@ -89,11 +91,11 @@ public partial class DeveloperPageViewModel : ViewModelBase, INavigationAware
         try
         {
             _mainPageNavigationService.Navigate();
-            _ = ErrorLoggingService.LogInfo("Navigated to MainPage from SettingPage.");
+            _ = ErrorLoggingService.LogInfo("Navigated to MainPage from DeveloperPage.");
         }
         catch (Exception ex)
         {
-            _ = ErrorLoggingService.LogError("Error navigating to MainPage from SettingPage.", ex);
+            _ = ErrorLoggingService.LogError("Error navigating to MainPage from DeveloperPage.", ex);
         }
     }
 
@@ -138,7 +140,6 @@ public partial class DeveloperPageViewModel : ViewModelBase, INavigationAware
                     break;
             }
             _ = ErrorLoggingService.LogInfo($"Jog start: {direction}");
-            UpdateStatusMessage($"Jog start: {direction}");
             // TODO: send "start jog" for this direction at the selected speed mode.
         });
     }
@@ -172,7 +173,6 @@ public partial class DeveloperPageViewModel : ViewModelBase, INavigationAware
             _activeJogDirection = null;
 
             _ = ErrorLoggingService.LogInfo($"Jog stop: {stopped}");
-            UpdateStatusMessage($"Jog stop: {stopped}");
             // TODO: send "stop jog" to the device.
         });
     }
@@ -186,6 +186,7 @@ public partial class DeveloperPageViewModel : ViewModelBase, INavigationAware
             {
                 return;
             }
+            _mainPageModel.SendTcpMessage(message: $"R,1,{angle},0,0,0", isCommand: true, commandNo: 9);
 
             _ = ErrorLoggingService.LogInfo($"Go to elevation angle: {ElevationAngleInput}");
         });
@@ -200,6 +201,7 @@ public partial class DeveloperPageViewModel : ViewModelBase, INavigationAware
             {
                 return;
             }
+            _mainPageModel.SendTcpMessage(message: $"R,2,{angle},0,0,0", isCommand: true, commandNo: 10);
 
             _ = ErrorLoggingService.LogInfo($"Go to azimuth angle: {AzimuthAngleInput}");
         });
@@ -210,6 +212,7 @@ public partial class DeveloperPageViewModel : ViewModelBase, INavigationAware
     {
         Safe(nameof(ElevationEncorderReset), () =>
         {
+            _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 14);
             _ = ErrorLoggingService.LogInfo("Elevation encoder reset command sent.");
         });
     }
@@ -219,6 +222,7 @@ public partial class DeveloperPageViewModel : ViewModelBase, INavigationAware
     {
         Safe(nameof(AzimuthEncorderReset), () =>
         {
+            _mainPageModel.SendTcpMessage(isCommand: true, commandNo: 15);
             _ = ErrorLoggingService.LogInfo("Azimuth encoder reset command sent.");
         });
     }
@@ -288,7 +292,7 @@ public partial class DeveloperPageViewModel : ViewModelBase, INavigationAware
         }
     }
 
-    void UpdateStatusMessage(string message)
+    public void UpdateStatusMessage(string message)
     {
         int MaxLines = 20;
 

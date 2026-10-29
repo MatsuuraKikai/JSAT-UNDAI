@@ -29,6 +29,10 @@
         <DataTemplate DataType="{x:Type vm:DeveloperPageViewModel}">
             <views:DeveloperPageView />
         </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:AlarmPageViewModel}">
+            <views:AlarmPageView />
+        </DataTemplate>
     </Window.Resources>
 
     <ContentControl Content="{Binding CurrentViewModel}" />
